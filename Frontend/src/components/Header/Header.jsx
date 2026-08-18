@@ -169,7 +169,7 @@ const Header = () => {
           </div>
           
           <Link to="/" className="logo-container">
-            <img src="/src/assets/images/logoWithName.jpeg" alt="Janaki Sky Innovations" className="logo-img" />
+            <img src="https://ik.imagekit.io/ftcr3yz3y1/Ecommerce-Drone/Logo/logoWithName.jpeg" alt="Janaki Sky Innovations" className="logo-img" />
           </Link>
 
           <div className="search-container" ref={searchWrapperRef}>
