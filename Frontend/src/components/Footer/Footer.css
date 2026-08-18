@@ -178,6 +178,25 @@
     margin: 0;
 }
 
+/* Developer credit line in the footer bottom bar */
+.developer-credit {
+    font-size: 12.5px !important;
+    color: #bbb;
+    font-weight: 500;
+}
+
+.developer-credit a {
+    color: var(--primary-orange);
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.developer-credit a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
 .payment-badge {
     font-size: 10px;
     font-weight: bold;

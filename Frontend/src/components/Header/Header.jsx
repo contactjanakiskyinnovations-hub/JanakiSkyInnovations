@@ -150,12 +150,10 @@ const Header = () => {
           <p className="top-bar-message">
             <span className="welcome-flag">Welcome to Janaki Sky Innovations!</span>
             <span className="top-bar-divider" aria-hidden="true">➤</span>
-            <span className="top-bar-tagline">India's Biggest Drone Store</span>
+            <span className="top-bar-tagline">Nepal's Biggest Drone Store</span>
           </p>
           <div className="top-links">
             <span className="phone"><i className="phone-icon">📞</i> {getDisplayPhone()}</span>
-            <Link to="/track-order">Track Order</Link>
-            <Link to="/bulk-inquiry">Bulk Inquiry</Link>
           </div>
         </div>
         <span className="top-bar-sparkle sparkle-right" aria-hidden="true">✨</span>

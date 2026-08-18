@@ -52,8 +52,8 @@ const Footer = () => {
         <footer className="main-footer">
             <div className="container footer-content">
                 <div className="footer-col about">
-                    <h2 className="footer-logo">{footer.companyName || 'Janaki Sky Innovations'}<span>.IN</span></h2>
-                    <p>{footer.tagline || 'India\'s Biggest Robotics, DIY & Engineering Online Store.'}</p>
+                    <h2 className="footer-logo">{footer.companyName || 'Janaki Sky Innovations'}<span>.NP</span></h2>
+                    <p>{footer.tagline || 'Nepal\'s Biggest Robotics, DIY & Engineering Online Store.'}</p>
 
                     <div className="footer-contact-info">
                         {footer.address && (
@@ -117,6 +117,10 @@ const Footer = () => {
             <div className="footer-bottom">
                 <div className="container">
                     <p>{footer.copyrightText || '© 2026 Janaki Sky Innovations - All Rights Reserved.'}</p>
+                    <p className="developer-credit">
+                        Developed By{' '}
+                        <a href="https://www.dipendrakumaryadav.com.np/" target="_blank" rel="noopener noreferrer">Dipendra</a>
+                    </p>
                     <div className="payment-icons">
                         {paymentMethods.map((method, i) => (
                             <span key={i} className="payment-badge">{method}</span>
