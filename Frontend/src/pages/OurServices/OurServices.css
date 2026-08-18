@@ -1,0 +1,336 @@
+.services-page {
+    background: #fafafc;
+    min-height: 100vh;
+}
+
+/* Hero Section */
+.services-hero {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-image: url('https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=2070&auto=format&fit=crop');
+    height: 380px;
+    display: flex;
+    align-items: center;
+    color: white;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(26, 28, 35, 0.9) 0%, rgba(249, 115, 22, 0.4) 100%);
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-content .badge {
+    background: var(--primary-orange);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+}
+
+.hero-content h1 {
+    font-size: 44px;
+    font-weight: 900;
+    margin-bottom: 15px;
+    letter-spacing: -0.5px;
+}
+
+.hero-content p {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 600px;
+    line-height: 1.6;
+}
+
+/* Layout Utilities */
+.py-60 {
+    padding: 60px 0;
+}
+
+.section-header-center {
+    text-align: center;
+    max-width: 650px;
+    margin: 0 auto 50px;
+}
+
+.section-header-center h2 {
+    font-size: 32px;
+    font-weight: 900;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.section-header-center p {
+    font-size: 16px;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* Services Grid */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-bottom: 70px;
+}
+
+.service-card {
+    background: white;
+    border-radius: 16px;
+    padding: 35px 30px;
+    transition: all 0.3s ease;
+    border: 1px solid #f1f5f9;
+}
+
+/* Service with a CMS-managed background image: the photo shows through a
+   translucent white veil so icon/title/description stay fully readable. */
+.service-card.with-bg {
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.88)),
+        var(--bg-image) center / cover no-repeat;
+    background-color: #f8fafc;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+.service-icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    background: #fff5eb;
+    color: var(--primary-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+}
+
+.service-card h3 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.service-desc {
+    font-size: 15px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.service-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.service-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 14px;
+    color: #475569;
+    font-weight: 600;
+}
+
+.shield-icon {
+    color: var(--primary-orange);
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+/* Booking Row */
+.booking-row {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 50px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid #f1f5f9;
+    align-items: center;
+}
+
+.booking-info h2 {
+    font-size: 28px;
+    font-weight: 900;
+    color: #1e293b;
+    margin-bottom: 15px;
+}
+
+.booking-info p {
+    font-size: 15px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.info-points {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.point-item {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.point-item svg {
+    color: var(--primary-orange);
+    flex-shrink: 0;
+}
+
+.point-item h4 {
+    font-size: 16px;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.point-item p {
+    font-size: 13.5px;
+    color: #64748b;
+    margin: 0;
+}
+
+/* Booking Form Card */
+.booking-form-card {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 30px;
+    border: 1px solid #e2e8f0;
+}
+
+.booking-form-card h3 {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 6px;
+}
+
+.booking-form-card p {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 25px;
+}
+
+.enquiry-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-group-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #475569;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    font-size: 14px;
+    color: #1e293b;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-orange);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+.submit-enquiry-btn {
+    width: 100%;
+    justify-content: center;
+    font-weight: 700;
+    padding: 12px;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+/* Success Enquiry */
+.success-enquiry {
+    text-align: center;
+    padding: 30px 10px;
+}
+
+.success-icon {
+    color: #10b981;
+    margin: 0 auto 15px;
+}
+
+.success-enquiry h4 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 10px;
+}
+
+.success-enquiry p {
+    font-size: 14.5px;
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .booking-row {
+        grid-template-columns: 1fr;
+        padding: 25px;
+    }
+    .form-group-row {
+        grid-template-columns: 1fr;
+    }
+    .services-hero h1 {
+        font-size: 34px;
+    }
+}

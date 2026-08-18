@@ -1,0 +1,114 @@
+.category-banners-section {
+    padding: 70px 4% 80px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+}
+
+/* Section heading — kept consistent with the "Shop by top categories"
+   section right below (shared .section-title-clean pattern). */
+.category-banners-section .section-title-clean {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--secondary-black);
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    position: relative;
+    padding-left: 15px;
+    margin-bottom: 40px;
+}
+
+.category-banners-section .section-title-clean::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+    width: 5px;
+    background-color: var(--primary-orange);
+    border-radius: 4px;
+}
+
+/* Keep the banner grid from stretching too wide on large monitors. */
+.category-banners-section .category-banners-grid {
+    max-width: 1360px;
+    margin: 0 auto;
+}
+
+/* Flex layout: every banner card keeps the SAME size no matter how many
+   banners the CMS has — no ugly last-row stretching like CSS grid 1fr. */
+.category-banners-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 26px;
+}
+
+.category-banners-grid.single {
+    justify-content: center;
+}
+
+.category-banner-card {
+    display: block;
+    flex: 1 1 320px;
+    max-width: 440px;
+    min-width: 260px;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #eef2f7;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.category-banner-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
+}
+
+/* Consistent image ratio so all banners line up perfectly,
+   whatever the uploaded image dimensions are. */
+.category-banner-img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #f1f5f9;
+}
+
+.category-banner-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+}
+
+.category-banner-card:hover .category-banner-img img {
+    transform: scale(1.06);
+}
+
+.category-banner-title {
+    display: block;
+    padding: 15px 18px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--secondary-black);
+    letter-spacing: 0.2px;
+}
+
+@media (max-width: 768px) {
+    .category-banners-section {
+        padding: 50px 4% 60px;
+    }
+    .category-banners-grid {
+        gap: 18px;
+    }
+    .category-banner-card {
+        flex: 0 1 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+    .category-banner-img {
+        aspect-ratio: 16 / 10;
+    }
+}

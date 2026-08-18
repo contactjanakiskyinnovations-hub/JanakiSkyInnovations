@@ -1,0 +1,114 @@
+.product-carousel-section {
+    padding: 60px 0;
+    background-color: var(--bg-light);
+    border-bottom: 1px solid #eee;
+}
+
+.product-carousel-section.full-width {
+    padding: 60px 4%; /* Add percentage padding for full width feeling */
+}
+
+.carousel-full-width-inner {
+    width: 100%;
+    margin: 0;
+}
+
+.carousel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.carousel-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--secondary-black);
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    position: relative;
+    padding-left: 15px;
+}
+
+.carousel-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+    width: 5px;
+    background-color: var(--primary-orange);
+    border-radius: 4px;
+}
+
+.carousel-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.carousel-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--white);
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    color: var(--secondary-black);
+}
+
+.carousel-btn:hover {
+    background-color: var(--primary-orange);
+    color: var(--white);
+    border-color: var(--primary-orange);
+    transform: scale(1.05);
+}
+
+.carousel-container {
+    position: relative;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+.carousel-container::-webkit-scrollbar {
+    display: none;
+}
+
+.carousel-track {
+    display: flex;
+    gap: 24px;
+    padding: 10px 5px; /* Add some padding so box shadows are not cut off */
+}
+
+.carousel-item {
+    min-width: 290px;
+    max-width: 290px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .product-carousel-section {
+        padding: 40px 0;
+    }
+    
+    .carousel-title {
+        font-size: 22px;
+    }
+
+    .carousel-item {
+        min-width: 220px;
+        max-width: 220px;
+    }
+    
+    .carousel-btn {
+        width: 36px;
+        height: 36px;
+    }
+}

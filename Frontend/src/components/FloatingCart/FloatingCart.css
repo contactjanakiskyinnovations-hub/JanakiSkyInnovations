@@ -1,0 +1,119 @@
+.floating-cart-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 420px;
+    background: #111827;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 100px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.floating-cart-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.cart-summary-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cart-icon-wrapper {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-badge-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--primary-orange);
+    color: white;
+    font-size: 8px;
+    font-weight: 700;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #111827;
+}
+
+.cart-info-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-info-text .item-count {
+    font-size: 12px;
+    opacity: 0.7;
+    font-weight: 500;
+}
+
+.cart-info-text .total-amount {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.view-cart-btn {
+    background: var(--primary-orange);
+    color: white;
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.3s ease;
+}
+
+.view-cart-btn:hover {
+    background: #e55a2b;
+    transform: translateX(3px);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translate(-50%, 100%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .floating-cart-bar {
+        bottom: 10px;
+        width: 95%;
+        padding: 10px 16px;
+    }
+    
+    .cart-info-text .total-amount {
+        font-size: 14px;
+    }
+    
+    .view-cart-btn {
+        padding: 6px 14px;
+        font-size: 12px;
+    }
+}

@@ -1,0 +1,124 @@
+:root {
+  /* Robu.in Brand Colors */
+  --primary-orange: #FF8F00;
+  --primary-orange-hover: #E67E00;
+  --secondary-black: #212121;
+  --secondary-grey: #424242;
+  --bg-light: #F5F7FA;
+  --white: #FFFFFF;
+  
+  /* Text Colors */
+  --text-main: #333333;
+  --text-muted: #757575;
+  --text-white: #FFFFFF;
+
+  /* Shadows & Radius */
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Layout */
+  --header-height: 120px;
+  --container-max-width: 1280px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--bg-light);
+  color: var(--text-main);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: none;
+  font-family: inherit;
+}
+
+.container {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.header .container {
+  max-width: 1680px; /* increased to push 20% further left */
+}
+
+/* ============================================================
+   Full-height layout: push the footer to the bottom of the
+   viewport so no blank space ever appears under/around it,
+   even when zooming out on short pages (e.g. empty cart/wishlist).
+   ============================================================ */
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100vh;
+}
+
+.App main {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Let every routed page fill the whole <main> area so its
+   background always covers the space above the footer. */
+.App main > * {
+  flex: 1;
+  width: 100%;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary-grey);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-black);
+}

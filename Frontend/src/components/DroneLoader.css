@@ -1,0 +1,348 @@
+.drone-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background: #ffffff;
+  overflow: hidden;
+}
+
+/* Scene */
+
+.drone-scene {
+  position: relative;
+  width: 320px;
+  height: 220px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Drone */
+
+.drone {
+  position: relative;
+  width: 180px;
+  height: 100px;
+
+  animation: droneFloat 2.5s ease-in-out infinite;
+}
+
+/* Drone body */
+
+.drone-body {
+  position: absolute;
+
+  left: 50%;
+  top: 42px;
+
+  width: 100px;
+  height: 45px;
+
+  transform: translateX(-50%);
+
+  background: linear-gradient(
+    145deg,
+    #26384d,
+    #101923
+  );
+
+  border-radius: 45% 45% 35% 35%;
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.2),
+    inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+/* Arms */
+
+.drone-arm {
+  position: absolute;
+
+  top: 54px;
+
+  width: 75px;
+  height: 8px;
+
+  background: #1c2b3b;
+  border-radius: 10px;
+}
+
+.left-arm {
+  left: 0;
+  transform: rotate(-18deg);
+}
+
+.right-arm {
+  right: 0;
+  transform: rotate(18deg);
+}
+
+/* Propellers */
+
+.propeller {
+  position: absolute;
+
+  top: 17px;
+
+  width: 48px;
+  height: 48px;
+
+  animation: propellerSpin 0.18s linear infinite;
+}
+
+.left-propeller {
+  left: -8px;
+}
+
+.right-propeller {
+  right: -8px;
+}
+
+.propeller span {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 7px;
+  height: 44px;
+
+  transform: translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background: rgba(60, 100, 140, 0.65);
+}
+
+.propeller span:nth-child(2) {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+/* Camera */
+
+.drone-camera {
+  position: absolute;
+
+  left: 50%;
+  bottom: -9px;
+
+  width: 25px;
+  height: 20px;
+
+  transform: translateX(-50%);
+
+  background: #101a27;
+
+  border-radius: 0 0 12px 12px;
+}
+
+.drone-camera::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 10px;
+  height: 10px;
+
+  transform: translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background: #4ddfff;
+
+  box-shadow: 0 0 12px #4ddfff;
+}
+
+/* Top light */
+
+.drone-light {
+  position: absolute;
+
+  left: 50%;
+  top: 7px;
+
+  width: 6px;
+  height: 6px;
+
+  transform: translateX(-50%);
+
+  border-radius: 50%;
+
+  background: #4ddfff;
+
+  box-shadow:
+    0 0 8px #4ddfff,
+    0 0 20px #4ddfff;
+
+  animation: blink 1s infinite;
+}
+
+/* Scanning beam */
+
+.scan-beam {
+  position: absolute;
+
+  left: 50%;
+  top: 105px;
+
+  width: 180px;
+  height: 110px;
+
+  transform: translateX(-50%);
+
+  background: linear-gradient(
+    to bottom,
+    rgba(77, 223, 255, 0.25),
+    rgba(77, 223, 255, 0)
+  );
+
+  clip-path: polygon(
+    35% 0,
+    65% 0,
+    100% 100%,
+    0 100%
+  );
+
+  animation: scanPulse 2s ease-in-out infinite;
+}
+
+/* Shadow */
+
+.drone-shadow {
+  position: absolute;
+
+  bottom: 15px;
+  left: 50%;
+
+  width: 130px;
+  height: 18px;
+
+  transform: translateX(-50%);
+
+  background: rgba(0, 0, 0, 0.15);
+
+  border-radius: 50%;
+
+  filter: blur(8px);
+
+  animation: shadowPulse 2.5s ease-in-out infinite;
+}
+
+/* Text */
+
+.loader-text {
+  display: flex;
+  align-items: center;
+
+  margin-top: 20px;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 15px;
+  letter-spacing: 3px;
+
+  color: #1c2b3b;
+
+  text-transform: uppercase;
+}
+
+/* Dots */
+
+.loading-dots {
+  display: flex;
+  margin-left: 5px;
+}
+
+.loading-dots span {
+  animation: dotAnimation 1.4s infinite;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Animations */
+
+@keyframes droneFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-18px);
+  }
+}
+
+@keyframes propellerSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes scanPulse {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translateX(-50%) scaleY(0.8);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: translateX(-50%) scaleY(1);
+  }
+}
+
+@keyframes shadowPulse {
+  0%,
+  100% {
+    transform: translateX(-50%) scaleX(0.8);
+    opacity: 0.2;
+  }
+
+  50% {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 0.5;
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes dotAnimation {
+  0%,
+  60%,
+  100% {
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+}
