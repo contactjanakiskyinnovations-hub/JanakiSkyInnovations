@@ -82,7 +82,7 @@ const AdminLayout = ({ children }) => {
             {/* Sidebar */}
             <aside className="admin-sidebar">
                 <div className="sidebar-header">
-                    <img src="../../../src/assets/images/logoWithName.jpeg" alt="Janaki Sky" className="admin-logo" />
+                    <img src="https://ik.imagekit.io/ftcr3yz3y1/Ecommerce-Drone/Logo/logoWithName.jpeg?updatedAt=1787070991944" alt="Janaki Sky" className="admin-logo" />
                     <h3>Admin Panel</h3>
                 </div>
 
