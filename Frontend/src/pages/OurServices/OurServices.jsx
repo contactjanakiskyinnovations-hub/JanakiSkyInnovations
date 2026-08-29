@@ -139,22 +139,36 @@ const OurServices = () => {
                         {currentCategory.services.map((service, idx) => (
                             <div
                                 key={idx}
-                                className={`service-card shadow-sm${service.image ? ' with-bg' : ''}`}
-                                style={service.image ? { '--bg-image': `url(${service.image})` } : undefined}
+                                className={`service-card shadow-sm${service.image ? ' has-image' : ''}`}
                             >
-                                <div className="service-icon-box">
-                                    {iconMapping[service.iconName] || <Shield size={28} />}
+                                {service.image ? (
+                                    <div className="service-card-image-wrapper">
+                                        <img src={service.image} alt={service.title} className="service-card-img" />
+                                        <div className="service-icon-badge">
+                                            {iconMapping[service.iconName] || <Shield size={20} />}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="service-no-image-header">
+                                        <div className="service-icon-box">
+                                            {iconMapping[service.iconName] || <Shield size={26} />}
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="service-card-content">
+                                    <h3>{service.title}</h3>
+                                    <p className="service-desc">{service.description}</p>
+                                    {service.features && service.features.length > 0 && (
+                                        <ul className="service-features">
+                                            {service.features.map((feat, fIdx) => (
+                                                <li key={fIdx}>
+                                                    <Shield size={14} className="shield-icon" />
+                                                    <span>{feat}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
                                 </div>
-                                <h3>{service.title}</h3>
-                                <p className="service-desc">{service.description}</p>
-                                <ul className="service-features">
-                                    {(service.features || []).map((feat, fIdx) => (
-                                        <li key={fIdx}>
-                                            <Shield size={14} className="shield-icon" />
-                                            <span>{feat}</span>
-                                        </li>
-                                    ))}
-                                </ul>
                             </div>
                         ))}
                     </div>

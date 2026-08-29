@@ -83,6 +83,8 @@ const Header = () => {
     }
   };
 
+  const [hoveredSubByNav, setHoveredSubByNav] = useState({});
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -93,11 +95,16 @@ const Header = () => {
     return () => window.removeEventListener('toggleAuthModal', handleToggleModal);
   }, []);
 
-  // Load service categories for the OUR SERVICES dropdown
+  const [logoUrl, setLogoUrl] = useState('https://ik.imagekit.io/ftcr3yz3y1/Ecommerce-Drone/Logo/logoWithName.jpeg');
+
+  // Load service categories and logo for the header
   React.useEffect(() => {
     const loadServiceCategories = async () => {
       try {
         const { data } = await api.get('/api/cms');
+        if (data?.logoImage) {
+          setLogoUrl(data.logoImage);
+        }
         const cats = data?.serviceCategories || [];
         if (cats.length > 0) {
           setServiceCategories(cats);
@@ -130,6 +137,7 @@ const Header = () => {
   const navDefs = [
     { slug: 'drones', label: 'DRONES' },
     { slug: 'accessories', label: 'ACCESSORIES' },
+    { slug: 'fpv-drone-accessories', label: 'FPV DRONE ACCESSORIES' },
     { slug: 'stem-kits', label: 'STEM KITS' },
     { slug: 'tools', label: 'TOOLS' },
   ];
@@ -137,7 +145,7 @@ const Header = () => {
   const slugify = (s) => String(s || '').toLowerCase().replace(/\s+/g, '-');
 
   const getDisplayPhone = () => {
-    return isLoggedIn && user && user.mobile ? user.mobile : '+91-7742228345';
+    return isLoggedIn && user && user.mobile ? '+977-9842228345' : '+977-9842228345';
   };
 
   return (
@@ -150,7 +158,7 @@ const Header = () => {
           <p className="top-bar-message">
             <span className="welcome-flag">Welcome to Janaki Sky Innovations!</span>
             <span className="top-bar-divider" aria-hidden="true">➤</span>
-            <span className="top-bar-tagline">Nepal's Biggest Drone Store</span>
+            <span className="top-bar-tagline">Nepal's Biggest Robotics & Drone Store</span>
           </p>
           <div className="top-links">
             <span className="phone"><i className="phone-icon">📞</i> {getDisplayPhone()}</span>
@@ -167,7 +175,7 @@ const Header = () => {
           </div>
           
           <Link to="/" className="logo-container">
-            <img src="https://ik.imagekit.io/ftcr3yz3y1/Ecommerce-Drone/Logo/logoWithName.jpeg" alt="Janaki Sky Innovations" className="logo-img" />
+            <img src={logoUrl} alt="Janaki Sky Innovations" className="logo-img" />
           </Link>
 
           <div className="search-container" ref={searchWrapperRef}>
@@ -357,52 +365,86 @@ const Header = () => {
               // sub-categories / sub-sub-categories always resolve.
               const cat = navCategories.find(c => (c.slug === slug || c.slug === `${slug}-products`) && c.isActive !== false);
               const hasSubs = cat && cat.subCategories && cat.subCategories.length > 0;
+              const currentHoveredSubName = hoveredSubByNav[slug];
+              const activeSubObj = hasSubs && currentHoveredSubName 
+                ? cat.subCategories.find(s => s.name === currentHoveredSubName)
+                : null;
+              const hasActiveSubSubs = activeSubObj && activeSubObj.subSubCategories && activeSubObj.subSubCategories.length > 0;
+
               return (
-                <li key={slug} className={`nav-item ${hasSubs ? 'has-dropdown' : ''}`}>
+                <li 
+                  key={slug} 
+                  className={`nav-item ${hasSubs ? 'has-dropdown' : ''}`}
+                  onMouseLeave={() => setHoveredSubByNav(prev => ({ ...prev, [slug]: null }))}
+                >
                   <Link to={`/category/${slug}`}>
                     {label}
                     {hasSubs && <ChevronDown size={14} />}
                   </Link>
                   {hasSubs ? (
-                    <ul className="dropdown-menu">
-                      {cat.subCategories.map((sub, i) => (
-                        sub.subSubCategories && sub.subSubCategories.length > 0 ? (
-                          <li key={i} className="has-submenu">
-                            <Link to={`/category/${slugify(sub.name)}`} onClick={toggleMobileMenu}>
-                              {sub.name} <ChevronDown size={14} className="submenu-icon" />
-                            </Link>
-                            <ul className="submenu">
-                              {sub.subSubCategories.map((ss, j) => (
-                                <li key={j} onClick={toggleMobileMenu}>
-                                  <Link to={`/category/${slugify(ss)}`}>{ss}</Link>
-                                </li>
-                              ))}
-                            </ul>
-                          </li>
-                        ) : (
-                          <li key={i} onClick={toggleMobileMenu}>
-                            <Link to={`/category/${slugify(sub.name)}`}>{sub.name}</Link>
-                          </li>
-                        )
-                      ))}
-                    </ul>
+                    <div className={`dropdown-menu ${hasActiveSubSubs ? 'has-active-submenu' : ''}`}>
+                      <ul className="dropdown-sub-list">
+                        {cat.subCategories.map((sub, i) => {
+                          const hasSubSubs = sub.subSubCategories && sub.subSubCategories.length > 0;
+                          const isHovered = currentHoveredSubName === sub.name;
+                          return (
+                            <li 
+                              key={i} 
+                              className={`sub-item ${hasSubSubs ? 'has-subs' : ''} ${isHovered ? 'active' : ''}`}
+                              onMouseEnter={() => {
+                                if (hasSubSubs) {
+                                  setHoveredSubByNav(prev => ({ ...prev, [slug]: sub.name }));
+                                } else {
+                                  setHoveredSubByNav(prev => ({ ...prev, [slug]: null }));
+                                }
+                              }}
+                            >
+                              <Link to={`/category/${slugify(sub.name)}`} onClick={toggleMobileMenu}>
+                                <span>{sub.name}</span>
+                                {hasSubSubs && <ChevronDown size={14} className="submenu-icon" />}
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+
+                      {hasActiveSubSubs && (
+                        <ul className="dropdown-subsub-list">
+                          {activeSubObj.subSubCategories.map((ss, j) => (
+                            <li key={j} onClick={toggleMobileMenu}>
+                              <Link to={`/category/${slugify(ss)}`}>{ss}</Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   ) : null}
                 </li>
               );
             })}
             <li className="nav-item has-dropdown">
               <Link to="/services">OUR SERVICES <ChevronDown size={14} /></Link>
-              <ul className="dropdown-menu">
-                {serviceCategories.length > 0 ? (
-                  serviceCategories.map((cat, ci) => (
-                    <li key={ci} onClick={toggleMobileMenu}><Link to={`/services?category=${encodeURIComponent(cat.slug || '')}`}>{cat.name || 'Services'}</Link></li>
-                  ))
-                ) : (
-                  <li onClick={toggleMobileMenu}><Link to="/services">All Services</Link></li>
-                )}
-              </ul>
+              <div className="dropdown-menu">
+                <ul className="dropdown-sub-list">
+                  {serviceCategories.length > 0 ? (
+                    serviceCategories.map((cat, ci) => (
+                      <li key={ci} className="sub-item" onClick={toggleMobileMenu}>
+                        <Link to={`/services?category=${encodeURIComponent(cat.slug || '')}`}>
+                          <span>{cat.name || 'Services'}</span>
+                        </Link>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="sub-item" onClick={toggleMobileMenu}>
+                      <Link to="/services"><span>All Services</span></Link>
+                    </li>
+                  )}
+                </ul>
+              </div>
             </li>
-            <li className="nav-item highlight" onClick={toggleMobileMenu}><Link to="/offers">OFFERS</Link></li>
+            <li className="nav-item highlight" onClick={toggleMobileMenu}>
+              <Link to="/offers">OFFERS</Link>
+            </li>
           </ul>
         </div>
       </nav>

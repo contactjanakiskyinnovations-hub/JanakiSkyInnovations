@@ -73,6 +73,18 @@ const getProducts = async (req, res) => {
                     { subCategory: { $regex: /accessories/i } }
                 ] 
             });
+        } else if (lowerCat === 'fpv-drone-accessories' || lowerCat === 'fpv drone accessories') {
+            filterConditions.push({
+                $or: [
+                    { category: { $regex: /fpv/i } },
+                    { subCategory: { $regex: /fpv/i } },
+                    { subSubCategory: { $regex: /fpv/i } },
+                    { category: { $regex: /fpv.drone/i } },
+                    { subCategory: { $regex: /fpv.drone/i } },
+                    { category: { $regex: /fpv.accessories/i } },
+                    { subCategory: { $regex: /fpv.accessories/i } }
+                ]
+            });
         } else {
             const catOrConditions = [
                 { category: catExactRegex },

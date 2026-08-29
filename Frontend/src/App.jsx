@@ -56,6 +56,7 @@ const AppContent = () => {
               <Route path="/users" element={<AdminUsers />} />
               <Route path="/users/:id" element={<UserDetails />} />
               <Route path="/cms" element={<AdminCMS />} />
+              <Route path="/home-content" element={<AdminCMS defaultTab="home-content" />} />
               <Route path="/orders" element={<AdminOrders />} />
               <Route path="/customers" element={<div className="admin-content">Customers Page Coming Soon</div>} />
             </Routes>
@@ -83,6 +84,8 @@ const AppContent = () => {
               <Route path="/order-success/:id" element={<OrderSuccess />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/all-categories" element={<AllCategories />} />
+              <Route path="/products" element={<AllCategories />} />
+              <Route path="/products/:id" element={<CategoryPage />} />
               <Route path="/services" element={<OurServices />} />
               <Route path="/offers" element={<Offers />} />
               <Route path="/search" element={<SearchResults />} />

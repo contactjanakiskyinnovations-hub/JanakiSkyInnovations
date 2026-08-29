@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const homeSettingsSchema = new mongoose.Schema({
+    logoImage: { 
+        type: String, 
+        default: 'https://ik.imagekit.io/ftcr3yz3y1/Ecommerce-Drone/Logo/logoWithName.jpeg' 
+    },
     heroSliders: [
         {
             image: { type: String, required: true },

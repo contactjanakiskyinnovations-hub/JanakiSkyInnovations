@@ -1,22 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { MessageCircle, Phone, Mail, MessageSquare } from 'lucide-react';
 import WhatsappIcon from '../icons/WhatsappIcon';
 import api from '../../utils/api';
 import './SocialFloatingButtons.css';
 
+const DEFAULT_CONTACT_ICONS = [
+    { platform: 'Messenger', iconName: 'MessageCircle', url: 'https://m.me/janakiskyinnovations', isActive: true },
+    { platform: 'WhatsApp', iconName: 'WhatsApp', url: 'https://wa.me/917742228345?text=Hi!%20I%20need%20some%20assistance%20with%20Janaki%20Sky%20Innovations.', isActive: true }
+];
+
 const SocialFloatingButtons = () => {
-    const { isLoggedIn, user } = useAuth();
-    const [socialIcons, setSocialIcons] = useState([]);
+    const [contactIcons, setContactIcons] = useState(DEFAULT_CONTACT_ICONS);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchContactIcons = async () => {
             try {
                 const { data } = await api.get('/api/cms');
-                setSocialIcons(data?.contactIcons || []);
+                const icons = data?.contactIcons;
+                if (Array.isArray(icons) && icons.length > 0) {
+                    setContactIcons(icons);
+                } else {
+                    setContactIcons(DEFAULT_CONTACT_ICONS);
+                }
             } catch (error) {
                 console.error('Failed to fetch contact icons:', error);
+                setContactIcons(DEFAULT_CONTACT_ICONS);
             } finally {
                 setLoading(false);
             }
@@ -24,57 +33,87 @@ const SocialFloatingButtons = () => {
         fetchContactIcons();
     }, []);
 
-    const getWhatsAppNumber = () => {
-        if (isLoggedIn && user && user.mobile) {
-            return user.mobile.replace(/\D/g, '');
-        }
-        return '917742228345';
-    };
-
-    const handleWhatsAppClick = () => {
-        const message = "Hi! I need some assistance with Janaki Sky Innovations.";
-        window.open(`https://wa.me/${getWhatsAppNumber()}?text=${encodeURIComponent(message)}`, '_blank');
-    };
-
-    const handleMessengerClick = () => {
-        window.open('https://m.me/janakiskyinnovations', '_blank');
-    };
-
     if (loading) {
-        return (
-            <div className="social-floating-container">
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: '20px', height: '20px', border: '2px solid #e2e8f0', borderTopColor: 'var(--primary-orange)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                </div>
-            </div>
-        );
+        return null;
     }
+
+    const activeIcons = (contactIcons || []).filter(item => item.isActive !== false && item.url);
+
+    if (activeIcons.length === 0) {
+        return null;
+    }
+
+    const renderIcon = (contact) => {
+        const icon = contact.iconName || '';
+        const platform = (contact.platform || '').toLowerCase();
+
+        if (icon === 'WhatsApp' || platform.includes('whatsapp')) {
+            return <WhatsappIcon size={26} />;
+        }
+        if (icon === 'MessageCircle' || platform.includes('messenger')) {
+            return <MessageCircle size={26} />;
+        }
+        if (icon === 'Phone' || platform.includes('phone')) {
+            return <Phone size={22} />;
+        }
+        if (icon === 'Mail' || platform.includes('mail') || platform.includes('email')) {
+            return <Mail size={22} />;
+        }
+        return <MessageSquare size={22} />;
+    };
+
+    const getButtonClass = (contact) => {
+        const icon = contact.iconName || '';
+        const platform = (contact.platform || '').toLowerCase();
+
+        if (icon === 'WhatsApp' || platform.includes('whatsapp')) {
+            return 'social-btn whatsapp-btn';
+        }
+        if (icon === 'MessageCircle' || platform.includes('messenger')) {
+            return 'social-btn messenger-btn';
+        }
+        if (icon === 'Phone' || platform.includes('phone')) {
+            return 'social-btn phone-btn';
+        }
+        if (icon === 'Mail' || platform.includes('mail')) {
+            return 'social-btn mail-btn';
+        }
+        return 'social-btn custom-contact-btn';
+    };
+
+    const handleClick = (contact) => {
+        if (!contact.url) return;
+        let url = contact.url.trim();
+        // If it's a pure phone number entered by admin, format as wa.me or tel:
+        if (/^\+?\d{7,15}$/.test(url)) {
+            const cleanNum = url.replace(/\D/g, '');
+            if (contact.iconName === 'Phone') {
+                url = `tel:${url}`;
+            } else {
+                url = `https://wa.me/${cleanNum}`;
+            }
+        }
+        window.open(url, '_blank', 'noopener,noreferrer');
+    };
 
     return (
         <div className="social-floating-container">
-            {/* Messenger Button - Always visible, hardcoded */}
-            <button 
-                className="social-btn messenger-btn" 
-                onClick={handleMessengerClick}
-                title="Contact us on Messenger"
-            >
-                <div className="social-icon-wrapper">
-                    <MessageCircle size={24} />
-                </div>
-            </button>
-            
-            {/* WhatsApp Button - Always visible, hardcoded */}
-            <button 
-                className="social-btn whatsapp-btn" 
-                onClick={handleWhatsAppClick}
-                title="Contact us on WhatsApp"
-            >
-                <div className="social-icon-wrapper">
-                    <WhatsappIcon />
-                </div>
-            </button>
+            {activeIcons.map((contact, idx) => (
+                <button 
+                    key={idx}
+                    className={getButtonClass(contact)}
+                    onClick={() => handleClick(contact)}
+                    title={`Contact us on ${contact.platform || 'Chat'}`}
+                    aria-label={`Contact us on ${contact.platform || 'Chat'}`}
+                >
+                    <div className="social-icon-wrapper">
+                        {renderIcon(contact)}
+                    </div>
+                </button>
+            ))}
         </div>
     );
 };
 
 export default SocialFloatingButtons;
+

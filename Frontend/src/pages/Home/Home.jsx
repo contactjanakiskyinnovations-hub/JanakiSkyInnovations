@@ -81,12 +81,12 @@ const Home = () => {
         <div className="home-page">
             <Seo
                 title="Buy Drones, Robotics & DIY Electronics Online in India"
-                description={cms?.footer?.tagline || "India's biggest online drone store – shop drones, FPV, robotics, Arduino, sensors and DIY electronics with fast delivery."}
+                description={cms?.footer?.tagline || "Nepal's biggest online drone store – shop drones, FPV, robotics, Arduino, sensors and DIY electronics with fast delivery."}
                 path="/"
                 image="/logoWithName.jpeg"
             />
-            <HeroSlider />
-            <PromoBanners />
+            <HeroSlider cmsSlides={cms?.heroSliders} />
+            <PromoBanners cmsBanners={cms?.promoBanners} />
             <CategoryBanners title="Shop by Category" />
             <CategoryGrid />
             
@@ -101,25 +101,41 @@ const Home = () => {
                             <h2 style={{ fontSize: '36px', fontWeight: '800', marginBottom: '10px' }}>Our Premium Services</h2>
                             <p style={{ fontSize: '18px', color: '#64748b', maxWidth: '600px', margin: '0 auto' }}>Advanced aerial solutions engineered for industrial precision and celebratory excellence.</p>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
                             {premiumServices.map((service, idx) => (
-                                <div key={idx} className="service-card-home shadow-sm" style={{ background: service.image ? `linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url(${service.image}) center / cover no-repeat` : 'white', padding: '35px 30px', borderRadius: '16px', border: '1px solid #e2e8f0', transition: 'all 0.3s' }}>
-                                    <div style={{ width: '60px', height: '60px', borderRadius: '12px', background: 'linear-gradient(135deg, #FF8F00, #FF6B00)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', marginBottom: '20px' }}>
-                                        {getServiceIcon(service.iconName)}
-                                    </div>
-                                    <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '12px', color: '#0f172a' }}>{service.title}</h3>
-                                    {service.category && <p style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--primary-orange)', marginBottom: '6px' }}>{service.category}</p>}
-                                    <p style={{ fontSize: '14px', color: '#64748b', lineHeight: '1.7', marginBottom: '20px' }}>{service.description}</p>
-                                    {service.features && service.features.length > 0 && (
-                                        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                            {service.features.slice(0, 3).map((feat, fIdx) => (
-                                                <li key={fIdx} style={{ fontSize: '13px', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary-orange)', flexShrink: 0 }}></span>
-                                                    {feat}
-                                                </li>
-                                            ))}
-                                        </ul>
+                                <div
+                                    key={idx}
+                                    className={`service-card-home shadow-sm${service.image ? ' has-image' : ''}`}
+                                >
+                                    {service.image ? (
+                                        <div className="service-card-image-wrapper">
+                                            <img src={service.image} alt={service.title} className="service-card-img" />
+                                            <div className="service-icon-badge">
+                                                {getServiceIcon(service.iconName)}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="service-no-image-header">
+                                            <div className="service-icon-box">
+                                                {getServiceIcon(service.iconName)}
+                                            </div>
+                                        </div>
                                     )}
+                                    <div className="service-card-content">
+                                        <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px', color: '#0f172a' }}>{service.title}</h3>
+                                        {service.category && <p style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--primary-orange)', marginBottom: '8px' }}>{service.category}</p>}
+                                        <p style={{ fontSize: '14.5px', color: '#475569', lineHeight: '1.65', marginBottom: '18px' }}>{service.description}</p>
+                                        {service.features && service.features.length > 0 && (
+                                            <ul className="service-card-features">
+                                                {service.features.slice(0, 3).map((feat, fIdx) => (
+                                                    <li key={fIdx}>
+                                                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary-orange)', flexShrink: 0 }}></span>
+                                                        {feat}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>

@@ -33,8 +33,11 @@ const resolveImageKitFolder = (context, rawSegments) => {
     if (context === 'category') {
         return `/${['ecommerce-drone', 'categories', ...segments.slice(0, 3)].join('/')}`;
     }
-    if (context === 'banner') {
-        return '/ecommerce-drone/banners';
+    if (context === 'banner' || context === 'homebanner') {
+        return '/ecommerce-drone/homebanner';
+    }
+    if (context === 'logo') {
+        return '/ecommerce-drone/logo';
     }
     if (context === 'cms') {
         // CMS-managed images (e.g. category banners) use a dedicated, segment-scoped

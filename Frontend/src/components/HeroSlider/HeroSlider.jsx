@@ -1,60 +1,77 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import api from '../../utils/api';
 import './HeroSlider.css';
 
-const HeroSlider = () => {
-    const slides = [
-        {
-            id: 1,
-            type: 'diamond-grid',
-            title: 'RJX CNC machining services',
-            subtitle: 'Build Your Own FPV Drone',
-            btnText: 'Shop Now',
-            gridImages: [
-                'https://images.unsplash.com/photo-1473968512647-3e447244af8f?q=80&w=2070&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=2070&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1507504031003-b417219a0fde?q=80&w=2070&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1521671713035-0f6fc3a0fd04?q=80&w=2070&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1579829366248-204fe8413f31?q=80&w=2070&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1524143878510-e3b8d6312402?q=80&w=2070&auto=format&fit=crop'
-            ]
-        },
-        {
-            id: 2,
-            type: 'circular-grid',
-            title: 'Carbon fiber tube',
-            points: ['High strength', 'Lightweight', 'Corrosion resistance'],
-            gridImages: [
-                'https://images.unsplash.com/photo-1579829366248-204fe8413f31?q=80&w=2070&auto=format&fit=crop', // item-0
-                'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=2070&auto=format&fit=crop', // item-1
-                'https://images.unsplash.com/photo-1507504031003-b417219a0fde?q=80&w=2070&auto=format&fit=crop', // item-2
-                'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop', // item-3
-                'https://images.unsplash.com/photo-1521671713035-0f6fc3a0fd04?q=80&w=2070&auto=format&fit=crop', // item-4
-                'https://images.unsplash.com/photo-1473968512647-3e447244af8f?q=80&w=2070&auto=format&fit=crop', // item-5
-                'https://images.unsplash.com/photo-1524143878510-e3b8d6312402?q=80&w=2070&auto=format&fit=crop', // item-6
-                'https://images.unsplash.com/photo-1563207153-f403bf289096?q=80&w=2071&auto=format&fit=crop'  // item-7
-            ]
-        },
-        {
-            id: 3,
-            type: 'diamond-grid',
-            title: 'Advanced FPV Drones',
-            subtitle: 'Professional Grade Racing',
-            btnText: 'Explore Collection',
-            gridImages: [
-                'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=2070&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1507504031003-b417219a0fde?q=80&w=2070&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1521671713035-0f6fc3a0fd04?q=80&w=2070&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1579829366248-204fe8413f31?q=80&w=2070&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1524143878510-e3b8d6312402?q=80&w=2070&auto=format&fit=crop'
-            ]
+// Default static slides shown when no CMS heroSliders have been configured yet.
+const DEFAULT_SLIDES = [
+    {
+        image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?q=80&w=2070&auto=format&fit=crop',
+        title: 'RJX CNC Machining Services',
+        subtitle: 'Build Your Own FPV Drone',
+        btnText: 'Shop Now',
+        link: '/all-categories'
+    },
+    {
+        image: 'https://images.unsplash.com/photo-1579829366248-204fe8413f31?q=80&w=2070&auto=format&fit=crop',
+        title: 'Carbon Fiber Tubes',
+        subtitle: 'High Strength · Lightweight · Corrosion Resistant',
+        btnText: 'Explore',
+        link: '/category/accessories'
+    },
+    {
+        image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=2070&auto=format&fit=crop',
+        title: 'Advanced FPV Drones',
+        subtitle: 'Professional Grade Racing',
+        btnText: 'Explore Collection',
+        link: '/category/drones'
+    }
+];
+
+const HeroSlider = ({ cmsSlides }) => {
+    const [slides, setSlides] = useState(null);
+    const navigate = useNavigate();
+
+    const handleNavigate = (link) => {
+        const target = link && link.trim() ? link.trim() : '/all-categories';
+        if (target.startsWith('http://') || target.startsWith('https://')) {
+            window.open(target, '_blank', 'noopener,noreferrer');
+        } else {
+            navigate(target);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-    ];
+    };
+
+    useEffect(() => {
+        if (cmsSlides !== undefined) {
+            // Parent already fetched CMS data and passed it in
+            const active = (cmsSlides || []).filter(s => s.isActive !== false && s.image);
+            setSlides(active.length > 0 ? active : DEFAULT_SLIDES);
+            return;
+        }
+        // Standalone fetch (when used without a parent CMS fetch)
+        api.get('/api/cms')
+            .then(res => {
+                const cmsData = res.data?.heroSliders || [];
+                const active = cmsData.filter(s => s.isActive !== false && s.image);
+                setSlides(active.length > 0 ? active : DEFAULT_SLIDES);
+            })
+            .catch(() => setSlides(DEFAULT_SLIDES));
+    }, [cmsSlides]);
+
+    if (!slides) {
+        return (
+            <section className="hero-slider full-width" style={{ minHeight: '420px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Loader2 size={36} className="spin" color="var(--primary-orange, #f97316)" />
+            </section>
+        );
+    }
 
     return (
         <section className="hero-slider full-width">
@@ -62,60 +79,32 @@ const HeroSlider = () => {
                 modules={[Navigation, Pagination, Autoplay]}
                 navigation={true}
                 pagination={{ clickable: true }}
-                autoplay={{ delay: 6000 }}
-                loop={true}
-                className="mySwiper"
+                autoplay={{ delay: 6000, disableOnInteraction: false }}
+                loop={slides.length > 1}
+                className="mySwiper hero-swiper"
             >
-                {slides.map(slide => (
-                    <SwiperSlide key={slide.id}>
-                        <div className="slide-wrapper">
-                            <div className="container slide-inner">
-                                <div className="slide-content-left">
-                                    <div className="text-overlay">
-                                        <div className="accent-line"></div>
-                                        <h2>{slide.title}</h2>
-                                        {slide.points ? (
-                                            <ul className="benefit-points">
-                                                {slide.points.map((p, i) => (
-                                                    <li key={i}><span className="bullet"></span> {p}</li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <div className="mini-cards">
-                                                <div className="mini-card"><img src="https://images.unsplash.com/photo-1563207153-f403bf289096?q=80&w=2071&auto=format&fit=crop" alt="CNC 1" /></div>
-                                                <div className="mini-card"><img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop" alt="CNC 2" /></div>
-                                                <div className="mini-card"><img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=2070&auto=format&fit=crop" alt="CNC 3" /></div>
-                                            </div>
-                                        )}
-                                        {slide.btnText && <button className="slide-btn-primary">{slide.btnText}</button>}
-                                    </div>
-                                </div>
-                                <div className="slide-content-right">
-                                    {slide.type === 'diamond-grid' ? (
-                                        <div className="image-diamond-grid">
-                                            {slide.gridImages.map((img, idx) => (
-                                                <div key={idx} className={`diamond-item item-${idx}`}>
-                                                    <div className="diamond-inner">
-                                                        <img src={img} alt={`Product ${idx}`} />
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="circular-wheel-grid">
-                                            <div className="wheel-center">
-                                                <div className="wheel-inner">
-                                                    <h2>20+</h2>
-                                                    <p>years experience</p>
-                                                </div>
-                                            </div>
-                                            {slide.gridImages.map((img, idx) => (
-                                                <div key={idx} className={`wheel-item item-${idx}`}>
-                                                    <img src={img} alt={`Wheel Product ${idx}`} />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+                {slides.map((slide, idx) => (
+                    <SwiperSlide key={idx}>
+                        <div className="hero-slide-item" onClick={() => handleNavigate(slide.link)}>
+                            <img
+                                src={slide.image}
+                                alt={slide.title || `Slide ${idx + 1}`}
+                                className="hero-slide-img"
+                            />
+                            <div className="hero-slide-overlay">
+                                <div className="hero-overlay-inner">
+                                    {slide.title && <h2 className="hero-slide-title">{slide.title}</h2>}
+                                    {slide.subtitle && <p className="hero-slide-subtitle">{slide.subtitle}</p>}
+                                    <button
+                                        type="button"
+                                        className="hero-slide-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleNavigate(slide.link);
+                                        }}
+                                    >
+                                        {slide.btnText || 'Explore'}
+                                    </button>
                                 </div>
                             </div>
                         </div>

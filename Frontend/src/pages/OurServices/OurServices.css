@@ -84,57 +84,110 @@
 /* Services Grid */
 .services-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 30px;
     margin-bottom: 70px;
+    align-items: stretch;
 }
 
 .service-card {
-    background: white;
-    border-radius: 16px;
-    padding: 35px 30px;
-    transition: all 0.3s ease;
-    border: 1px solid #f1f5f9;
-}
-
-/* Service with a CMS-managed background image: the photo shows through a
-   translucent white veil so icon/title/description stay fully readable. */
-.service-card.with-bg {
-    background:
-        linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.88)),
-        var(--bg-image) center / cover no-repeat;
-    background-color: #f8fafc;
+    position: relative;
+    background: #ffffff;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
 .service-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    transform: translateY(-6px);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
 }
 
-.service-icon-box {
-    width: 60px;
-    height: 60px;
-    border-radius: 14px;
-    background: #fff5eb;
+/* Service Card Image Header - shows the FULL image without any cropping */
+.service-card-image-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: #0f172a;
+    line-height: 0;
+}
+
+.service-card-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    transition: transform 0.5s ease;
+}
+
+.service-card:hover .service-card-img {
+    transform: scale(1.03);
+}
+
+/* Icon badge floating nicely at the top-right of the image */
+.service-icon-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: var(--primary-orange);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 22px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    z-index: 2;
+}
+
+.service-no-image-header {
+    padding: 28px 26px 0;
+}
+
+/* Content section below the image */
+.service-card-content {
+    padding: 24px 26px 28px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    background: #ffffff;
+}
+
+/* Icon box for cards without image */
+.service-icon-box {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #fff1e0, #ffe0bd);
+    color: var(--primary-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 14px rgba(255, 111, 0, 0.15);
 }
 
 .service-card h3 {
     font-size: 20px;
     font-weight: 800;
-    color: #1e293b;
-    margin-bottom: 12px;
+    color: #0f172a;
+    margin-bottom: 10px;
+    line-height: 1.35;
 }
 
 .service-desc {
-    font-size: 15px;
-    color: #64748b;
-    line-height: 1.6;
-    margin-bottom: 20px;
+    font-size: 14.5px;
+    color: #475569;
+    line-height: 1.65;
+    margin-bottom: 18px;
 }
 
 .service-features {
@@ -144,20 +197,24 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
 }
 
 .service-features li {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
-    font-size: 14px;
-    color: #475569;
+    gap: 10px;
+    font-size: 13.5px;
+    color: #1e293b;
     font-weight: 600;
+    line-height: 1.4;
 }
 
 .shield-icon {
     color: var(--primary-orange);
-    margin-top: 3px;
+    margin-top: 2px;
     flex-shrink: 0;
 }
 

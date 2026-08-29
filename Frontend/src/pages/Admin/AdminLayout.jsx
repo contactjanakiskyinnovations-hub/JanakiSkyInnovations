@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
     LayoutDashboard, 
@@ -9,21 +9,35 @@ import {
     LogOut, 
     ChevronLeft, 
     Bell,
-    Monitor
+    Monitor,
+    Image as ImageIcon
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../utils/api';
 import './Admin.css';
 import Seo from '../../utils/seo';
 
 const AdminLayout = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [logoUrl, setLogoUrl] = useState('https://ik.imagekit.io/ftcr3yz3y1/Ecommerce-Drone/Logo/logoWithName.jpeg');
+
+    // Fetch CMS settings to load dynamic logo
+    useEffect(() => {
+        api.get('/api/cms')
+            .then(res => {
+                if (res.data?.logoImage) {
+                    setLogoUrl(res.data.logoImage);
+                }
+            })
+            .catch(() => {});
+    }, []);
 
     // Auto-logout after 5 minutes (300000ms) of inactivity.
     // Single ref-based timer reset on any user activity or route change.
-    const logoutTimerRef = React.useRef(null);
+    const logoutTimerRef = useRef(null);
 
-    const resetLogoutTimer = React.useCallback(() => {
+    const resetLogoutTimer = useCallback(() => {
         if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
         logoutTimerRef.current = setTimeout(() => {
             localStorage.removeItem('adminInfo');
@@ -31,7 +45,7 @@ const AdminLayout = ({ children }) => {
         }, 300000); // 5 minutes
     }, [navigate]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         resetLogoutTimer();
         const activityEvents = ['mousemove', 'keydown', 'scroll', 'click'];
         activityEvents.forEach(ev => window.addEventListener(ev, resetLogoutTimer, { passive: true }));
@@ -49,10 +63,13 @@ const AdminLayout = ({ children }) => {
         { name: 'Orders', icon: <ShoppingCart size={20} />, path: '/admin/orders' },
         { name: 'Customers', icon: <Users size={20} />, path: '/admin/users' },
         { name: 'CMS Home', icon: <Monitor size={20} />, path: '/admin/cms' },
+        { name: 'Home Page Content', icon: <ImageIcon size={20} />, path: '/admin/home-content' },
     ];
 
     const cmsSubMenu = [
+        { name: 'Home Page Content', path: '/admin/cms?tab=home-content' },
         { name: 'Hero Slider', path: '/admin/cms?tab=slider' },
+        { name: 'Promo Banners', path: '/admin/cms?tab=promo' },
         { name: 'Coupons', path: '/admin/cms?tab=coupons' },
         { name: 'Offers & Bundles', path: '/admin/cms?tab=offers' },
         { name: 'Services', path: '/admin/cms?tab=services' },
@@ -82,21 +99,26 @@ const AdminLayout = ({ children }) => {
             {/* Sidebar */}
             <aside className="admin-sidebar">
                 <div className="sidebar-header">
-                    <img src="https://ik.imagekit.io/ftcr3yz3y1/Ecommerce-Drone/Logo/logoWithName.jpeg?updatedAt=1787070991944" alt="Janaki Sky" className="admin-logo" />
+                    <img src={logoUrl} alt="Janaki Sky" className="admin-logo" />
                     <h3>Admin Panel</h3>
                 </div>
 
                 <nav className="sidebar-nav">
-                    {menuItems.map((item) => (
-                        <Link 
-                            key={item.path} 
-                            to={item.path} 
-                            className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-                        >
-                            {item.icon}
-                            <span>{item.name}</span>
-                        </Link>
-                    ))}
+                    {menuItems.map((item) => {
+                        const isActive = location.pathname === item.path || 
+                            (item.path === '/admin/home-content' && (location.pathname === '/admin/home-content' || (location.pathname === '/admin/cms' && location.search.includes('home-content'))));
+
+                        return (
+                            <Link 
+                                key={item.path} 
+                                to={item.path} 
+                                className={`nav-item ${isActive ? 'active' : ''}`}
+                            >
+                                {item.icon}
+                                <span>{item.name}</span>
+                            </Link>
+                        );
+                    })}
                     
                     {/* CMS Sub-menu */}
                     {location.pathname === '/admin/cms' && (

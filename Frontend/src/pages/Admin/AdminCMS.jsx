@@ -4,9 +4,9 @@ import { useSearchParams } from 'react-router-dom';
 import api from '../../utils/api';
 import './Admin.css';
 
-const AdminCMS = () => {
+const AdminCMS = ({ defaultTab }) => {
     const [searchParams] = useSearchParams();
-    const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'slider');
+    const [activeTab, setActiveTab] = useState(defaultTab || searchParams.get('tab') || 'home-content');
     const [settings, setSettings] = useState({ 
         heroSliders: [], 
         promoBanners: [], 
@@ -42,7 +42,8 @@ const AdminCMS = () => {
             { platform: 'YouTube', iconName: 'Youtube', url: 'https://youtube.com/janakiskyinnovations', isActive: true }
         ],
         contactIcons: [
-            { platform: 'Messenger', iconName: 'MessageCircle', url: 'https://m.me/janakiskyinnovations', isActive: true }
+            { platform: 'Messenger', iconName: 'MessageCircle', url: 'https://m.me/janakiskyinnovations', isActive: true },
+            { platform: 'WhatsApp', iconName: 'WhatsApp', url: 'https://wa.me/917742228345?text=Hi!%20I%20need%20some%20assistance%20with%20Janaki%20Sky%20Innovations.', isActive: true }
         ],
         offers: {
             heroTitle: 'Flash Sale & Coupons',
@@ -73,6 +74,13 @@ const AdminCMS = () => {
     const fileInputRef = useRef(null);
     const [uploadingIndex, setUploadingIndex] = useState(null);
 
+    // Logo state
+    const [logoImage, setLogoImage] = useState('https://ik.imagekit.io/ftcr3yz3y1/Ecommerce-Drone/Logo/logoWithName.jpeg');
+    const [logoPendingFile, setLogoPendingFile] = useState(null);
+    const [logoPreview, setLogoPreview] = useState(null);
+    const [uploadingLogo, setUploadingLogo] = useState(false);
+    const logoInputRef = useRef(null);
+
     // Raw text for the payment methods input so commas are preserved while typing.
     // Committed to settings.footer.paymentMethods (array) on blur / save.
     const [paymentMethodsText, setPaymentMethodsText] = useState('VISA, MasterCard, UPI, Rupay');
@@ -94,6 +102,19 @@ const AdminCMS = () => {
         setLoading(true);
         try {
             const { data } = await api.get('/api/cms');
+            let fetchedContactIcons = data?.contactIcons || [];
+            if (!Array.isArray(fetchedContactIcons) || fetchedContactIcons.length === 0) {
+                fetchedContactIcons = [
+                    { platform: 'Messenger', iconName: 'MessageCircle', url: 'https://m.me/janakiskyinnovations', isActive: true },
+                    { platform: 'WhatsApp', iconName: 'WhatsApp', url: 'https://wa.me/917742228345?text=Hi!%20I%20need%20some%20assistance%20with%20Janaki%20Sky%20Innovations.', isActive: true }
+                ];
+            } else {
+                const hasWhatsApp = fetchedContactIcons.some(c => c.platform?.toLowerCase().includes('whatsapp') || c.iconName === 'WhatsApp');
+                if (!hasWhatsApp) {
+                    fetchedContactIcons.push({ platform: 'WhatsApp', iconName: 'WhatsApp', url: 'https://wa.me/917742228345?text=Hi!%20I%20need%20some%20assistance%20with%20Janaki%20Sky%20Innovations.', isActive: true });
+                }
+            }
+
             setSettings({
                 heroSliders: data?.heroSliders || [],
                 promoBanners: data?.promoBanners || [],
@@ -106,9 +127,12 @@ const AdminCMS = () => {
                 serviceCategories: data?.serviceCategories || [],
                 footer: data?.footer || settings.footer,
                 socialMediaIcons: data?.socialMediaIcons || settings.socialMediaIcons,
-                contactIcons: data?.contactIcons || settings.contactIcons,
+                contactIcons: fetchedContactIcons,
                 offers: data?.offers || settings.offers
             });
+            if (data?.logoImage) {
+                setLogoImage(data.logoImage);
+            }
         } catch (err) {
             setError('Failed to fetch CMS settings');
         } finally {
@@ -127,6 +151,23 @@ const AdminCMS = () => {
         try {
             // Ensure the latest payment methods text is committed before publishing,
             // even if the input was never blurred.
+            // Upload any newly picked logo file (deferred) before publishing.
+            let finalLogoImage = logoImage;
+            if (logoPendingFile) {
+                const formData = new FormData();
+                formData.append('image', logoPendingFile);
+                formData.append('context', 'logo');
+                formData.append('name', 'logo-image');
+                const { data } = await api.post('/api/upload', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                finalLogoImage = data.url;
+                setLogoImage(data.url);
+                setLogoPendingFile(null);
+                if (logoPreview) URL.revokeObjectURL(logoPreview);
+                setLogoPreview(null);
+            }
+
             // Upload any newly picked hero-slider images (deferred) before publishing.
             const heroSliders = (settings.heroSliders || []).map((slide) => ({ ...slide }));
             for (let i = 0; i < heroSliders.length; i++) {
@@ -134,8 +175,9 @@ const AdminCMS = () => {
                 if (pendingFile) {
                     const formData = new FormData();
                     formData.append('image', pendingFile);
-                    formData.append('context', 'banner');
+                    formData.append('context', 'homebanner');
                     formData.append('index', String(i + 1));
+                    formData.append('name', `homebanner-image${i + 1}`);
                     const { data } = await api.post('/api/upload', formData, {
                         headers: { 'Content-Type': 'multipart/form-data' }
                     });
@@ -162,10 +204,60 @@ const AdminCMS = () => {
                 }
             }
 
+            // Upload any newly picked promo banner images (deferred) before publishing.
+            const promoBanners = (settings.promoBanners || []).map((b) => ({ ...b }));
+            for (let i = 0; i < promoBanners.length; i++) {
+                const pendingFile = promoBanners[i].pendingFile;
+                if (pendingFile) {
+                    const formData = new FormData();
+                    formData.append('image', pendingFile);
+                    formData.append('context', 'homebanner');
+                    formData.append('index', String(i + 1));
+                    formData.append('name', `homebanner-promo${i + 1}`);
+                    const { data } = await api.post('/api/upload', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    promoBanners[i] = { ...promoBanners[i], image: data.url };
+                    delete promoBanners[i].pendingFile;
+                }
+            }
+
+            // Upload any newly picked service background images (deferred) before publishing.
+            const serviceCategories = (settings.serviceCategories || []).map((cat) => ({
+                ...cat,
+                services: (cat.services || []).map((svc) => ({ ...svc }))
+            }));
+            for (let ci = 0; ci < serviceCategories.length; ci++) {
+                const services = serviceCategories[ci].services;
+                for (let si = 0; si < services.length; si++) {
+                    const svc = services[si];
+                    if (svc._pendingFile) {
+                        const title = (svc.title || '').trim();
+                        const formData = new FormData();
+                        formData.append('image', svc._pendingFile);
+                        formData.append('context', 'service');
+                        formData.append('folderPath', title || 'service-default');
+                        formData.append('name', title || 'service-default');
+                        const { data } = await api.post('/api/upload', formData, {
+                            headers: { 'Content-Type': 'multipart/form-data' }
+                        });
+                        services[si] = { ...svc, image: data.url };
+                        if (svc._previewUrl) URL.revokeObjectURL(svc._previewUrl);
+                    }
+                    // Strip temp client-only fields before persisting.
+                    delete services[si]._pendingFile;
+                    delete services[si]._previewUrl;
+                    delete services[si]._previewChanged;
+                }
+            }
+
             const finalSettings = {
                 ...settings,
+                logoImage: finalLogoImage,
                 heroSliders,
+                promoBanners,
                 categoryBanners,
+                serviceCategories,
                 footer: {
                     ...settings.footer,
                     paymentMethods: paymentMethodsText.split(',').map(m => m.trim()).filter(Boolean)
@@ -195,6 +287,13 @@ const AdminCMS = () => {
         setSettings({ ...settings, heroSliders: newSliders });
     };
 
+    const handleRemoveSlideImage = (index) => {
+        const newSliders = [...settings.heroSliders];
+        newSliders[index] = { ...newSliders[index], image: '' };
+        delete newSliders[index].pendingFile;
+        setSettings({ ...settings, heroSliders: newSliders });
+    };
+
     const handleSlideChange = (index, field, value) => {
         const newSliders = [...settings.heroSliders];
         newSliders[index][field] = value;
@@ -210,14 +309,37 @@ const AdminCMS = () => {
             alert('Only image files are allowed (JPG, PNG, WEBP, etc.)');
             return;
         }
-        if (file.size > 2 * 1024 * 1024) {
-            alert('Image size must be 2 MB or less');
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size must be 5 MB or less');
             return;
         }
 
-        // Deferred upload: keep the chosen file on the slide; it is uploaded
-        // to ImageKit when the user clicks "Publish Changes".
+        // Deferred upload: keep the chosen file on the slide; it is previewed immediately
+        // and uploaded to ImageKit when the user clicks "Publish Changes".
         handleSlideChange(index, 'pendingFile', file);
+    };
+
+    const handleRemovePromoBannerImage = (index) => {
+        const newBanners = [...settings.promoBanners];
+        newBanners[index] = { ...newBanners[index], image: '' };
+        delete newBanners[index].pendingFile;
+        setSettings({ ...settings, promoBanners: newBanners });
+    };
+
+    const handlePromoBannerImageUpload = (e, index) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        e.target.value = '';
+        if (!file.type || !file.type.startsWith('image/')) {
+            alert('Only image files are allowed (JPG, PNG, WEBP, etc.)');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size must be 5 MB or less');
+            return;
+        }
+        const updated = (settings.promoBanners || []).map((b, idx) => idx === index ? { ...b, pendingFile: file } : b);
+        setSettings({ ...settings, promoBanners: updated });
     };
 
     // Category Banner functions
@@ -351,11 +473,12 @@ const AdminCMS = () => {
         setSettings({ ...settings, serviceCategories: newCats });
     };
 
-    // ---- Service background-image upload (ImageKit /ecommerce-drone/services/<ServiceName>) ----
-    // Tracks which service is currently uploading so the button shows a spinner.
-    const [uploadingSvcKey, setUploadingSvcKey] = useState(null);
-
-    const uploadServiceImage = async (catIndex, svcIndex, file) => {
+    // ---- Service background image (deferred upload) ----
+    // When the admin picks a file we ONLY keep it in state and show a live
+    // browser preview. The actual ImageKit upload happens in handleSave()
+    // when "Publish Changes" is clicked — mirroring the hero-slider/category
+    // banner behavior, so nothing hits the server until publish.
+    const selectServiceImage = (catIndex, svcIndex, file) => {
         const service = settings.serviceCategories[catIndex]?.services?.[svcIndex];
         if (!service) return;
         const title = (service.title || '').trim();
@@ -363,27 +486,32 @@ const AdminCMS = () => {
             alert('Please set the Service Title first — the background image is named after the service.');
             return;
         }
-        setUploadingSvcKey(`${catIndex}-${svcIndex}`);
-        try {
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('context', 'service');
-            formData.append('folderPath', title);
-            formData.append('name', title);
-            const { data } = await api.post('/api/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            handleServiceInCatChange(catIndex, svcIndex, 'image', data.url);
-        } catch (err) {
-            alert(err.response?.data?.message || 'Service image upload failed. Please try again.');
-        } finally {
-            setUploadingSvcKey(null);
-        }
+        const newCats = [...settings.serviceCategories];
+        const target = { ...service };
+        // Revoke an old object-URL (if any) to avoid leaking memory.
+        if (target._previewUrl) URL.revokeObjectURL(target._previewUrl);
+        target._pendingFile = file;
+        target._previewUrl = URL.createObjectURL(file);
+        target._previewChanged = true;
+        newCats[catIndex].services[svcIndex] = target;
+        setSettings({ ...settings, serviceCategories: newCats });
     };
 
     const removeServiceImage = async (catIndex, svcIndex) => {
         const service = settings.serviceCategories[catIndex]?.services?.[svcIndex];
         if (!service) return;
+
+        // If a new file was picked but never published, just drop the pending file.
+        if (service._pendingFile) {
+            if (service._previewUrl) URL.revokeObjectURL(service._previewUrl);
+            handleServiceInCatChange(catIndex, svcIndex, '_pendingFile', undefined);
+            handleServiceInCatChange(catIndex, svcIndex, '_previewUrl', undefined);
+            handleServiceInCatChange(catIndex, svcIndex, '_previewChanged', undefined);
+            // If an old published image exists, keep it for now (it will be
+            // cleared below only when the admin confirms via the button).
+            return;
+        }
+
         // Best-effort cleanup of the ImageKit file(s) stored in the service folder.
         try {
             const title = (service.title || '').trim() || 'service-default';
@@ -439,6 +567,12 @@ const AdminCMS = () => {
 
             <div className="cms-tabs">
                 <button 
+                    className={`tab-btn ${activeTab === 'home-content' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('home-content')}
+                >
+                    🏠 Home Page Content
+                </button>
+                <button 
                     className={`tab-btn ${activeTab === 'slider' ? 'active' : ''}`}
                     onClick={() => setActiveTab('slider')}
                 >
@@ -483,6 +617,284 @@ const AdminCMS = () => {
             </div>
 
             <div className="cms-content">
+                {/* ========== HOME PAGE CONTENT TAB ========== */}
+                {activeTab === 'home-content' && (
+                    <div className="home-content-manager">
+                        {/* LOGO SECTION */}
+                        <div className="cms-section-card" style={{ background: 'var(--bg-secondary, #f9fafb)', borderRadius: '12px', padding: '24px', marginBottom: '32px', border: '1px solid var(--border-color, #e5e7eb)' }}>
+                            <h4 style={{ marginBottom: '6px', fontSize: '1.1rem', fontWeight: 700 }}>🖼️ Site Logo Image</h4>
+                            <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '18px' }}>This logo is displayed on both the Admin Panel sidebar and the Storefront header. When you choose a new image, you will see an instant preview, and it will be uploaded when you click "Publish Changes".</p>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+                                {/* Preview */}
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                    <div style={{ width: '200px', height: '80px', borderRadius: '10px', border: '2px dashed #d1d5db', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
+                                        {(logoPreview || logoImage) ? (
+                                            <img
+                                                src={logoPreview || logoImage}
+                                                alt="Logo Preview"
+                                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                            />
+                                        ) : (
+                                            <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>No Logo Uploaded</span>
+                                        )}
+                                    </div>
+                                    {(logoPreview || logoImage) && (
+                                        <button
+                                            type="button"
+                                            className="danger-btn btn-sm"
+                                            style={{ width: '100%' }}
+                                            onClick={() => {
+                                                setLogoImage('');
+                                                setLogoPendingFile(null);
+                                                if (logoPreview) URL.revokeObjectURL(logoPreview);
+                                                setLogoPreview(null);
+                                            }}
+                                        >
+                                            <Trash2 size={13} /> Remove Logo
+                                        </button>
+                                    )}
+                                    {logoPendingFile && (
+                                        <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 600 }}>🟡 Pending upload on Publish</span>
+                                    )}
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    <input
+                                        ref={logoInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (!file) return;
+                                            setLogoPendingFile(file);
+                                            const previewUrl = URL.createObjectURL(file);
+                                            setLogoPreview(previewUrl);
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="secondary-btn"
+                                        onClick={() => logoInputRef.current && logoInputRef.current.click()}
+                                    >
+                                        <ImageIcon size={14} /> Choose New Logo Image
+                                    </button>
+
+                                    {logoPendingFile && (
+                                        <button
+                                            type="button"
+                                            className="danger-btn btn-sm"
+                                            onClick={() => {
+                                                setLogoPendingFile(null);
+                                                if (logoPreview) URL.revokeObjectURL(logoPreview);
+                                                setLogoPreview(null);
+                                            }}
+                                        >
+                                            <X size={14} /> Cancel Selection
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div style={{ flex: 1, minWidth: '220px' }}>
+                                    <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Or enter image URL directly:</label>
+                                    <input
+                                        className="cms-input"
+                                        type="url"
+                                        value={logoImage}
+                                        placeholder="https://ik.imagekit.io/..."
+                                        onChange={(e) => {
+                                            setLogoImage(e.target.value);
+                                            setLogoPendingFile(null);
+                                            if (logoPreview) URL.revokeObjectURL(logoPreview);
+                                            setLogoPreview(null);
+                                        }}
+                                        style={{ width: '100%' }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* HERO SLIDER BANNERS SECTION */}
+                        <div className="cms-section-card" style={{ background: 'var(--bg-secondary, #f9fafb)', borderRadius: '12px', padding: '24px', marginBottom: '32px', border: '1px solid var(--border-color, #e5e7eb)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <div>
+                                    <h4 style={{ marginBottom: '4px', fontSize: '1.1rem', fontWeight: 700 }}>🎞️ Hero Slider Banners</h4>
+                                    <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Images are previewed instantly and saved to ImageKit folder <code style={{ background: '#e5e7eb', padding: '2px 6px', borderRadius: '4px' }}>homebanner</code> on "Publish Changes".</p>
+                                </div>
+                                <button className="secondary-btn btn-sm" onClick={handleAddSlide}><Plus size={16} /> Add Slide</button>
+                            </div>
+                            <div className="cms-grid">
+                                {(settings.heroSliders || []).length === 0 && (
+                                    <div style={{ padding: '32px', textAlign: 'center', color: '#9ca3af', gridColumn: '1/-1' }}>
+                                        <ImageIcon size={40} style={{ margin: '0 auto 8px', display: 'block', opacity: 0.4 }} />
+                                        <p>No hero sliders added yet. Click "Add Slide" to get started.</p>
+                                    </div>
+                                )}
+                                {(settings.heroSliders || []).map((slide, i) => (
+                                    <div key={i} className="cms-card shadow-sm">
+                                        <div className="cms-image-preview">
+                                            {slide.pendingFile ? (
+                                                <img src={URL.createObjectURL(slide.pendingFile)} alt="Slide preview" style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                                            ) : slide.image ? (
+                                                <img src={slide.image} alt="Slide" style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                                            ) : (
+                                                <div className="img-placeholder"><ImageIcon size={32} /><span>No Image Selected</span></div>
+                                            )}
+                                            <input type="file" id={`hc-slide-upload-${i}`} style={{display:'none'}} onChange={(e) => handleImageUpload(e, i)} accept="image/*" />
+                                            <button className="edit-img-btn" onClick={() => document.getElementById(`hc-slide-upload-${i}`).click()} title="Choose Image">
+                                                <Edit2 size={14} />
+                                            </button>
+                                        </div>
+
+                                        {/* REMOVE IMAGE BUTTON BELOW PREVIEW */}
+                                        <div style={{ padding: '0 12px', marginTop: '6px' }}>
+                                            {(slide.image || slide.pendingFile) && (
+                                                <button
+                                                    type="button"
+                                                    className="danger-btn btn-sm"
+                                                    style={{ width: '100%', fontSize: '0.78rem', padding: '4px 8px' }}
+                                                    onClick={() => handleRemoveSlideImage(i)}
+                                                >
+                                                    <Trash2 size={12} /> Remove Image
+                                                </button>
+                                            )}
+                                            {slide.pendingFile && (
+                                                <span style={{ fontSize: '0.72rem', color: '#d97706', fontWeight: 600, display: 'block', marginTop: '3px', textAlign: 'center' }}>
+                                                    🟡 New image preview (uploads on Publish)
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <div className="cms-details">
+                                            <div className="input-group">
+                                                <label>Title</label>
+                                                <input className="cms-input" value={slide.title || ''} onChange={(e) => handleSlideChange(i,'title',e.target.value)} placeholder="Slide Title" />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Subtitle</label>
+                                                <input className="cms-input" value={slide.subtitle || ''} onChange={(e) => handleSlideChange(i,'subtitle',e.target.value)} placeholder="Slide subtitle" />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Link URL</label>
+                                                <input className="cms-input" value={slide.link || ''} onChange={(e) => handleSlideChange(i,'link',e.target.value)} placeholder="/category/drones or https://..." />
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                                                <label style={{ fontSize: '0.8rem', color: '#6b7280' }}>Active</label>
+                                                <input type="checkbox" checked={!!slide.isActive} onChange={(e) => handleSlideChange(i,'isActive',e.target.checked)} />
+                                            </div>
+                                        </div>
+
+                                        {/* FULL BANNER REMOVAL BUTTON */}
+                                        <button className="danger-btn btn-sm" style={{ margin: '8px 12px 12px' }} onClick={() => handleRemoveSlide(i)}>
+                                            <Trash2 size={14} /> Remove Slide (Delete Banner)
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* PROMO BANNERS SECTION */}
+                        <div className="cms-section-card" style={{ background: 'var(--bg-secondary, #f9fafb)', borderRadius: '12px', padding: '24px', border: '1px solid var(--border-color, #e5e7eb)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <div>
+                                    <h4 style={{ marginBottom: '4px', fontSize: '1.1rem', fontWeight: 700 }}>📣 Promo Banners</h4>
+                                    <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Promotional banner images shown below the hero slider on the homepage (e.g. Smart Agriculture, High-Speed FPV).</p>
+                                </div>
+                                <button className="secondary-btn btn-sm" onClick={() => {
+                                    setSettings({ ...settings, promoBanners: [...(settings.promoBanners || []), { image: '', title: '', description: '', link: '' }] });
+                                }}><Plus size={16} /> Add Banner</button>
+                            </div>
+                            <div className="cms-grid">
+                                {(settings.promoBanners || []).length === 0 && (
+                                    <div style={{ padding: '32px', textAlign: 'center', color: '#9ca3af', gridColumn: '1/-1' }}>
+                                        <ImageIcon size={40} style={{ margin: '0 auto 8px', display: 'block', opacity: 0.4 }} />
+                                        <p>No promo banners added yet.</p>
+                                    </div>
+                                )}
+                                {(settings.promoBanners || []).map((banner, i) => (
+                                    <div key={i} className="cms-card shadow-sm">
+                                        <div className="cms-image-preview">
+                                            {banner.pendingFile ? (
+                                                <img src={URL.createObjectURL(banner.pendingFile)} alt="Banner preview" style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                                            ) : banner.image ? (
+                                                <img src={banner.image} alt="Promo Banner" style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                                            ) : (
+                                                <div className="img-placeholder"><ImageIcon size={32} /><span>No Image Selected</span></div>
+                                            )}
+                                            <input
+                                                type="file"
+                                                id={`promo-upload-${i}`}
+                                                style={{display:'none'}}
+                                                accept="image/*"
+                                                onChange={(e) => handlePromoBannerImageUpload(e, i)}
+                                            />
+                                            <button className="edit-img-btn" onClick={() => document.getElementById(`promo-upload-${i}`).click()} title="Choose Image">
+                                                <Edit2 size={14} />
+                                            </button>
+                                        </div>
+
+                                        {/* REMOVE IMAGE BUTTON BELOW PREVIEW */}
+                                        <div style={{ padding: '0 12px', marginTop: '6px' }}>
+                                            {(banner.image || banner.pendingFile) && (
+                                                <button
+                                                    type="button"
+                                                    className="danger-btn btn-sm"
+                                                    style={{ width: '100%', fontSize: '0.78rem', padding: '4px 8px' }}
+                                                    onClick={() => handleRemovePromoBannerImage(i)}
+                                                >
+                                                    <Trash2 size={12} /> Remove Image
+                                                </button>
+                                            )}
+                                            {banner.pendingFile && (
+                                                <span style={{ fontSize: '0.72rem', color: '#d97706', fontWeight: 600, display: 'block', marginTop: '3px', textAlign: 'center' }}>
+                                                    🟡 New image preview (uploads on Publish)
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <div className="cms-details">
+                                            <div className="input-group">
+                                                <label>Title</label>
+                                                <input className="cms-input" value={banner.title || ''} onChange={(e) => {
+                                                    const updated = (settings.promoBanners || []).map((b,idx) => idx===i ? {...b, title: e.target.value} : b);
+                                                    setSettings({ ...settings, promoBanners: updated });
+                                                }} placeholder="e.g. Smart Agriculture" />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Description</label>
+                                                <input className="cms-input" value={banner.description || ''} onChange={(e) => {
+                                                    const updated = (settings.promoBanners || []).map((b,idx) => idx===i ? {...b, description: e.target.value} : b);
+                                                    setSettings({ ...settings, promoBanners: updated });
+                                                }} placeholder="Short description..." />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Link URL</label>
+                                                <input className="cms-input" value={banner.link || ''} onChange={(e) => {
+                                                    const updated = (settings.promoBanners || []).map((b,idx) => idx===i ? {...b, link: e.target.value} : b);
+                                                    setSettings({ ...settings, promoBanners: updated });
+                                                }} placeholder="/category/drones" />
+                                            </div>
+                                        </div>
+
+                                        {/* FULL BANNER REMOVAL BUTTON */}
+                                        <button className="danger-btn btn-sm" style={{ margin: '8px 12px 12px' }} onClick={() => {
+                                            if (!window.confirm('Delete this promo banner completely?')) return;
+                                            const updated = (settings.promoBanners || []).filter((_,idx) => idx !== i);
+                                            setSettings({ ...settings, promoBanners: updated });
+                                        }}>
+                                            <Trash2 size={14} /> Remove Banner (Delete All)
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            <div style={{ marginTop: '20px', padding: '12px 16px', background: '#eff6ff', borderRadius: '8px', borderLeft: '4px solid #3b82f6', fontSize: '0.85rem', color: '#1d4ed8' }}>
+                                💡 <strong>Tip:</strong> You can choose/replace images to see immediate previews or click <strong>"Remove Image"</strong> below any image. When ready, click the orange <strong>"Publish Changes"</strong> button at the top to upload all pending files to ImageKit and save everything.
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {activeTab === 'slider' && (
                     <div className="slider-manager">
                         <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -742,8 +1154,8 @@ const AdminCMS = () => {
                                         <div className="input-group" style={{ marginTop: '2px' }}>
                                             <label>Background Image <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '12px' }}>(optional — named after the service)</span></label>
                                             <div className="cms-image-preview" style={{ height: '130px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-                                                {service.image ? (
-                                                    <img src={service.image} alt={`${service.title || 'Service'} background`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                {(service._previewUrl || service.image) ? (
+                                                    <img src={service._previewUrl || service.image} alt={`${service.title || 'Service'} background`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 ) : (
                                                     <div className="img-placeholder">
                                                         <ImageIcon size={26} />
@@ -753,8 +1165,8 @@ const AdminCMS = () => {
                                             </div>
                                             <div style={{ display: 'flex', gap: '10px', marginTop: '10px', alignItems: 'center' }}>
                                                 <label className="secondary-btn btn-sm" style={{ cursor: 'pointer', margin: 0 }}>
-                                                    {uploadingSvcKey === `${ci}-${si}` ? <Loader2 size={14} className="spin" /> : <ImageIcon size={14} />}
-                                                    {uploadingSvcKey === `${ci}-${si}` ? ' Uploading...' : ' Upload Image'}
+                                                    <ImageIcon size={14} />
+                                                    {service.image || service._pendingFile ? ' Replace Image' : ' Upload Image'}
                                                     <input
                                                         type="file"
                                                         accept="image/*"
@@ -762,11 +1174,17 @@ const AdminCMS = () => {
                                                         onChange={(e) => {
                                                             const file = e.target.files && e.target.files[0];
                                                             e.target.value = '';
-                                                            if (file) uploadServiceImage(ci, si, file);
+                                                            if (file) selectServiceImage(ci, si, file);
                                                         }}
                                                     />
                                                 </label>
-                                                {service.image && (
+                                                {service._pendingFile && (
+                                                    <span style={{ fontSize: '12px', color: 'var(--primary-orange)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                        <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: 'var(--primary-orange)' }} />
+                                                        Pending publish
+                                                    </span>
+                                                )}
+                                                {(service.image || service._pendingFile) && (
                                                     <button className="remove-cms-btn" onClick={() => removeServiceImage(ci, si)} style={{ margin: 0 }}>
                                                         <Trash2 size={14} /> Remove Image
                                                     </button>
@@ -1163,61 +1581,97 @@ const AdminCMS = () => {
                         <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', marginTop: '40px' }}>
                             <div>
                                 <h4>Contact Icons (Floating Buttons)</h4>
-                                <p style={{ color: '#6b7280', fontSize: '13px' }}>Manage direct contact buttons (Messenger, WhatsApp) that float on the storefront</p>
+                                <p style={{ color: '#6b7280', fontSize: '13px' }}>Manage direct contact buttons (WhatsApp, Messenger, Phone, Mail) that float on the storefront</p>
                             </div>
-                            <button className="secondary-btn btn-sm" onClick={() => setSettings({ ...settings, contactIcons: [...(settings.contactIcons || []), { platform: '', iconName: 'MessageCircle', url: '', isActive: true }] })}><Plus size={16} /> Add Contact Icon</button>
+                            <button className="secondary-btn btn-sm" onClick={() => setSettings({ ...settings, contactIcons: [...(settings.contactIcons || []), { platform: 'WhatsApp', iconName: 'WhatsApp', url: 'https://wa.me/917742228345', isActive: true }] })}><Plus size={16} /> Add Contact Icon</button>
                         </div>
                         <div className="cms-grid">
-                            {(settings.contactIcons || []).map((contact, i) => (
-                                <div key={i} className="cms-card shadow-sm" style={{ padding: '25px', border: '2px solid #fbbf24' }}>
-                                    <div className="cms-details" style={{ width: '100%' }}>
-                                        <div className="input-group">
-                                            <label>Platform Name</label>
-                                            <input type="text" value={contact.platform} onChange={(e) => {
-                                                const newIcons = [...settings.contactIcons];
-                                                newIcons[i].platform = e.target.value;
-                                                setSettings({ ...settings, contactIcons: newIcons });
-                                            }} placeholder="e.g. Messenger, WhatsApp" />
-                                        </div>
-                                        <div className="input-group">
-                                            <label>Icon Name (Lucide React)</label>
-                                            <select value={contact.iconName} onChange={(e) => {
-                                                const newIcons = [...settings.contactIcons];
-                                                newIcons[i].iconName = e.target.value;
-                                                setSettings({ ...settings, contactIcons: newIcons });
+                            {(settings.contactIcons || []).map((contact, i) => {
+                                const isWA = contact.iconName === 'WhatsApp' || contact.platform?.toLowerCase().includes('whatsapp');
+                                const isMessenger = contact.iconName === 'MessageCircle' || contact.platform?.toLowerCase().includes('messenger');
+                                const badgeColor = isWA ? '#25D366' : isMessenger ? '#0084FF' : '#f97316';
+
+                                return (
+                                    <div key={i} className="cms-card shadow-sm" style={{ padding: '24px', border: '1px solid #e2e8f0', borderTop: `4px solid ${badgeColor}` }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                            <span style={{ 
+                                                display: 'inline-flex', 
+                                                alignItems: 'center', 
+                                                gap: '6px', 
+                                                fontSize: '12px', 
+                                                fontWeight: '800', 
+                                                padding: '4px 10px', 
+                                                borderRadius: '6px', 
+                                                background: `${badgeColor}15`, 
+                                                color: badgeColor 
                                             }}>
-                                                <option value="MessageCircle">MessageCircle (Messenger)</option>
-                                                <option value="MessageSquare">MessageSquare</option>
-                                                <option value="Phone">Phone</option>
-                                                <option value="Mail">Mail</option>
-                                            </select>
-                                        </div>
-                                        <div className="input-group">
-                                            <label>URL / Link</label>
-                                            <input type="text" value={contact.url} onChange={(e) => {
-                                                const newIcons = [...settings.contactIcons];
-                                                newIcons[i].url = e.target.value;
+                                                ● {contact.platform || (isWA ? 'WhatsApp' : isMessenger ? 'Messenger' : 'Contact Icon')}
+                                            </span>
+                                            <button className="remove-cms-btn" style={{ padding: '4px 8px', margin: 0 }} onClick={() => {
+                                                if (!window.confirm('Are you absolutely sure you want to delete this contact icon?')) return;
+                                                const newIcons = settings.contactIcons.filter((_, idx) => idx !== i);
                                                 setSettings({ ...settings, contactIcons: newIcons });
-                                            }} placeholder="https://m.me/..." />
+                                            }}><Trash2 size={13} /> Delete</button>
                                         </div>
-                                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
-                                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                                <input type="checkbox" checked={contact.isActive} onChange={(e) => {
+                                        <div className="cms-details" style={{ width: '100%', padding: 0 }}>
+                                            <div className="input-group">
+                                                <label>Platform Name</label>
+                                                <input type="text" value={contact.platform} onChange={(e) => {
                                                     const newIcons = [...settings.contactIcons];
-                                                    newIcons[i].isActive = e.target.checked;
+                                                    newIcons[i].platform = e.target.value;
                                                     setSettings({ ...settings, contactIcons: newIcons });
-                                                }} />
-                                                <span style={{ fontWeight: '600', fontSize: '14px' }}>Active</span>
-                                            </label>
+                                                }} placeholder="e.g. WhatsApp, Messenger" />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Icon Type</label>
+                                                <select value={contact.iconName} onChange={(e) => {
+                                                    const newIcons = [...settings.contactIcons];
+                                                    newIcons[i].iconName = e.target.value;
+                                                    if (e.target.value === 'WhatsApp' && !newIcons[i].platform) newIcons[i].platform = 'WhatsApp';
+                                                    if (e.target.value === 'MessageCircle' && !newIcons[i].platform) newIcons[i].platform = 'Messenger';
+                                                    setSettings({ ...settings, contactIcons: newIcons });
+                                                }}>
+                                                    <option value="WhatsApp">WhatsApp (Green Floating Button)</option>
+                                                    <option value="MessageCircle">MessageCircle / Messenger (Blue Floating Button)</option>
+                                                    <option value="MessageSquare">MessageSquare (Chat)</option>
+                                                    <option value="Phone">Phone Call (tel:)</option>
+                                                    <option value="Mail">Email (mailto:)</option>
+                                                </select>
+                                            </div>
+                                            <div className="input-group">
+                                                <label>URL / Direct Contact Link</label>
+                                                <input 
+                                                    type="text" 
+                                                    value={contact.url} 
+                                                    onChange={(e) => {
+                                                        const newIcons = [...settings.contactIcons];
+                                                        newIcons[i].url = e.target.value;
+                                                        setSettings({ ...settings, contactIcons: newIcons });
+                                                    }} 
+                                                    placeholder={contact.iconName === 'WhatsApp' ? 'https://wa.me/917742228345?text=Hi...' : 'https://m.me/yourpage'} 
+                                                />
+                                                <small style={{ color: '#64748b', fontSize: '11.5px', marginTop: '4px', display: 'block', lineHeight: '1.4' }}>
+                                                    {isWA
+                                                        ? '💡 WhatsApp link: https://wa.me/<countrycode><phone>?text=<custom message>'
+                                                        : isMessenger
+                                                        ? '💡 Messenger link: https://m.me/<facebook_page_username>'
+                                                        : '💡 Enter the full direct destination link'}
+                                                </small>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '6px' }}>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                                    <input type="checkbox" checked={contact.isActive} onChange={(e) => {
+                                                        const newIcons = [...settings.contactIcons];
+                                                        newIcons[i].isActive = e.target.checked;
+                                                        setSettings({ ...settings, contactIcons: newIcons });
+                                                    }} />
+                                                    <span style={{ fontWeight: '600', fontSize: '13.5px', color: '#334155' }}>Active (Visible on storefront)</span>
+                                                </label>
+                                            </div>
                                         </div>
-                                        <button className="remove-cms-btn" onClick={() => {
-                                            if (!window.confirm('Are you absolutely sure you want to delete this contact icon?')) return;
-                                            const newIcons = settings.contactIcons.filter((_, idx) => idx !== i);
-                                            setSettings({ ...settings, contactIcons: newIcons });
-                                        }}><Trash2 size={14} /> Remove Contact Icon</button>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}

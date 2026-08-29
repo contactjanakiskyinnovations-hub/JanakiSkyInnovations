@@ -46,18 +46,27 @@ router.post('/', protect, admin, upload.single('image'), async (req, res) => {
     }
 
     try {
-        const context = String(req.body.context || 'banner').toLowerCase();
+        const context = String(req.body.context || 'homebanner').toLowerCase();
         const folder = resolveImageKitFolder(context, String(req.body.folderPath || ''));
         const index = Math.max(1, parseInt(req.body.index, 10) || 1);
         const ext = extensionForMime(req.file.mimetype, req.file.originalname);
         const name = String(req.body.name || '').trim();
-        const fileName = name ? `${sanitizeSegment(name)}.${ext}` : `image-${index}.${ext}`;
+        let fileName;
+        if (name) {
+            fileName = `${sanitizeSegment(name)}.${ext}`;
+        } else if (context === 'homebanner' || context === 'banner') {
+            fileName = `homebanner-image${index}.${ext}`;
+        } else if (context === 'logo') {
+            fileName = `logo-image.${ext}`;
+        } else {
+            fileName = `image-${index}.${ext}`;
+        }
 
         const response = await imagekit.upload({
             file: req.file.buffer, // required
-            fileName, // required — structured name (image-1.jpg, image-2.jpg, ...)
-            folder, // e.g. /ecommerce-drone/products/<SKU>
-            useUniqueFileName: false, // keep the exact name so re-uploading image-1 overwrites it
+            fileName, // required — structured name (homebanner-image1.jpg, logo-image.png, etc.)
+            folder, // e.g. /ecommerce-drone/homebanner or /ecommerce-drone/logo
+            useUniqueFileName: false, // keep the exact name so re-uploading overwrites
         });
 
         res.status(201).json({

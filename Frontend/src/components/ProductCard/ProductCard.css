@@ -182,24 +182,30 @@
 
 .buy-now-btn {
     width: 100%;
-    background: #FF6A3D;
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
     color: white;
-    padding: 9px;
+    padding: 10px 14px;
     border-radius: 8px;
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: 700;
+    font-size: 13.5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     border: none;
     cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 3px 10px rgba(37, 211, 102, 0.25);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .buy-now-btn:hover {
-    background: #e55a2b;
+    background: linear-gradient(135deg, #20bd5a 0%, #0e7065 100%);
     transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35);
+}
+
+.buy-now-btn:active {
+    transform: translateY(0) scale(0.98);
 }
 
 /* ===== Stock Status Badge (top-left of image) ===== */
