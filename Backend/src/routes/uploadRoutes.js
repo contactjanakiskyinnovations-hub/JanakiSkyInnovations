@@ -11,7 +11,7 @@ const {
 const imagekit = require('../config/imagekit');
 const { protect, admin } = require('../middleware/authMiddleware');
 
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2 MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 // Memory storage + strict validation: only image files, max 2 MB each.
 const upload = multer({
