@@ -117,6 +117,40 @@
     }
 
     .promo-card {
-        height: 300px;
+        height: 320px;
+    }
+
+    .promo-overlay {
+        padding: 36px 30px;
+    }
+
+    .promo-overlay h2 {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 576px) {
+    .promo-card {
+        height: 250px;
+    }
+
+    .promo-overlay {
+        padding: 22px 18px;
+    }
+
+    .promo-overlay h2 {
+        font-size: 22px;
+        margin-bottom: 6px;
+    }
+
+    .promo-overlay p {
+        font-size: 13px;
+        margin-bottom: 14px;
+        line-height: 1.4;
+    }
+
+    .promo-btn {
+        padding: 10px 22px;
+        font-size: 13px;
     }
 }

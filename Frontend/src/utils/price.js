@@ -15,7 +15,7 @@ export const withVat = (amount) => round2(Number(amount || 0) * (1 + VAT_RATE));
 
 // Format an amount as Indian Rupees.
 export const formatINR = (amount, { decimals = true } = {}) =>
-    '₹' +
+    'Rs. ' +
     Number(amount || 0).toLocaleString('en-IN', decimals
         ? { minimumFractionDigits: 2, maximumFractionDigits: 2 }
         : { maximumFractionDigits: 0 });

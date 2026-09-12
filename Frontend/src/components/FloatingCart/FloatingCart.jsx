@@ -23,7 +23,7 @@ const FloatingCart = () => {
                     </div>
                     <div className="cart-info-text">
                         <span className="item-count">{cartCount} {cartCount === 1 ? 'Item' : 'Items'}</span>
-                        <span className="total-amount">₹{cartTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        <span className="total-amount">Rs. {cartTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     </div>
                 </div>
                 

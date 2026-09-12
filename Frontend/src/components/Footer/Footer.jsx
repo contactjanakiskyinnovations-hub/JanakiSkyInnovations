@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Youtube, Mail, MapPin, Phone, Linkedin, Github } from 'lucide-react';
 import api from '../../utils/api';
 import './Footer.css';
@@ -80,10 +81,19 @@ const Footer = () => {
                 <div className="footer-col links">
                     <h4>Customer Service</h4>
                     <ul>
-                        {(footer.customerServiceLinks || []).map((link, i) => (
-                            <li key={i}>
-                                <a href={link.href || '#'}>{link.label}</a>
-                            </li>
+                        <li>
+                            <Link to="/about">About Store</Link>
+                        </li>
+                        {(footer.customerServiceLinks || [])
+                            .filter(link => !['About Store', 'About Us'].includes(link.label))
+                            .map((link, i) => (
+                                <li key={i}>
+                                    {link.href && link.href.startsWith('/') ? (
+                                        <Link to={link.href}>{link.label}</Link>
+                                    ) : (
+                                        <a href={link.href || '#'}>{link.label}</a>
+                                    )}
+                                </li>
                         ))}
                     </ul>
                 </div>

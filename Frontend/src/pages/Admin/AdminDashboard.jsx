@@ -191,7 +191,7 @@ const AdminDashboard = () => {
         },
         { 
             title: 'Total Revenue Est.', 
-            value: '₹8,42,500', 
+            value: 'Rs. 8,42,500', 
             icon: <DollarSign size={22} />, 
             trend: '+18.4%', 
             isUp: true, 
@@ -201,10 +201,10 @@ const AdminDashboard = () => {
 
     // High-fidelity Category Performance Metrics
     const categoryPerformance = [
-        { name: 'DJI & Custom Drones', percentage: 75, revenue: '₹6,31,875', color: 'var(--primary-orange)' },
-        { name: 'FPV Electronics & Motors', percentage: 48, revenue: '₹4,04,400', color: '#10b981' },
-        { name: 'Arduino & STEM Kits', percentage: 32, revenue: '₹2,69,600', color: '#3b82f6' },
-        { name: 'Sensors & Power Batteries', percentage: 22, revenue: '₹1,85,350', color: '#8b5cf6' }
+        { name: 'DJI & Custom Drones', percentage: 75, revenue: 'Rs. 6,31,875', color: 'var(--primary-orange)' },
+        { name: 'FPV Electronics & Motors', percentage: 48, revenue: 'Rs. 4,04,400', color: '#10b981' },
+        { name: 'Arduino & STEM Kits', percentage: 32, revenue: 'Rs. 2,69,600', color: '#3b82f6' },
+        { name: 'Sensors & Power Batteries', percentage: 22, revenue: 'Rs. 1,85,350', color: '#8b5cf6' }
     ];
 
     // Mock Sales Trend Data for the interactive SVG Chart
@@ -286,7 +286,7 @@ const AdminDashboard = () => {
                             <h4>Dynamic Revenue Trend</h4>
                             <p>Real-time projection of monthly sales values across drone fleets.</p>
                         </div>
-                        <span className="revenue-total-pill">₹1.2M Total</span>
+                        <span className="revenue-total-pill">Rs. 1.2M Total</span>
                     </div>
                     <div className="chart-wrapper-svg">
                         <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
@@ -315,7 +315,7 @@ const AdminDashboard = () => {
                                 <g key={i} className="chart-interactive-dot">
                                     <circle cx={p.x} cy={p.y} r="5" fill="white" stroke="var(--primary-orange)" strokeWidth="3" />
                                     <text x={p.x} y={p.y - 12} textAnchor="middle" fontSize="10" fontWeight="700" fill="var(--admin-text-main)">
-                                        ₹{(p.val / 1000).toFixed(0)}k
+                                        Rs. {(p.val / 1000).toFixed(0)}k
                                     </text>
                                 </g>
                             ))}

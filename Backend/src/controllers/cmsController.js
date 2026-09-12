@@ -37,6 +37,8 @@ const updateHomeSettings = async (req, res) => {
                 ...((obj?.featuredCategories || []).map((f) => f?.image).filter(Boolean)),
                 ...((obj?.categoryBanners || []).map((b) => b?.image).filter(Boolean)),
                 ...((obj?.offers?.bundleDeals || []).map((b) => b?.image).filter(Boolean)),
+                obj?.aboutStore?.bannerImage,
+                obj?.aboutStore?.storeImage,
             ].filter(Boolean).sort();
             return imgs.join('|');
         };
@@ -61,6 +63,7 @@ const updateHomeSettings = async (req, res) => {
             if (req.body.socialMediaIcons) settings.socialMediaIcons = req.body.socialMediaIcons;
             if (req.body.contactIcons) settings.contactIcons = req.body.contactIcons;
             if (req.body.offers) settings.offers = req.body.offers;
+            if (req.body.aboutStore) settings.aboutStore = req.body.aboutStore;
         }
 
         // Detect image changes: if signature changed, bump the version for cache-busting

@@ -136,6 +136,43 @@ const homeSettingsSchema = new mongoose.Schema({
                 image: { type: String }
             }
         ]
+    },
+    aboutStore: {
+        title: { type: String, default: 'About Janaki Sky Innovations' },
+        subtitle: { type: String, default: 'Pioneering Drone Tech & Advanced Engineering Solutions' },
+        story: { type: String, default: 'Founded with a passion for robotics, aviation, and aerospace engineering, Janaki Sky Innovations is your premier destination for UAV technology, high-precision drone components, DIY robotics supplies, and specialized commercial flight solutions. We serve hobbyists, agricultural innovators, researchers, and professional aerial photographers across India and Nepal.' },
+        mission: { type: String, default: 'To empower creators, agricultural pioneers, and tech enthusiasts with authentic, high-performance drone hardware, verified engineering parts, and personalized technical support.' },
+        vision: { type: String, default: 'To be the leading unmanned systems and robotics ecosystem in South Asia, bridging cutting-edge aerospace advancements with accessible, reliable hardware.' },
+        bannerImage: { type: String, default: '' },
+        storeImage: { type: String, default: '' },
+        features: [
+            {
+                icon: { type: String, default: 'ShieldCheck' },
+                title: { type: String, default: '100% Genuine Components' },
+                description: { type: String, default: 'All UAV flight controllers, motors, ESCs, and batteries are sourced directly from verified manufacturers.' }
+            },
+            {
+                icon: { type: String, default: 'Zap' },
+                title: { type: String, default: 'Fast & Secure Dispatch' },
+                description: { type: String, default: 'Precision-packed sensitive electronics delivered swiftly and safely right to your workshop or field.' }
+            },
+            {
+                icon: { type: String, default: 'Headphones' },
+                title: { type: String, default: 'Expert Technical Support' },
+                description: { type: String, default: 'Our team of aerospace and robotics engineers is available to help you build, tune, and fly.' }
+            },
+            {
+                icon: { type: String, default: 'Award' },
+                title: { type: String, default: 'Custom UAV Solutions' },
+                description: { type: String, default: 'Specialized agricultural spraying drones, surveillance systems, and industrial inspection rigs.' }
+            }
+        ],
+        stats: [
+            { label: { type: String, default: 'Active Pilots & Builders' }, value: { type: String, default: '10,000+' } },
+            { label: { type: String, default: 'Drone & Robotics Parts' }, value: { type: String, default: '5,000+' } },
+            { label: { type: String, default: 'Custom Drones Delivered' }, value: { type: String, default: '500+' } },
+            { label: { type: String, default: 'Years of Engineering' }, value: { type: String, default: '5+' } }
+        ]
     }
 }, {
     timestamps: true

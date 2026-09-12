@@ -52,19 +52,56 @@ const AdminCMS = ({ defaultTab }) => {
                 {
                     title: 'Agri-Spray Complete Bundle',
                     items: ['1x Janaki Agriculture Drone (10L)', '2x Smart Flight Batteries', '1x Toolkit & Storage Box'],
-                    price: '₹1,45,000',
-                    originalPrice: '₹1,75,000',
-                    discount: 'Save ₹30,000',
+                    price: 'Rs. 1,45,000',
+                    originalPrice: 'Rs. 1,75,000',
+                    discount: 'Save Rs. 30,000',
                     image: 'https://images.unsplash.com/photo-1532509170117-98ef7500b411?q=80&w=2070&auto=format&fit=crop'
                 },
                 {
                     title: 'FPV Pilot Starter Kit',
                     items: ['1x Janaki FPV Racer', '1x FPV Goggles Pro', '1x 2.4GHz Controller Link'],
-                    price: '₹34,999',
-                    originalPrice: '₹42,000',
-                    discount: 'Save ₹7,001',
+                    price: 'Rs. 34,999',
+                    originalPrice: 'Rs. 42,000',
+                    discount: 'Save Rs. 7,001',
                     image: 'https://images.unsplash.com/photo-1597847494283-a27825b84365?q=80&w=1168&auto=format&fit=crop'
                 }
+            ]
+        },
+        aboutStore: {
+            title: 'About Janaki Sky Innovations',
+            subtitle: 'Pioneering Drone Tech & Advanced Engineering Solutions across South Asia',
+            story: 'Founded with a passion for robotics, aviation, and aerospace engineering, Janaki Sky Innovations is your premier destination for UAV technology, high-precision drone components, DIY robotics supplies, and specialized commercial flight solutions. We serve hobbyists, agricultural innovators, researchers, and professional aerial photographers across India and Nepal.',
+            mission: 'To empower creators, agricultural pioneers, and tech enthusiasts with authentic, high-performance drone hardware, verified engineering parts, and personalized technical support.',
+            vision: 'To be the leading unmanned systems and robotics ecosystem in South Asia, bridging cutting-edge aerospace advancements with accessible, reliable hardware.',
+            bannerImage: '',
+            storeImage: '',
+            features: [
+                {
+                    icon: 'ShieldCheck',
+                    title: '100% Genuine Components',
+                    description: 'All UAV flight controllers, motors, ESCs, and batteries are sourced directly from verified manufacturers.'
+                },
+                {
+                    icon: 'Zap',
+                    title: 'Fast & Secure Dispatch',
+                    description: 'Precision-packed sensitive electronics delivered swiftly and safely right to your workshop or field.'
+                },
+                {
+                    icon: 'Headphones',
+                    title: 'Expert Technical Support',
+                    description: 'Our team of aerospace and robotics engineers is available to help you build, tune, and fly.'
+                },
+                {
+                    icon: 'Award',
+                    title: 'Custom UAV Solutions',
+                    description: 'Specialized agricultural spraying drones, surveillance systems, and industrial inspection rigs.'
+                }
+            ],
+            stats: [
+                { label: 'Active Pilots & Builders', value: '10,000+' },
+                { label: 'Drone & Robotics Parts', value: '5,000+' },
+                { label: 'Custom Drones Delivered', value: '500+' },
+                { label: 'Years of Engineering', value: '5+' }
             ]
         }
     });
@@ -80,6 +117,15 @@ const AdminCMS = ({ defaultTab }) => {
     const [logoPreview, setLogoPreview] = useState(null);
     const [uploadingLogo, setUploadingLogo] = useState(false);
     const logoInputRef = useRef(null);
+
+    // About Store Image States
+    const [aboutBannerPendingFile, setAboutBannerPendingFile] = useState(null);
+    const [aboutBannerPreview, setAboutBannerPreview] = useState(null);
+    const aboutBannerInputRef = useRef(null);
+
+    const [aboutStorePendingFile, setAboutStorePendingFile] = useState(null);
+    const [aboutStorePreview, setAboutStorePreview] = useState(null);
+    const aboutStoreInputRef = useRef(null);
 
     // Raw text for the payment methods input so commas are preserved while typing.
     // Committed to settings.footer.paymentMethods (array) on blur / save.
@@ -128,7 +174,8 @@ const AdminCMS = ({ defaultTab }) => {
                 footer: data?.footer || settings.footer,
                 socialMediaIcons: data?.socialMediaIcons || settings.socialMediaIcons,
                 contactIcons: fetchedContactIcons,
-                offers: data?.offers || settings.offers
+                offers: data?.offers || settings.offers,
+                aboutStore: data?.aboutStore || settings.aboutStore
             });
             if (data?.logoImage) {
                 setLogoImage(data.logoImage);
@@ -251,6 +298,39 @@ const AdminCMS = ({ defaultTab }) => {
                 }
             }
 
+            // Upload any newly picked About Store images before publishing.
+            let finalAboutBanner = settings.aboutStore?.bannerImage || '';
+            if (aboutBannerPendingFile) {
+                const formData = new FormData();
+                formData.append('image', aboutBannerPendingFile);
+                formData.append('context', 'cms');
+                formData.append('folderPath', 'about-store');
+                formData.append('name', 'about-banner');
+                const { data } = await api.post('/api/upload', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                finalAboutBanner = data.url;
+                setAboutBannerPendingFile(null);
+                if (aboutBannerPreview) URL.revokeObjectURL(aboutBannerPreview);
+                setAboutBannerPreview(null);
+            }
+
+            let finalAboutStoreImg = settings.aboutStore?.storeImage || '';
+            if (aboutStorePendingFile) {
+                const formData = new FormData();
+                formData.append('image', aboutStorePendingFile);
+                formData.append('context', 'cms');
+                formData.append('folderPath', 'about-store');
+                formData.append('name', 'about-store-image');
+                const { data } = await api.post('/api/upload', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                finalAboutStoreImg = data.url;
+                setAboutStorePendingFile(null);
+                if (aboutStorePreview) URL.revokeObjectURL(aboutStorePreview);
+                setAboutStorePreview(null);
+            }
+
             const finalSettings = {
                 ...settings,
                 logoImage: finalLogoImage,
@@ -258,6 +338,11 @@ const AdminCMS = ({ defaultTab }) => {
                 promoBanners,
                 categoryBanners,
                 serviceCategories,
+                aboutStore: {
+                    ...(settings.aboutStore || {}),
+                    bannerImage: finalAboutBanner,
+                    storeImage: finalAboutStoreImg
+                },
                 footer: {
                     ...settings.footer,
                     paymentMethods: paymentMethodsText.split(',').map(m => m.trim()).filter(Boolean)
@@ -270,6 +355,99 @@ const AdminCMS = ({ defaultTab }) => {
         } finally {
             setSaving(false);
         }
+    };
+
+    // About Store helper functions
+    const handleAboutStoreFieldChange = (field, value) => {
+        setSettings(prev => ({
+            ...prev,
+            aboutStore: {
+                ...(prev.aboutStore || {}),
+                [field]: value
+            }
+        }));
+    };
+
+    const handleAboutFeatureChange = (index, field, value) => {
+        const features = [...(settings.aboutStore?.features || [])];
+        features[index] = { ...features[index], [field]: value };
+        handleAboutStoreFieldChange('features', features);
+    };
+
+    const handleAddAboutFeature = () => {
+        const features = [...(settings.aboutStore?.features || [])];
+        features.push({ icon: 'ShieldCheck', title: 'New Guarantee', description: 'Description of store guarantee or capability.' });
+        handleAboutStoreFieldChange('features', features);
+    };
+
+    const handleRemoveAboutFeature = (index) => {
+        const features = (settings.aboutStore?.features || []).filter((_, idx) => idx !== index);
+        handleAboutStoreFieldChange('features', features);
+    };
+
+    const handleAboutStatChange = (index, field, value) => {
+        const stats = [...(settings.aboutStore?.stats || [])];
+        stats[index] = { ...stats[index], [field]: value };
+        handleAboutStoreFieldChange('stats', stats);
+    };
+
+    const handleAddAboutStat = () => {
+        const stats = [...(settings.aboutStore?.stats || [])];
+        stats.push({ label: 'New Metric', value: '1,000+' });
+        handleAboutStoreFieldChange('stats', stats);
+    };
+
+    const handleRemoveAboutStat = (index) => {
+        const stats = (settings.aboutStore?.stats || []).filter((_, idx) => idx !== index);
+        handleAboutStoreFieldChange('stats', stats);
+    };
+
+    const handleAboutBannerSelect = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        e.target.value = '';
+        if (!file.type?.startsWith('image/')) {
+            alert('Only image files are allowed');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size must be 5 MB or less');
+            return;
+        }
+        if (aboutBannerPreview) URL.revokeObjectURL(aboutBannerPreview);
+        setAboutBannerPendingFile(file);
+        setAboutBannerPreview(URL.createObjectURL(file));
+    };
+
+    const handleRemoveAboutBanner = () => {
+        if (aboutBannerPreview) URL.revokeObjectURL(aboutBannerPreview);
+        setAboutBannerPendingFile(null);
+        setAboutBannerPreview(null);
+        handleAboutStoreFieldChange('bannerImage', '');
+    };
+
+    const handleAboutStoreImageSelect = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        e.target.value = '';
+        if (!file.type?.startsWith('image/')) {
+            alert('Only image files are allowed');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size must be 5 MB or less');
+            return;
+        }
+        if (aboutStorePreview) URL.revokeObjectURL(aboutStorePreview);
+        setAboutStorePendingFile(file);
+        setAboutStorePreview(URL.createObjectURL(file));
+    };
+
+    const handleRemoveAboutStoreImage = () => {
+        if (aboutStorePreview) URL.revokeObjectURL(aboutStorePreview);
+        setAboutStorePendingFile(null);
+        setAboutStorePreview(null);
+        handleAboutStoreFieldChange('storeImage', '');
     };
 
     // Hero Slider functions
@@ -601,6 +779,12 @@ const AdminCMS = ({ defaultTab }) => {
                     onClick={() => setActiveTab('services')}
                 >
                     Our Services
+                </button>
+                <button 
+                    className={`tab-btn ${activeTab === 'about-store' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('about-store')}
+                >
+                    🏪 About Store
                 </button>
                 <button 
                     className={`tab-btn ${activeTab === 'footer' ? 'active' : ''}`}
@@ -1047,7 +1231,7 @@ const AdminCMS = ({ defaultTab }) => {
                                         </div>
                                         <div className="input-group">
                                             <label>Discount Label</label>
-                                            <input type="text" value={coupon.discount} onChange={(e) => handleCouponChange(i, 'discount', e.target.value)} placeholder="e.g. 10% OFF or ₹500 FLAT" />
+                                            <input type="text" value={coupon.discount} onChange={(e) => handleCouponChange(i, 'discount', e.target.value)} placeholder="e.g. 10% OFF or Rs. 500 FLAT" />
                                         </div>
                                         <div className="input-group">
                                             <label>Campaign Title</label>
@@ -1373,7 +1557,7 @@ const AdminCMS = ({ defaultTab }) => {
                                                     const newDeals = [...settings.offers.bundleDeals];
                                                     newDeals[i].price = e.target.value;
                                                     setSettings({ ...settings, offers: { ...settings.offers, bundleDeals: newDeals } });
-                                                }} placeholder="₹1,45,000" />
+                                                }} placeholder="Rs. 1,45,000" />
                                             </div>
                                             <div className="input-group">
                                                 <label>Original Price</label>
@@ -1381,7 +1565,7 @@ const AdminCMS = ({ defaultTab }) => {
                                                     const newDeals = [...settings.offers.bundleDeals];
                                                     newDeals[i].originalPrice = e.target.value;
                                                     setSettings({ ...settings, offers: { ...settings.offers, bundleDeals: newDeals } });
-                                                }} placeholder="₹1,75,000" />
+                                                }} placeholder="Rs. 1,75,000" />
                                             </div>
                                         </div>
                                         <div className="input-group">
@@ -1390,7 +1574,7 @@ const AdminCMS = ({ defaultTab }) => {
                                                 const newDeals = [...settings.offers.bundleDeals];
                                                 newDeals[i].discount = e.target.value;
                                                 setSettings({ ...settings, offers: { ...settings.offers, bundleDeals: newDeals } });
-                                            }} placeholder="Save ₹30,000" />
+                                            }} placeholder="Save Rs. 30,000" />
                                         </div>
                                         <div className="input-group">
                                             <label>Bundle Image URL</label>
@@ -1672,6 +1856,340 @@ const AdminCMS = ({ defaultTab }) => {
                                     </div>
                                 );
                             })}
+                        </div>
+                    </div>
+                )}
+
+                {/* ========== ABOUT STORE TAB ========== */}
+                {activeTab === 'about-store' && (
+                    <div className="about-store-manager">
+                        {/* Section 1: Hero & Titles */}
+                        <div className="cms-section-card" style={{ background: '#ffffff', borderRadius: '14px', padding: '24px', marginBottom: '24px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <div>
+                                    <h4 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>
+                                        🏪 Store Identity & Hero Banner
+                                    </h4>
+                                    <p style={{ margin: 0, color: '#64748b', fontSize: '13.5px' }}>
+                                        Configure the main headline, subtitle, and hero background displayed at the top of the About Store page.
+                                    </p>
+                                </div>
+                                <a 
+                                    href="/about" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--primary-orange)', fontWeight: '700', textDecoration: 'none' }}
+                                >
+                                    <Eye size={15} /> Preview Store Page
+                                </a>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                                <div className="input-group">
+                                    <label style={{ fontWeight: 700, fontSize: '13.5px', marginBottom: '6px' }}>Page Title / Store Name</label>
+                                    <input 
+                                        type="text" 
+                                        value={settings.aboutStore?.title || ''} 
+                                        onChange={(e) => handleAboutStoreFieldChange('title', e.target.value)} 
+                                        placeholder="e.g. About Janaki Sky Innovations" 
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label style={{ fontWeight: 700, fontSize: '13.5px', marginBottom: '6px' }}>Store Tagline / Subtitle</label>
+                                    <input 
+                                        type="text" 
+                                        value={settings.aboutStore?.subtitle || ''} 
+                                        onChange={(e) => handleAboutStoreFieldChange('subtitle', e.target.value)} 
+                                        placeholder="e.g. Pioneering Drone Tech & Engineering Solutions" 
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Banner Image Uploader */}
+                            <div style={{ marginTop: '16px', padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+                                <label style={{ display: 'block', fontWeight: 700, fontSize: '13.5px', marginBottom: '8px' }}>
+                                    Hero Banner Background Image (Optional)
+                                </label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                                    {(aboutBannerPreview || settings.aboutStore?.bannerImage) && (
+                                        <div style={{ width: '180px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                                            <img 
+                                                src={aboutBannerPreview || settings.aboutStore?.bannerImage} 
+                                                alt="Banner Preview" 
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                            />
+                                        </div>
+                                    )}
+                                    <input 
+                                        type="file" 
+                                        ref={aboutBannerInputRef} 
+                                        onChange={handleAboutBannerSelect} 
+                                        accept="image/*" 
+                                        style={{ display: 'none' }} 
+                                    />
+                                    <button 
+                                        type="button" 
+                                        className="btn-sm" 
+                                        style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}
+                                        onClick={() => aboutBannerInputRef.current?.click()}
+                                    >
+                                        <ImageIcon size={14} style={{ marginRight: '6px' }} />
+                                        {(aboutBannerPreview || settings.aboutStore?.bannerImage) ? 'Change Banner Image' : 'Upload Banner Image'}
+                                    </button>
+                                    {(aboutBannerPreview || settings.aboutStore?.bannerImage) && (
+                                        <button 
+                                            type="button" 
+                                            className="danger-btn btn-sm" 
+                                            onClick={handleRemoveAboutBanner}
+                                        >
+                                            <Trash2 size={14} style={{ marginRight: '4px' }} /> Remove
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Section 2: Our Story & Storefront Image */}
+                        <div className="cms-section-card" style={{ background: '#ffffff', borderRadius: '14px', padding: '24px', marginBottom: '24px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                            <h4 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>
+                                📖 The Store Story & Facility Showcase
+                            </h4>
+                            <p style={{ margin: '0 0 16px', color: '#64748b', fontSize: '13.5px' }}>
+                                Share your store's origin, expertise, passion for robotics, and upload a workshop or storefront photo.
+                            </p>
+
+                            <div className="input-group" style={{ marginBottom: '20px' }}>
+                                <label style={{ fontWeight: 700, fontSize: '13.5px', marginBottom: '6px' }}>Store Story / Description (Multi-Paragraph)</label>
+                                <textarea 
+                                    rows={5} 
+                                    value={settings.aboutStore?.story || ''} 
+                                    onChange={(e) => handleAboutStoreFieldChange('story', e.target.value)} 
+                                    placeholder="Write your store narrative, engineering focus, and background..." 
+                                    style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', lineHeight: '1.6', fontFamily: 'inherit' }}
+                                />
+                            </div>
+
+                            {/* Store Image Uploader */}
+                            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+                                <label style={{ display: 'block', fontWeight: 700, fontSize: '13.5px', marginBottom: '8px' }}>
+                                    Storefront / Workshop / Lab Photo
+                                </label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                                    {(aboutStorePreview || settings.aboutStore?.storeImage) && (
+                                        <div style={{ width: '140px', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                                            <img 
+                                                src={aboutStorePreview || settings.aboutStore?.storeImage} 
+                                                alt="Store Preview" 
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                            />
+                                        </div>
+                                    )}
+                                    <input 
+                                        type="file" 
+                                        ref={aboutStoreInputRef} 
+                                        onChange={handleAboutStoreImageSelect} 
+                                        accept="image/*" 
+                                        style={{ display: 'none' }} 
+                                    />
+                                    <button 
+                                        type="button" 
+                                        className="btn-sm" 
+                                        style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}
+                                        onClick={() => aboutStoreInputRef.current?.click()}
+                                    >
+                                        <ImageIcon size={14} style={{ marginRight: '6px' }} />
+                                        {(aboutStorePreview || settings.aboutStore?.storeImage) ? 'Change Store Photo' : 'Upload Store Photo'}
+                                    </button>
+                                    {(aboutStorePreview || settings.aboutStore?.storeImage) && (
+                                        <button 
+                                            type="button" 
+                                            className="danger-btn btn-sm" 
+                                            onClick={handleRemoveAboutStoreImage}
+                                        >
+                                            <Trash2 size={14} style={{ marginRight: '4px' }} /> Remove
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Section 3: Mission & Vision */}
+                        <div className="cms-section-card" style={{ background: '#ffffff', borderRadius: '14px', padding: '24px', marginBottom: '24px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                            <h4 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>
+                                🎯 Mission & Vision
+                            </h4>
+                            <p style={{ margin: '0 0 16px', color: '#64748b', fontSize: '13.5px' }}>
+                                State what drives your drone company and your future roadmap.
+                            </p>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                <div className="input-group">
+                                    <label style={{ fontWeight: 700, fontSize: '13.5px', marginBottom: '6px' }}>Our Mission Statement</label>
+                                    <textarea 
+                                        rows={4} 
+                                        value={settings.aboutStore?.mission || ''} 
+                                        onChange={(e) => handleAboutStoreFieldChange('mission', e.target.value)} 
+                                        placeholder="State your store mission..." 
+                                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', lineHeight: '1.6', fontFamily: 'inherit' }}
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label style={{ fontWeight: 700, fontSize: '13.5px', marginBottom: '6px' }}>Our Vision Statement</label>
+                                    <textarea 
+                                        rows={4} 
+                                        value={settings.aboutStore?.vision || ''} 
+                                        onChange={(e) => handleAboutStoreFieldChange('vision', e.target.value)} 
+                                        placeholder="State your long-term vision..." 
+                                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', lineHeight: '1.6', fontFamily: 'inherit' }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Section 4: Key Store Guarantees / Highlights */}
+                        <div className="cms-section-card" style={{ background: '#ffffff', borderRadius: '14px', padding: '24px', marginBottom: '24px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <div>
+                                    <h4 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>
+                                        ✨ Store Guarantees & Highlights ("Why Choose Us")
+                                    </h4>
+                                    <p style={{ margin: 0, color: '#64748b', fontSize: '13.5px' }}>
+                                        Key value propositions displayed in the highlight grid.
+                                    </p>
+                                </div>
+                                <button 
+                                    type="button" 
+                                    className="primary-btn btn-sm" 
+                                    onClick={handleAddAboutFeature}
+                                >
+                                    <Plus size={15} /> Add Highlight
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
+                                {(settings.aboutStore?.features || []).map((feat, idx) => (
+                                    <div key={idx} style={{ background: '#f8fafc', borderRadius: '12px', padding: '18px', border: '1px solid #e2e8f0', position: 'relative' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                            <span style={{ fontWeight: 800, fontSize: '12px', color: 'var(--primary-orange)', textTransform: 'uppercase' }}>
+                                                Highlight #{idx + 1}
+                                            </span>
+                                            <button 
+                                                type="button" 
+                                                className="remove-cms-btn" 
+                                                style={{ padding: '3px 6px', margin: 0 }}
+                                                onClick={() => handleRemoveAboutFeature(idx)}
+                                            >
+                                                <Trash2 size={13} />
+                                            </button>
+                                        </div>
+                                        <div className="input-group" style={{ marginBottom: '10px' }}>
+                                            <label style={{ fontSize: '12.5px' }}>Icon</label>
+                                            <select 
+                                                value={feat.icon || 'ShieldCheck'} 
+                                                onChange={(e) => handleAboutFeatureChange(idx, 'icon', e.target.value)}
+                                            >
+                                                <option value="ShieldCheck">ShieldCheck (Security / Genuine)</option>
+                                                <option value="Zap">Zap (Speed / Fast Shipping)</option>
+                                                <option value="Headphones">Headphones (Support / Guidance)</option>
+                                                <option value="Award">Award (Quality / Precision)</option>
+                                                <option value="Plane">Plane (UAV / Flight)</option>
+                                                <option value="Cpu">Cpu (Robotics / Electronics)</option>
+                                                <option value="Users">Users (Community / Pilots)</option>
+                                                <option value="Target">Target (Mission / Accuracy)</option>
+                                                <option value="Compass">Compass (Navigation / Innovation)</option>
+                                            </select>
+                                        </div>
+                                        <div className="input-group" style={{ marginBottom: '10px' }}>
+                                            <label style={{ fontSize: '12.5px' }}>Title</label>
+                                            <input 
+                                                type="text" 
+                                                value={feat.title || ''} 
+                                                onChange={(e) => handleAboutFeatureChange(idx, 'title', e.target.value)} 
+                                                placeholder="e.g. 100% Genuine Components" 
+                                            />
+                                        </div>
+                                        <div className="input-group">
+                                            <label style={{ fontSize: '12.5px' }}>Description</label>
+                                            <textarea 
+                                                rows={2} 
+                                                value={feat.description || ''} 
+                                                onChange={(e) => handleAboutFeatureChange(idx, 'description', e.target.value)} 
+                                                placeholder="Brief description..." 
+                                                style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontFamily: 'inherit' }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Section 5: Key Store Metrics & Stats */}
+                        <div className="cms-section-card" style={{ background: '#ffffff', borderRadius: '14px', padding: '24px', marginBottom: '24px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <div>
+                                    <h4 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>
+                                        📊 Key Store Metrics & Numeric Stats
+                                    </h4>
+                                    <p style={{ margin: 0, color: '#64748b', fontSize: '13.5px' }}>
+                                        Four prominent counter metrics displayed in the ribbon below the hero.
+                                    </p>
+                                </div>
+                                <button 
+                                    type="button" 
+                                    className="primary-btn btn-sm" 
+                                    onClick={handleAddAboutStat}
+                                >
+                                    <Plus size={15} /> Add Stat
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
+                                {(settings.aboutStore?.stats || []).map((stat, idx) => (
+                                    <div key={idx} style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0', position: 'relative' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                            <span style={{ fontWeight: 800, fontSize: '11.5px', color: '#64748b' }}>
+                                                STAT #{idx + 1}
+                                            </span>
+                                            <button 
+                                                type="button" 
+                                                className="remove-cms-btn" 
+                                                style={{ padding: '2px 5px', margin: 0 }}
+                                                onClick={() => handleRemoveAboutStat(idx)}
+                                            >
+                                                <Trash2 size={12} />
+                                            </button>
+                                        </div>
+                                        <div className="input-group" style={{ marginBottom: '8px' }}>
+                                            <label style={{ fontSize: '12px' }}>Value (e.g. 10,000+)</label>
+                                            <input 
+                                                type="text" 
+                                                value={stat.value || ''} 
+                                                onChange={(e) => handleAboutStatChange(idx, 'value', e.target.value)} 
+                                                placeholder="10,000+" 
+                                            />
+                                        </div>
+                                        <div className="input-group">
+                                            <label style={{ fontSize: '12px' }}>Label (e.g. Active Pilots)</label>
+                                            <input 
+                                                type="text" 
+                                                value={stat.label || ''} 
+                                                onChange={(e) => handleAboutStatChange(idx, 'label', e.target.value)} 
+                                                placeholder="Pilots & Builders" 
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Store Location / Contact Information Note */}
+                        <div style={{ background: '#eff6ff', borderRadius: '12px', padding: '16px 20px', border: '1px solid #bfdbfe', display: 'flex', alignItems: 'center', gap: '14px' }}>
+                            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#dbeafe', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <HelpCircle size={20} />
+                            </div>
+                            <div style={{ flex: 1, fontSize: '13.5px', color: '#1e3a8a', lineHeight: '1.5' }}>
+                                <strong>Tip:</strong> Store address, contact phone, and support email shown at the bottom of the About Store page are automatically synced from your <strong>Footer</strong> tab settings. You can edit them anytime in the Footer tab.
+                            </div>
                         </div>
                     </div>
                 )}

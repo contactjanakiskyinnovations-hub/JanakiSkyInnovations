@@ -374,3 +374,72 @@
     border-radius: 6px;
     margin-bottom: 12px;
 }
+
+@media (max-width: 768px) {
+    .product-card {
+        padding: 12px;
+        border-radius: 10px;
+    }
+
+    .product-name {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .product-sku {
+        font-size: 11px;
+        padding: 2px 6px;
+        margin-bottom: 8px;
+    }
+
+    .price-container {
+        min-height: auto;
+        gap: 6px;
+    }
+
+    .current-price {
+        font-size: 17px;
+    }
+
+    .card-actions-vertical {
+        gap: 8px;
+        padding-left: 4px;
+        flex-shrink: 0;
+    }
+
+    /* Bigger, thumb-friendly touch targets on mobile/small devices */
+    .card-action-btn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        min-height: 40px;
+        border-radius: 50%;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-action-btn svg {
+        width: 19px;
+        height: 19px;
+    }
+
+    /* Bigger quantity stepper on mobile */
+    .quantity-stepper {
+        padding: 3px;
+        gap: 4px;
+    }
+
+    .qty-step-btn {
+        width: 32px;
+        height: 32px;
+    }
+
+    .qty-step-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .quantity-stepper .qty-value {
+        font-size: 15px;
+        min-width: 24px;
+    }
+}

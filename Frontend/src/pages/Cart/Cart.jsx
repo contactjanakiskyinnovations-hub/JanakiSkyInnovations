@@ -13,7 +13,7 @@ const Cart = () => {
     const { isLoggedIn, user, refreshProfile } = useAuth();
     const [orderError, setOrderError] = useState('');
 
-    // Prices already include 13% VAT. Delivery is FREE above ₹2,000, otherwise ₹150.
+    // Prices already include 13% VAT. Delivery is FREE above Rs. 2,000, otherwise Rs. 150.
     const subtotal = Math.round(cartTotal * 100) / 100; // VAT-inclusive subtotal
     const deliveryAmount = subtotal >= 2000 ? 0 : 150;
     const grandTotal = Math.round((subtotal + deliveryAmount) * 100) / 100;
@@ -131,7 +131,7 @@ const Cart = () => {
                                             <button onClick={() => updateQuantity(item.id, 1)} className="qty-btn"><Plus size={16} /></button>
                                         </div>
                                         <div className="item-price">
-                                            <span className="unit-total">₹{(item.price * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                            <span className="unit-total">Rs. {(item.price * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -142,10 +142,10 @@ const Cart = () => {
                     <div className="cart-summary-section">
                         <div className="summary-card">
                             <h3>Order Summary</h3>
-                            <div className="summary-row"><span>Subtotal <small>(VAT incl.)</small></span><span>₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                            <div className="summary-row"><span>Delivery</span><span className={deliveryAmount === 0 ? 'free-shipping' : ''}>{deliveryAmount === 0 ? 'FREE' : `₹${deliveryAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span></div>
+                            <div className="summary-row"><span>Subtotal <small>(VAT incl.)</small></span><span>Rs. {subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                            <div className="summary-row"><span>Delivery</span><span className={deliveryAmount === 0 ? 'free-shipping' : ''}>{deliveryAmount === 0 ? 'FREE' : `Rs. ${deliveryAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span></div>
                             <hr />
-                            <div className="summary-row total"><span>Total</span><span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                            <div className="summary-row total"><span>Total</span><span>Rs. {grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
                             {isLoggedIn && (
                                 <div className="shipping-address-form">
                                     <h4>Delivery Address</h4>
@@ -214,9 +214,9 @@ const Cart = () => {
                         <div className="review-section">
                             <h4>Order Summary</h4>
                             <div className="review-summary">
-                                <div className="review-row"><span>Subtotal (VAT incl.)</span><span>₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                                <div className="review-row"><span>Delivery</span><span className={deliveryAmount === 0 ? 'free-shipping' : ''}>{deliveryAmount === 0 ? 'FREE' : `₹${deliveryAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span></div>
-                                <div className="review-row review-total"><span>Total</span><span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                                <div className="review-row"><span>Subtotal (VAT incl.)</span><span>Rs. {subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                                <div className="review-row"><span>Delivery</span><span className={deliveryAmount === 0 ? 'free-shipping' : ''}>{deliveryAmount === 0 ? 'FREE' : `Rs. ${deliveryAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span></div>
+                                <div className="review-row review-total"><span>Total</span><span>Rs. {grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
                             </div>
                         </div>
 

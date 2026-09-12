@@ -72,17 +72,17 @@ const Offers = () => {
         {
             title: 'Agri-Spray Complete Bundle',
             items: ['1x Janaki Agriculture Drone (10L)', '2x Smart Flight Batteries', '1x Toolkit & Storage Box'],
-            price: '₹1,45,000',
-            originalPrice: '₹1,75,000',
-            discount: 'Save ₹30,000',
+            price: 'Rs. 1,45,000',
+            originalPrice: 'Rs. 1,75,000',
+            discount: 'Save Rs. 30,000',
             image: 'https://images.unsplash.com/photo-1532509170117-98ef7500b411?q=80&w=2070&auto=format&fit=crop'
         },
         {
             title: 'FPV Pilot Starter Kit',
             items: ['1x Janaki FPV Racer', '1x FPV Goggles Pro', '1x 2.4GHz Controller Link'],
-            price: '₹34,999',
-            originalPrice: '₹42,000',
-            discount: 'Save ₹7,001',
+            price: 'Rs. 34,999',
+            originalPrice: 'Rs. 42,000',
+            discount: 'Save Rs. 7,001',
             image: 'https://images.unsplash.com/photo-1597847494283-a27825b84365?q=80&w=1168&auto=format&fit=crop'
         }
     ];

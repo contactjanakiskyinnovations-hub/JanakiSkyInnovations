@@ -278,3 +278,55 @@
         transform: rotate(360deg);
     }
 }
+
+@media (max-width: 576px) {
+    .auth-modal-overlay {
+        padding: 16px;
+    }
+
+    .auth-modal-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 28px 20px;
+        border-radius: 20px;
+    }
+
+    .auth-header {
+        margin-bottom: 24px;
+    }
+
+    .auth-header h2 {
+        font-size: 22px;
+    }
+
+    .logo-mini {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+        border-radius: 12px;
+        margin-bottom: 14px;
+    }
+
+    .close-btn {
+        top: 14px;
+        right: 14px;
+        width: 34px;
+        height: 34px;
+    }
+
+    .otp-container {
+        gap: 8px;
+    }
+
+    .otp-input {
+        width: clamp(38px, 12vw, 54px);
+        height: clamp(48px, 14vw, 62px);
+        font-size: 20px;
+        border-radius: 12px;
+    }
+
+    .auth-btn-primary {
+        padding: 14px 20px;
+        font-size: 15px;
+    }
+}

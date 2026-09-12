@@ -319,7 +319,7 @@ const createOrder = async (req, res) => {
         const itemsPrice = Math.round(validatedItems.reduce((total, item) => total + item.price * item.qty, 0) * 100) / 100;
         // Prices already include 13% VAT, so there is no separate tax line.
         const taxPrice = 0;
-        // Free delivery above ₹2,000, otherwise a flat ₹150 charge.
+        // Free delivery above Rs. 2,000, otherwise a flat Rs. 150 charge.
         const shippingPrice = itemsPrice >= 2000 ? 0 : 150;
         const totalPrice = Math.round((itemsPrice + taxPrice + shippingPrice) * 100) / 100;
 

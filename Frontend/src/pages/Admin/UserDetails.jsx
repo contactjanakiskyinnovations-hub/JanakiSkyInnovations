@@ -261,7 +261,7 @@ const UserDetails = () => {
                                                         {order.status}
                                                     </span>
                                                 </td>
-                                                <td style={{ fontWeight: '700' }}>₹{Number(order.totalPrice || 0).toLocaleString('en-IN')}</td>
+                                                <td style={{ fontWeight: '700' }}>Rs. {Number(order.totalPrice || 0).toLocaleString('en-IN')}</td>
                                                 <td style={{ textAlign: 'right' }}>
                                                     <button 
                                                         className="secondary-btn" 
@@ -426,10 +426,10 @@ const UserDetails = () => {
                                                 {item.qty}
                                             </td>
                                             <td style={{ padding: '12px 15px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', fontSize: '13.5px', fontWeight: '600', color: '#475569' }}>
-                                                ₹{Number(item.price || 0).toLocaleString('en-IN')}
+                                                Rs. {Number(item.price || 0).toLocaleString('en-IN')}
                                             </td>
                                             <td style={{ padding: '12px 15px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', fontSize: '13.5px', fontWeight: '800', color: '#0f172a' }}>
-                                                ₹{Number(item.price * item.qty).toLocaleString('en-IN')}
+                                                Rs. {Number(item.price * item.qty).toLocaleString('en-IN')}
                                             </td>
                                         </tr>
                                     ))}
@@ -442,19 +442,19 @@ const UserDetails = () => {
                             <div style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#64748b', fontWeight: '600' }}>
                                     <span>Items Total:</span>
-                                    <span>₹{Number(selectedOrder.itemsPrice || 0).toLocaleString('en-IN')}</span>
+                                    <span>Rs. {Number(selectedOrder.itemsPrice || 0).toLocaleString('en-IN')}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#64748b', fontWeight: '600' }}>
                                     <span>Shipping:</span>
-                                    <span>₹{Number(selectedOrder.shippingPrice || 0).toLocaleString('en-IN')}</span>
+                                    <span>Rs. {Number(selectedOrder.shippingPrice || 0).toLocaleString('en-IN')}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#64748b', fontWeight: '600', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
                                     <span>Tax (GST):</span>
-                                    <span>₹{Number(selectedOrder.taxPrice || 0).toLocaleString('en-IN')}</span>
+                                    <span>Rs. {Number(selectedOrder.taxPrice || 0).toLocaleString('en-IN')}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '900', color: '#0f172a', paddingTop: '4px' }}>
                                     <span>Grand Total:</span>
-                                    <span>₹{Number(selectedOrder.totalPrice || 0).toLocaleString('en-IN')}</span>
+                                    <span>Rs. {Number(selectedOrder.totalPrice || 0).toLocaleString('en-IN')}</span>
                                 </div>
                             </div>
                         </div>

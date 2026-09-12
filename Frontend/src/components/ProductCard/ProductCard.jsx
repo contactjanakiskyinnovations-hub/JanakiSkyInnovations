@@ -141,7 +141,7 @@ const ProductCard = ({ product, showWishlist = true, onAddToCart = null }) => {
 
                 <div className="price-container">
                     <div className="price-details">
-                        {formattedOldPrice && <span className="old-price-strikethrough">₹{formattedOldPrice}</span>}
+                        {formattedOldPrice && <span className="old-price-strikethrough">Rs. {formattedOldPrice}</span>}
                         <div className="current-price-row">
                             <span className="current-price">{formattedPrice}</span>
                             <span className="gst-text">(VAT Included)</span>

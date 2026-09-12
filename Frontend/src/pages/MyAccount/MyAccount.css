@@ -2,13 +2,17 @@
     background-color: #f8f9fa;
     padding: 60px 0;
     min-height: calc(100vh - 400px);
+    overflow-x: hidden;
+    width: 100%;
 }
 
 .account-layout {
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 320px minmax(0, 1fr);
     gap: 40px;
     align-items: flex-start;
+    min-width: 0;
+    width: 100%;
 }
 
 /* Sidebar Styling */
@@ -17,6 +21,8 @@
     border-radius: 24px;
     padding: 30px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .user-profile-summary {
@@ -119,6 +125,8 @@
     padding: 50px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     min-height: 600px;
+    min-width: 0;
+    box-sizing: border-box;
     animation: fadeInSlide 0.4s ease;
 }
 
@@ -531,10 +539,356 @@
 
 @media (max-width: 992px) {
     .account-layout {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .account-sidebar {
+        padding: 20px;
+        border-radius: 18px;
+        width: 100%;
+        max-width: 100%;
     }
 
     .account-main-content {
-        padding: 30px;
+        padding: 24px;
+        border-radius: 18px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .dashboard-sections {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .account-page {
+        padding: 20px 0;
+    }
+
+    .account-page .container {
+        padding: 0 12px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .account-layout {
+        gap: 16px;
+    }
+
+    .account-sidebar {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    /* Horizontal compact profile banner */
+    .user-profile-summary {
+        display: flex;
+        align-items: center;
+        text-align: left;
+        gap: 14px;
+        padding-bottom: 14px;
+        margin-bottom: 14px;
+        border-bottom: 1px solid #f1f5f9;
+        width: 100%;
+    }
+
+    .profile-avatar {
+        width: 52px;
+        height: 52px;
+        font-size: 22px;
+        margin: 0;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(255, 143, 0, 0.25);
+    }
+
+    .profile-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .profile-info h3 {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .profile-info p {
+        font-size: 13px;
+        color: #64748b;
+        margin: 0;
+    }
+
+    /* Horizontal smooth scrollable tab navigation */
+    .account-nav-tabs {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 8px;
+        padding-bottom: 4px;
+        margin-bottom: 0;
+        width: 100%;
+        max-width: 100%;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .account-nav-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab-btn {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        width: auto;
+        border-radius: 10px;
+        background: #f8fafc;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+        padding-left: 14px;
+        background: #fff8f0;
+        color: var(--primary-orange);
+    }
+
+    .tab-btn.active {
+        background: var(--primary-orange);
+        color: white;
+        border-color: var(--primary-orange);
+        box-shadow: 0 4px 12px rgba(255, 143, 0, 0.25);
+    }
+
+    .tab-btn .arrow {
+        display: none;
+    }
+
+    .tab-btn.logout-btn {
+        margin-top: 0;
+        padding-top: 9px;
+        border-radius: 10px;
+        background: #fff5f5;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .account-main-content {
+        padding: 18px 14px;
+        border-radius: 16px;
+        min-height: auto;
+    }
+
+    .tab-title {
+        font-size: 20px;
+        margin-bottom: 16px;
+        letter-spacing: -0.3px;
+    }
+
+    /* Single compact stat card */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    .stat-card {
+        padding: 14px 16px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-align: left;
+    }
+
+    .stat-icon {
+        margin: 0;
+        width: 42px;
+        height: 42px;
+        padding: 9px;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+
+    .stat-val {
+        font-size: 22px;
+        line-height: 1.1;
+        margin-bottom: 2px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Dashboard cards */
+    .dashboard-sections {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        width: 100%;
+    }
+
+    .dashboard-card {
+        padding: 16px 14px;
+        border-radius: 14px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .card-header {
+        margin-bottom: 12px;
+    }
+
+    .card-header h4 {
+        font-size: 15px;
+    }
+
+    .card-placeholder {
+        font-size: 13.5px;
+    }
+
+    /* Orders tab responsive */
+    .orders-list {
+        gap: 14px;
+    }
+
+    .order-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .order-main {
+        gap: 10px;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .order-id .id {
+        font-size: 16px;
+    }
+
+    .order-details {
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: space-between;
+        padding-top: 12px;
+        border-top: 1px solid #f1f5f9;
+        width: 100%;
+    }
+
+    .detail {
+        text-align: left;
+    }
+
+    .view-order-btn {
+        flex: 1;
+        text-align: center;
+        padding: 9px 12px;
+        font-size: 12.5px;
+    }
+
+    /* Wishlist tab responsive */
+    .hangar-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .hangar-item {
+        border-radius: 12px;
+    }
+
+    .item-img {
+        height: 120px;
+    }
+
+    .item-details {
+        padding: 10px 8px;
+    }
+
+    .item-details h4 {
+        font-size: 12.5px;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .item-details .price {
+        font-size: 13.5px;
+        margin-bottom: 8px;
+    }
+
+    .add-to-cart-dash {
+        padding: 7px;
+        font-size: 11.5px;
+        border-radius: 8px;
+    }
+
+    /* Settings tab responsive */
+    .settings-list {
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .setting-row {
+        gap: 12px;
+        padding-bottom: 14px;
+    }
+
+    .setting-info h4 {
+        font-size: 14.5px;
+    }
+
+    .setting-info p {
+        font-size: 12px;
+    }
+
+    .save-settings-btn {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .account-page .container {
+        padding: 0 8px;
+    }
+
+    .account-sidebar {
+        padding: 14px 12px;
+    }
+
+    .account-main-content {
+        padding: 16px 12px;
+    }
+
+    .hangar-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .item-img {
+        height: 105px;
     }
 }

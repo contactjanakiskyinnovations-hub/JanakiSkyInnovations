@@ -287,19 +287,36 @@
 }
 
 @media (max-width: 768px) {
+    .offers-hero {
+        height: 260px;
+    }
+    .hero-content-offers h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+    .hero-content-offers p {
+        font-size: 14.5px;
+    }
+    .coupons-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .coupon-card {
+        padding: 20px 18px;
+    }
     .bundle-card {
         grid-template-columns: 1fr;
     }
     .bundle-img-box {
-        min-height: 200px;
+        min-height: 180px;
     }
     .bundle-info-box {
-        padding: 25px;
+        padding: 20px 18px;
     }
     .bundle-price-row {
         flex-direction: column;
         align-items: flex-start;
-        gap: 15px;
+        gap: 12px;
     }
     .bundle-shop-btn {
         width: 100%;

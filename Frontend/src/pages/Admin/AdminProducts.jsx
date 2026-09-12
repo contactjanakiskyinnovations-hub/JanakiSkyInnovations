@@ -639,7 +639,7 @@ const AdminProducts = () => {
                                                 )}
                                             </div>
                                         </td>
-                                        <td style={{ fontWeight: '800', color: '#0f172a' }}>₹{product.price.toLocaleString('en-IN')}</td>
+                                        <td style={{ fontWeight: '800', color: '#0f172a' }}>Rs. {product.price.toLocaleString('en-IN')}</td>
                                         <td style={{ fontWeight: '700' }}>{product.stock}</td>
                                         <td>
                                             <span className={`status-badge ${product.stock > 0 ? 'completed' : 'pending'}`}>
@@ -796,7 +796,7 @@ const AdminProducts = () => {
                             </div>
 
                             <div className="input-group">
-                                <label>Price (₹) *</label>
+                                <label>Price (Rs.) *</label>
                                 <input 
                                     type="number" 
                                     value={productForm.price} 
@@ -805,7 +805,7 @@ const AdminProducts = () => {
                             </div>
 
                             <div className="input-group">
-                                <label>Discount Price (₹)</label>
+                                <label>Discount Price (Rs.)</label>
                                 <input 
                                     type="number" 
                                     value={productForm.discountPrice} 

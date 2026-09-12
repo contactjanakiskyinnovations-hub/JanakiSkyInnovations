@@ -280,7 +280,7 @@ const AdminOrders = () => {
                                         <div style={{ fontSize: '12px', color: '#64748b' }}>{order.user?.email || 'N/A'}</div>
                                     </td>
                                     <td style={{ fontWeight: '800', color: '#0f172a', fontSize: '14.5px' }}>
-                                        ₹{order.totalPrice.toLocaleString('en-IN')}
+                                        Rs. {order.totalPrice.toLocaleString('en-IN')}
                                     </td>
                                     <td>
                                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '12px', fontSize: '12.5px', fontWeight: '700', backgroundColor: order.orderType === 'Pre-Order' ? 'rgba(245,158,11,0.12)' : 'rgba(34,197,94,0.12)', color: order.orderType === 'Pre-Order' ? '#92400e' : '#15803d' }}>
@@ -436,10 +436,10 @@ const AdminOrders = () => {
                                                 {item.qty}
                                             </td>
                                             <td style={{ padding: '12px 15px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', fontSize: '13.5px', fontWeight: '600', color: '#475569' }}>
-                                                ₹{item.price.toLocaleString('en-IN')}
+                                                Rs. {item.price.toLocaleString('en-IN')}
                                             </td>
                                             <td style={{ padding: '12px 15px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', fontSize: '13.5px', fontWeight: '800', color: '#0f172a' }}>
-                                                ₹{(item.qty * item.price).toLocaleString('en-IN')}
+                                                Rs. {(item.qty * item.price).toLocaleString('en-IN')}
                                             </td>
                                         </tr>
                                     ))}
@@ -452,19 +452,19 @@ const AdminOrders = () => {
                             <div style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#64748b', fontWeight: '600' }}>
                                     <span>Items Total:</span>
-                                    <span>₹{(selectedOrder.itemsPrice || selectedOrder.totalPrice - selectedOrder.shippingPrice - selectedOrder.taxPrice).toLocaleString('en-IN')}</span>
+                                    <span>Rs. {(selectedOrder.itemsPrice || selectedOrder.totalPrice - selectedOrder.shippingPrice - selectedOrder.taxPrice).toLocaleString('en-IN')}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#64748b', fontWeight: '600' }}>
                                     <span>Shipping:</span>
-                                    <span>₹{selectedOrder.shippingPrice.toLocaleString('en-IN')}</span>
+                                    <span>Rs. {selectedOrder.shippingPrice.toLocaleString('en-IN')}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#64748b', fontWeight: '600', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
                                     <span>Tax (GST):</span>
-                                    <span>₹{selectedOrder.taxPrice.toLocaleString('en-IN')}</span>
+                                    <span>Rs. {selectedOrder.taxPrice.toLocaleString('en-IN')}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '900', color: '#0f172a', paddingTop: '4px' }}>
                                     <span>Grand Total:</span>
-                                    <span>₹{selectedOrder.totalPrice.toLocaleString('en-IN')}</span>
+                                    <span>Rs. {selectedOrder.totalPrice.toLocaleString('en-IN')}</span>
                                 </div>
                             </div>
                         </div>

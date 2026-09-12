@@ -408,26 +408,43 @@
 
 @media (max-width: 600px) {
     .order-success-page {
-        padding: 40px 0;
+        padding: 24px 0;
+    }
+    .success-hero {
+        padding: 20px 10px 24px;
+        margin-bottom: 20px;
     }
     .success-hero h1 {
-        font-size: 28px;
+        font-size: 24px;
     }
     .success-checkmark,
     .success-checkmark-circle {
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        height: 70px;
+        margin-bottom: 16px;
     }
     .success-checkmark-check {
-        top: 20px;
-        left: 22px;
-        width: 36px;
-        height: 18px;
+        top: 18px;
+        left: 20px;
+        width: 32px;
+        height: 16px;
         border-left-width: 4px;
         border-bottom-width: 4px;
     }
+    .order-card {
+        padding: 18px 16px;
+        border-radius: 16px;
+    }
     .order-totals .total-row.grand-total span:last-child {
-        font-size: 17px;
+        font-size: 18px;
+    }
+    .success-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .success-actions .btn {
+        width: 100%;
+        justify-content: center;
     }
 }
 /* ===== Rate your products (after delivery) ===== */

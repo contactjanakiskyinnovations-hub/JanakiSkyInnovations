@@ -130,22 +130,22 @@ const OrderSuccess = () => {
                                             <div className="item-name">{item.name}</div>
                                             {item.name && <div className="item-sku"><span className="order-item-sku">SKU: {item.sku || (item.product && typeof item.product === "object" ? item.product.sku : "") || "N/A"}</span> · Qty: {item.qty}</div>}
                                         </div>
-                                        <div className="item-price">₹{Number(item.price * item.qty).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                                        <div className="item-price">Rs. {Number(item.price * item.qty).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
                                     </div>
                                 ))}
                             </div>
                             <div className="order-totals">
                                 <div className="total-row">
                                     <span>Subtotal <small>(VAT incl.)</small></span>
-                                    <span>₹{Number(order.itemsPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                    <span>Rs. {Number(order.itemsPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                 </div>
                                 <div className="total-row">
                                     <span>Delivery</span>
-                                    <span className={Number(order.shippingPrice) === 0 ? 'free-shipping' : ''}>{Number(order.shippingPrice) === 0 ? 'FREE' : `₹${Number(order.shippingPrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span>
+                                    <span className={Number(order.shippingPrice) === 0 ? 'free-shipping' : ''}>{Number(order.shippingPrice) === 0 ? 'FREE' : `Rs. ${Number(order.shippingPrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span>
                                 </div>
                                 <div className="total-row grand-total">
                                     <span>Total</span>
-                                    <span>₹{Number(order.totalPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                    <span>Rs. {Number(order.totalPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                 </div>
                             </div>
                         </div>

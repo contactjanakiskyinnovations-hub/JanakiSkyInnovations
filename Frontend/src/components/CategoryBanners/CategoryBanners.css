@@ -98,7 +98,11 @@
 
 @media (max-width: 768px) {
     .category-banners-section {
-        padding: 50px 4% 60px;
+        padding: 40px 4% 50px;
+    }
+    .category-banners-section .section-title-clean {
+        font-size: 22px;
+        margin-bottom: 25px;
     }
     .category-banners-grid {
         gap: 18px;
@@ -110,5 +114,15 @@
     }
     .category-banner-img {
         aspect-ratio: 16 / 10;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-banners-section {
+        padding: 30px 4% 40px;
+    }
+    .category-banner-title {
+        padding: 12px 14px;
+        font-size: 14.5px;
     }
 }

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { withVat, formatINR } from '../../utils/price';
-import { Search, ShoppingCart, User, Heart, ChevronDown, LayoutGrid, Award, Star, LogOut, Menu, X as CloseIcon, Package, Settings, ArrowRight, Loader2 } from 'lucide-react';
+import { Search, ShoppingCart, User, Heart, ChevronDown, ChevronRight, LayoutGrid, Award, Star, LogOut, Menu, X as CloseIcon, Package, Settings, ArrowRight, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -84,9 +84,29 @@ const Header = () => {
   };
 
   const [hoveredSubByNav, setHoveredSubByNav] = useState({});
+  const [mobileExpandedNavs, setMobileExpandedNavs] = useState({});
+  const [mobileExpandedSubs, setMobileExpandedSubs] = useState({});
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const toggleMobileNav = (slug, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMobileExpandedNavs(prev => ({
+      ...prev,
+      [slug]: !prev[slug]
+    }));
+  };
+
+  const toggleMobileSub = (subKey, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMobileExpandedSubs(prev => ({
+      ...prev,
+      [subKey]: !prev[subKey]
+    }));
   };
 
   React.useEffect(() => {
@@ -281,7 +301,7 @@ const Header = () => {
               </div>
               <div className="action-text">
                 <span className="label">My Cart</span>
-                <span className="sub-label">₹{cartTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                <span className="sub-label">Rs. {cartTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
               </div>
             </Link>
           </div>
@@ -370,27 +390,45 @@ const Header = () => {
                 ? cat.subCategories.find(s => s.name === currentHoveredSubName)
                 : null;
               const hasActiveSubSubs = activeSubObj && activeSubObj.subSubCategories && activeSubObj.subSubCategories.length > 0;
+              const isMobileNavOpen = !!mobileExpandedNavs[slug];
 
               return (
                 <li 
                   key={slug} 
-                  className={`nav-item ${hasSubs ? 'has-dropdown' : ''}`}
+                  className={`nav-item ${hasSubs ? 'has-dropdown' : ''} ${isMobileNavOpen ? 'mobile-expanded' : ''}`}
                   onMouseLeave={() => setHoveredSubByNav(prev => ({ ...prev, [slug]: null }))}
                 >
-                  <Link to={`/category/${slug}`}>
-                    {label}
-                    {hasSubs && <ChevronDown size={14} />}
-                  </Link>
+                  <div className="nav-item-row">
+                    <Link to={`/category/${slug}`} onClick={toggleMobileMenu}>
+                      <span>{label}</span>
+                      {hasSubs && (
+                        <ChevronDown size={13} className="nav-desktop-arrow" />
+                      )}
+                    </Link>
+                    {hasSubs && (
+                      <button 
+                        type="button" 
+                        className="mobile-dropdown-arrow-btn" 
+                        onClick={(e) => toggleMobileNav(slug, e)}
+                        aria-label={`Toggle ${label} menu`}
+                      >
+                        <ChevronDown size={14} className={`nav-chevron-icon ${isMobileNavOpen ? 'rotated' : ''}`} />
+                      </button>
+                    )}
+                  </div>
                   {hasSubs ? (
-                    <div className={`dropdown-menu ${hasActiveSubSubs ? 'has-active-submenu' : ''}`}>
+                    <div className={`dropdown-menu ${hasActiveSubSubs ? 'has-active-submenu' : ''} ${isMobileNavOpen ? 'mobile-open' : ''}`}>
                       <ul className="dropdown-sub-list">
                         {cat.subCategories.map((sub, i) => {
                           const hasSubSubs = sub.subSubCategories && sub.subSubCategories.length > 0;
                           const isHovered = currentHoveredSubName === sub.name;
+                          const subKey = `${slug}-${sub.name}`;
+                          const isMobileSubOpen = !!mobileExpandedSubs[subKey];
+
                           return (
                             <li 
                               key={i} 
-                              className={`sub-item ${hasSubSubs ? 'has-subs' : ''} ${isHovered ? 'active' : ''}`}
+                              className={`sub-item ${hasSubSubs ? 'has-subs' : ''} ${isHovered ? 'active' : ''} ${isMobileSubOpen ? 'mobile-sub-expanded' : ''}`}
                               onMouseEnter={() => {
                                 if (hasSubSubs) {
                                   setHoveredSubByNav(prev => ({ ...prev, [slug]: sub.name }));
@@ -399,17 +437,43 @@ const Header = () => {
                                 }
                               }}
                             >
-                              <Link to={`/category/${slugify(sub.name)}`} onClick={toggleMobileMenu}>
-                                <span>{sub.name}</span>
-                                {hasSubSubs && <ChevronDown size={14} className="submenu-icon" />}
-                              </Link>
+                              <div className="sub-item-row">
+                                <Link to={`/category/${slugify(sub.name)}`} onClick={toggleMobileMenu}>
+                                  <span>{sub.name}</span>
+                                  {hasSubSubs && (
+                                    <ChevronRight size={14} className="desktop-sub-arrow" />
+                                  )}
+                                </Link>
+                                {hasSubSubs && (
+                                  <button
+                                    type="button"
+                                    className="mobile-sub-arrow-btn"
+                                    onClick={(e) => toggleMobileSub(subKey, e)}
+                                    aria-label={`Toggle ${sub.name} sub-menu`}
+                                  >
+                                    <ChevronDown size={14} className={`mobile-sub-chevron ${isMobileSubOpen ? 'rotated' : ''}`} />
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Mobile Sub-Sub List Accordion */}
+                              {hasSubSubs && isMobileSubOpen && (
+                                <ul className="mobile-subsub-accordion">
+                                  {sub.subSubCategories.map((ss, j) => (
+                                    <li key={j} onClick={toggleMobileMenu}>
+                                      <Link to={`/category/${slugify(ss)}`}>{ss}</Link>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
                             </li>
                           );
                         })}
                       </ul>
 
+                      {/* Desktop flyout right column */}
                       {hasActiveSubSubs && (
-                        <ul className="dropdown-subsub-list">
+                        <ul className="dropdown-subsub-list desktop-only-subsub">
                           {activeSubObj.subSubCategories.map((ss, j) => (
                             <li key={j} onClick={toggleMobileMenu}>
                               <Link to={`/category/${slugify(ss)}`}>{ss}</Link>
@@ -422,9 +486,21 @@ const Header = () => {
                 </li>
               );
             })}
-            <li className="nav-item has-dropdown">
-              <Link to="/services">OUR SERVICES <ChevronDown size={14} /></Link>
-              <div className="dropdown-menu">
+            <li className={`nav-item has-dropdown ${mobileExpandedNavs['services'] ? 'mobile-expanded' : ''}`}>
+              <div className="nav-item-row">
+                <Link to="/services" onClick={toggleMobileMenu}>
+                  OUR SERVICES
+                </Link>
+                <button 
+                  type="button" 
+                  className="mobile-dropdown-arrow-btn" 
+                  onClick={(e) => toggleMobileNav('services', e)}
+                  aria-label="Toggle Services menu"
+                >
+                  <ChevronDown size={14} className={`nav-chevron-icon ${mobileExpandedNavs['services'] ? 'rotated' : ''}`} />
+                </button>
+              </div>
+              <div className={`dropdown-menu ${mobileExpandedNavs['services'] ? 'mobile-open' : ''}`}>
                 <ul className="dropdown-sub-list">
                   {serviceCategories.length > 0 ? (
                     serviceCategories.map((cat, ci) => (

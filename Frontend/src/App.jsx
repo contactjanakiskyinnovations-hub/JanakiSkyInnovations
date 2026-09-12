@@ -18,6 +18,7 @@ import AllCategories from "./pages/AllCategories/AllCategories";
 import OurServices from "./pages/OurServices/OurServices";
 import Offers from "./pages/Offers/Offers";
 import SearchResults from "./pages/SearchResults/SearchResults";
+import AboutStore from "./pages/AboutStore/AboutStore";
 
 import AdminLayout from "./pages/Admin/AdminLayout";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -88,6 +89,8 @@ const AppContent = () => {
               <Route path="/products/:id" element={<CategoryPage />} />
               <Route path="/services" element={<OurServices />} />
               <Route path="/offers" element={<Offers />} />
+              <Route path="/about" element={<AboutStore />} />
+              <Route path="/about-store" element={<AboutStore />} />
               <Route path="/search" element={<SearchResults />} />
               <Route path="*" element={<Home />} />
             </Routes>

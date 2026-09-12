@@ -214,7 +214,7 @@ const MyAccount = () => {
                                                     <div className="order-details">
                                                         <div className="detail">
                                                             <span className="label">Total</span>
-                                                            <span className="value">₹{Number(order.totalPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                                            <span className="value">Rs. {Number(order.totalPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                                         </div>
                                                         <div className="detail">
                                                             <span className="label">Type</span>
@@ -228,7 +228,7 @@ const MyAccount = () => {
                                                             <button
                                                                 className="view-order-btn"
                                                                 onClick={() => navigate(`/order-success/${order._id}`)}
-                                                                title={`Order total: ₹${Number(order.totalPrice || 0).toLocaleString('en-IN')} | Payment: ${order.paymentMethod || 'N/A'} | ${(order.orderItems || []).length} item(s)`}
+                                                                title={`Order total: Rs. ${Number(order.totalPrice || 0).toLocaleString('en-IN')} | Payment: ${order.paymentMethod || 'N/A'} | ${(order.orderItems || []).length} item(s)`}
                                                             >
                                                                 View Details
                                                             </button>

@@ -121,7 +121,7 @@ const ProductFilterSort = ({ onFilterChange, currentFilters = {} }) => {
                     {/* Price Filter */}
                     <div>
                         <div className="filter-section-title">
-                            <DollarSign size={13} /> Price Range (₹)
+                            <DollarSign size={13} /> Price Range (Rs.)
                         </div>
                         <div className="filter-price-inputs">
                             <input 

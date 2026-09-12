@@ -467,7 +467,7 @@ const AddProduct = () => {
                             <input type="text" value={sku} onChange={(e) => setSku(e.target.value)} placeholder="JSI-001" />
                         </div>
                         <div className="input-group">
-                            <label>Base Price (₹) *</label>
+                            <label>Base Price (Rs.) *</label>
                             <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0.00" />
                         </div>
                         <div className="input-group">
