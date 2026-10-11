@@ -159,6 +159,9 @@
     flex-direction: column;
     flex-grow: 1;
     background: #ffffff;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 /* Icon box for cards without image */
@@ -181,6 +184,8 @@
     color: #0f172a;
     margin-bottom: 10px;
     line-height: 1.35;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .service-desc {
@@ -188,6 +193,52 @@
     color: #475569;
     line-height: 1.65;
     margin-bottom: 18px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.service-desc p {
+    margin: 0 0 8px 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.service-desc p:last-child {
+    margin-bottom: 0;
+}
+
+.service-desc ul,
+.service-desc ol {
+    padding-left: 20px;
+    margin: 0 0 8px 0;
+}
+
+.service-desc li {
+    margin-bottom: 4px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.service-desc strong {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.service-desc img {
+    max-width: 100%;
+    height: auto;
+}
+
+.service-cat-desc-html {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+}
+
+.service-cat-desc-html p {
+    margin: 0 0 8px 0;
 }
 
 .service-features {
@@ -210,6 +261,15 @@
     color: #1e293b;
     font-weight: 600;
     line-height: 1.4;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    min-width: 0;
+}
+
+.service-features li span {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    min-width: 0;
 }
 
 .shield-icon {

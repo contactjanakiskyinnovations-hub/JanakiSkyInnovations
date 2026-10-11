@@ -142,9 +142,22 @@ const PromoBanners = ({ cmsBanners }) => {
 
                                     {/* Text content overlaid at bottom-left */}
                                     <div className="promo-overlay-content">
+                                        {banner.subtitle && (
+                                            <span className="promo-overlay-badge">{banner.subtitle}</span>
+                                        )}
                                         <h3 className="promo-overlay-title">
                                             {banner.title || 'Featured Drone Series'}
                                         </h3>
+                                        {banner.description && (
+                                            /<[a-z][\s\S]*>/i.test(banner.description) ? (
+                                                <div
+                                                    className="promo-overlay-desc promo-overlay-html-desc"
+                                                    dangerouslySetInnerHTML={{ __html: banner.description }}
+                                                />
+                                            ) : (
+                                                <p className="promo-overlay-desc">{banner.description}</p>
+                                            )
+                                        )}
                                         <button
                                             type="button"
                                             className="promo-overlay-btn"

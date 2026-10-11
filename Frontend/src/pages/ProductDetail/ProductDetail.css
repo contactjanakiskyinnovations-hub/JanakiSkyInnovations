@@ -184,6 +184,10 @@
     line-height: 1.6;
     color: #475569;
     margin-bottom: 30px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .product-action-buttons {
@@ -803,6 +807,11 @@
     color: #334155;
     font-size: 14.5px;
     line-height: 1.7;
+    /* Prevent horizontal overflow from long content */
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    overflow: hidden;
 }
 
 .overview-html-content p,
@@ -810,6 +819,8 @@
 .in-box-html-content p,
 .instruction-html-content p {
     margin-bottom: 10px;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .overview-html-content ul,
@@ -829,6 +840,8 @@
 .in-box-html-content li,
 .instruction-html-content li {
     margin-bottom: 6px;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .overview-html-content strong,
@@ -846,5 +859,15 @@
     color: #64748b;
     margin: 12px 0;
     font-style: italic;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
+/* Prevent any image or media inside rich text from overflowing */
+.overview-html-content img,
+.key-features-html-content img,
+.in-box-html-content img,
+.instruction-html-content img {
+    max-width: 100%;
+    height: auto;
+}

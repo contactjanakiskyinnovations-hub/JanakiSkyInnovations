@@ -298,7 +298,13 @@ const AboutStore = () => {
                                         {getFeatureIcon(feat.icon)}
                                     </div>
                                     <h4 className="feature-title">{feat.title}</h4>
-                                    <p className="feature-desc">{feat.description}</p>
+                                    {feat.description && (
+                                        /<[a-z][\s\S]*>/i.test(feat.description) ? (
+                                            <div className="feature-desc feature-html-desc" dangerouslySetInnerHTML={{ __html: feat.description }} />
+                                        ) : (
+                                            <p className="feature-desc">{feat.description}</p>
+                                        )
+                                    )}
                                 </div>
                             ))}
                         </div>

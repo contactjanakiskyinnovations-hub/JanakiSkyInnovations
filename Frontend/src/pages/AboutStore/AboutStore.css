@@ -446,6 +446,19 @@
     font-size: 13.5px;
     color: #64748b;
     line-height: 1.6;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+}
+
+.feature-desc p {
+    margin: 0 0 4px 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.feature-desc p:last-child {
+    margin-bottom: 0;
 }
 
 /* ------------------------------------------------------------
@@ -647,10 +660,16 @@
     color: #475569;
     font-size: 15.5px;
     line-height: 1.8;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .story-html-content p {
     margin-bottom: 14px;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .story-html-content ul,
@@ -661,6 +680,8 @@
 
 .story-html-content li {
     margin-bottom: 6px;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .story-html-content strong {
@@ -668,19 +689,40 @@
     font-weight: 700;
 }
 
+.story-html-content img {
+    max-width: 100%;
+    height: auto;
+}
+
 .mv-html-content {
     color: #475569;
     font-size: 15px;
     line-height: 1.7;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .mv-html-content p {
     margin-bottom: 10px;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .mv-html-content ul,
 .mv-html-content ol {
     padding-left: 20px;
     margin-bottom: 10px;
+}
+
+.mv-html-content li {
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.mv-html-content img {
+    max-width: 100%;
+    height: auto;
 }
 

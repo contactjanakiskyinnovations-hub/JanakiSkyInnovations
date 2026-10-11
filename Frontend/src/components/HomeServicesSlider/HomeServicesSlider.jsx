@@ -177,7 +177,16 @@ const HomeServicesSlider = ({ services = [] }) => {
 
                                     <div className="service-slider-body">
                                         <h3 className="service-slider-card-title">{service.title}</h3>
-                                        <p className="service-slider-desc">{service.description}</p>
+                                        {service.description && (
+                                            /<[a-z][\s\S]*>/i.test(service.description) ? (
+                                                <div
+                                                    className="service-slider-desc service-slider-html-content"
+                                                    dangerouslySetInnerHTML={{ __html: service.description }}
+                                                />
+                                            ) : (
+                                                <p className="service-slider-desc">{service.description}</p>
+                                            )
+                                        )}
 
                                         {service.features && service.features.length > 0 && (
                                             <ul className="service-slider-feature-list">

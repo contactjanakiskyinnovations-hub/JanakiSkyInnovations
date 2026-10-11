@@ -127,11 +127,13 @@ const OurServices = () => {
                 {/* Services Grid */}
                 <div className="section-header-center">
                     <h2>{currentCategory ? `${currentCategory.name} Services` : 'Our Service Offerings'}</h2>
-                    <p>
-                        {currentCategory?.description
-                            ? currentCategory.description
-                            : 'High-end technical expertise paired with state-of-the-art drone fleets to guarantee unmatched performance.'}
-                    </p>
+                    {(() => {
+                        const catDesc = currentCategory?.description || 'High-end technical expertise paired with state-of-the-art drone fleets to guarantee unmatched performance.';
+                        if (/<[a-z][\s\S]*>/i.test(catDesc)) {
+                            return <div className="service-cat-desc-html" dangerouslySetInnerHTML={{ __html: catDesc }} />;
+                        }
+                        return <p>{catDesc}</p>;
+                    })()}
                 </div>
 
                 {currentCategory && currentCategory.services && currentCategory.services.length > 0 ? (
@@ -157,7 +159,16 @@ const OurServices = () => {
                                 )}
                                 <div className="service-card-content">
                                     <h3>{service.title}</h3>
-                                    <p className="service-desc">{service.description}</p>
+                                    {service.description && (
+                                        /<[a-z][\s\S]*>/i.test(service.description) ? (
+                                            <div
+                                                className="service-desc service-html-content"
+                                                dangerouslySetInnerHTML={{ __html: service.description }}
+                                            />
+                                        ) : (
+                                            <p className="service-desc">{service.description}</p>
+                                        )
+                                    )}
                                     {service.features && service.features.length > 0 && (
                                         <ul className="service-features">
                                             {service.features.map((feat, fIdx) => (
