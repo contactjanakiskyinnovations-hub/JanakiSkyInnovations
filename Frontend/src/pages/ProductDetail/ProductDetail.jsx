@@ -307,9 +307,14 @@ const ProductDetail = () => {
                             </div>
                         </div>
 
-                        <p className="short-summary">
-                            {product.shortSummary || product.description}
-                        </p>
+                        {(() => {
+                            const summary = product.shortSummary || product.description;
+                            if (!summary) return null;
+                            if (/<[a-z][\s\S]*>/i.test(summary)) {
+                                return <div className="short-summary overview-html-content" dangerouslySetInnerHTML={{ __html: summary }} />;
+                            }
+                            return <p className="short-summary">{summary}</p>;
+                        })()}
 
                         {/* Stock availability indicator */}
                         <div className="detail-stock-status">
