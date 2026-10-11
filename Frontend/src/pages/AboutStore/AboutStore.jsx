@@ -193,9 +193,16 @@ const AboutStore = () => {
                             <span className="section-eyebrow">OUR STORY</span>
                             <h2 className="section-heading">Dedicated to the Future of Aerial Robotics</h2>
                             <div className="story-paragraphs">
-                                {(aboutData.story || '').split('\n\n').map((paragraph, idx) => (
-                                    <p key={idx}>{paragraph}</p>
-                                ))}
+                                {/<[a-z][\s\S]*>/i.test(aboutData.story) ? (
+                                    <div 
+                                        className="story-html-content" 
+                                        dangerouslySetInnerHTML={{ __html: aboutData.story }} 
+                                    />
+                                ) : (
+                                    (aboutData.story || '').split('\n\n').map((paragraph, idx) => (
+                                        <p key={idx}>{paragraph}</p>
+                                    ))
+                                )}
                             </div>
                             <div className="story-highlights">
                                 <div className="highlight-item">
@@ -244,7 +251,14 @@ const AboutStore = () => {
                                 </div>
                                 <h3>Our Mission</h3>
                             </div>
-                            <p>{aboutData.mission}</p>
+                            {/<[a-z][\s\S]*>/i.test(aboutData.mission) ? (
+                                <div 
+                                    className="mv-html-content" 
+                                    dangerouslySetInnerHTML={{ __html: aboutData.mission }} 
+                                />
+                            ) : (
+                                <p>{aboutData.mission}</p>
+                            )}
                         </div>
 
                         <div className="mv-card vision-card">
@@ -254,7 +268,14 @@ const AboutStore = () => {
                                 </div>
                                 <h3>Our Vision</h3>
                             </div>
-                            <p>{aboutData.vision}</p>
+                            {/<[a-z][\s\S]*>/i.test(aboutData.vision) ? (
+                                <div 
+                                    className="mv-html-content" 
+                                    dangerouslySetInnerHTML={{ __html: aboutData.vision }} 
+                                />
+                            ) : (
+                                <p>{aboutData.vision}</p>
+                            )}
                         </div>
                     </div>
                 </div>

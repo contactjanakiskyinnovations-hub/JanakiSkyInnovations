@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, X, Upload, Plus, Trash2, ChevronRight, Loader2, Columns3 } from 'lucide-react';
 import api from '../../utils/api';
+import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
 import './Admin.css';
 
 
@@ -271,11 +272,22 @@ const AddProduct = () => {
                         </div>
                         <div className="input-group">
                             <label>Description</label>
-                            <textarea rows="4" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Detailed product description..."></textarea>
+                            <RichTextEditor 
+                                value={description} 
+                                onChange={setDescription} 
+                                placeholder="Detailed product description, specifications, and overview..."
+                                height="220px"
+                            />
                         </div>
                         <div className="input-group">
                             <label>Short Summary</label>
-                            <textarea rows="3" value={shortSummary} onChange={(e) => setShortSummary(e.target.value)} placeholder="Brief product summary for the detail page..."></textarea>
+                            <RichTextEditor 
+                                value={shortSummary} 
+                                onChange={setShortSummary} 
+                                placeholder="Brief product summary for the detail page..."
+                                height="120px"
+                                compact={true}
+                            />
                         </div>
                     </div>
 
@@ -283,41 +295,39 @@ const AddProduct = () => {
                         <h4>User Instructions & Procedures</h4>
                         <div className="input-group" style={{ marginBottom: '15px' }}>
                             <label>How to Use (Step-by-step or guidelines)</label>
-                            <textarea 
-                                rows="4" 
+                            <RichTextEditor 
                                 value={howToUse} 
-                                onChange={(e) => setHowToUse(e.target.value)} 
-                                placeholder="Ensure the device is powered correctly...&#10;Turn on the system..."
-                            ></textarea>
+                                onChange={setHowToUse} 
+                                placeholder="Ensure the device is powered correctly... Turn on the system..."
+                                height="180px"
+                            />
                         </div>
-                        <div className="input-group">
+                        <div className="input-group" style={{ marginBottom: '15px' }}>
                             <label>Assembly & Maintenance Information</label>
-                            <textarea 
-                                rows="3" 
+                            <RichTextEditor 
                                 value={assemblyMaintenance} 
-                                onChange={(e) => setAssemblyMaintenance(e.target.value)} 
+                                onChange={setAssemblyMaintenance} 
                                 placeholder="Most components come pre-assembled. Periodically check connections..."
-                            ></textarea>
+                                height="180px"
+                            />
                         </div>
-                        <div className="input-group">
+                        <div className="input-group" style={{ marginBottom: '15px' }}>
                             <label>Key Features</label>
-                            <textarea 
-                                rows="5" 
+                            <RichTextEditor 
                                 value={keyFeatures} 
-                                onChange={(e) => setKeyFeatures(e.target.value)} 
-                                placeholder={`● Ultra-lightweight design (~135g) – easy to carry.\n● 4K video with stabilization.\n● 18 minutes flight time per battery.`}
-                            ></textarea>
-                            <small style={{ color: '#94a3b8', fontSize: '12px', marginTop: '4px', display: 'block' }}>Each feature on its own line. Start with ● for bullet styling.</small>
+                                onChange={setKeyFeatures} 
+                                placeholder="List features using bullet points or paragraphs..."
+                                height="200px"
+                            />
                         </div>
                         <div className="input-group">
                             <label>Accessorise in the Box</label>
-                            <textarea 
-                                rows="5" 
+                            <RichTextEditor 
                                 value={inTheBox} 
-                                onChange={(e) => setInTheBox(e.target.value)} 
-                                placeholder={`● DJI Neo Aircraft\n● Intelligent Flight Battery\n● Propeller Guards (Pair)`}
-                            ></textarea>
-                            <small style={{ color: '#94a3b8', fontSize: '12px', marginTop: '4px', display: 'block' }}>Each item on its own line. Start with ● for bullet styling.</small>
+                                onChange={setInTheBox} 
+                                placeholder="List package contents (e.g. Drone Aircraft, Batteries, Cables, Manual)..."
+                                height="180px"
+                            />
                         </div>
                     </div>
 

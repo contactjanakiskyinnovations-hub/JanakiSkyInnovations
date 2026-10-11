@@ -27,7 +27,7 @@ const TopRated = () => {
             try {
                 const params = new URLSearchParams();
                 params.append('pageNumber', page);
-                params.append('limit', 8);
+                params.append('limit', 12);
                 params.append('sortBy', filterState.sort || 'rating');
                 if (filterState.minPrice) params.append('minPrice', filterState.minPrice);
                 if (filterState.maxPrice) params.append('maxPrice', filterState.maxPrice);

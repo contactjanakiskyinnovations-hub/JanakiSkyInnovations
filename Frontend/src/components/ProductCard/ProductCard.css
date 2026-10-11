@@ -398,7 +398,8 @@
     }
 
     .current-price {
-        font-size: 17px;
+        font-size: 15px;
+        white-space: nowrap;
     }
 
     .card-actions-vertical {

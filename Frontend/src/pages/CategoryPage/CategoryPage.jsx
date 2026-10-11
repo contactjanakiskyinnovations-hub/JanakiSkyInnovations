@@ -91,7 +91,7 @@ const CategoryPage = () => {
                 const params = new URLSearchParams();
                 params.append('category', id);
                 params.append('pageNumber', page);
-                params.append('limit', 8);
+                params.append('limit', 12);
                 if (filterState.sort) params.append('sortBy', filterState.sort);
                 if (filterState.minPrice) params.append('minPrice', filterState.minPrice);
                 if (filterState.maxPrice) params.append('maxPrice', filterState.maxPrice);

@@ -18,7 +18,9 @@ const homeSettingsSchema = new mongoose.Schema({
         {
             image: { type: String, required: true },
             title: { type: String },
+            subtitle: { type: String },
             description: { type: String },
+            btnText: { type: String, default: 'Explore Now' },
             link: { type: String },
             position: { type: String, enum: ['top', 'middle', 'bottom'] }
         }

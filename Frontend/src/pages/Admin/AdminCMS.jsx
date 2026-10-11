@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Image as ImageIcon, Plus, Trash2, Link as LinkIcon, Save, Edit2, Loader2, X, Percent, Gift, CheckCircle, HelpCircle, Eye, Inbox, RefreshCw } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../utils/api';
+import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
 import './Admin.css';
 
 const AdminCMS = ({ defaultTab }) => {
@@ -986,7 +987,7 @@ const AdminCMS = ({ defaultTab }) => {
                                     <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Promotional banner images shown below the hero slider on the homepage (e.g. Smart Agriculture, High-Speed FPV).</p>
                                 </div>
                                 <button className="secondary-btn btn-sm" onClick={() => {
-                                    setSettings({ ...settings, promoBanners: [...(settings.promoBanners || []), { image: '', title: '', description: '', link: '' }] });
+                                    setSettings({ ...settings, promoBanners: [...(settings.promoBanners || []), { image: '', title: '', subtitle: '', description: '', btnText: 'Explore Now', link: '' }] });
                                 }}><Plus size={16} /> Add Banner</button>
                             </div>
                             <div className="cms-grid">
@@ -1043,14 +1044,34 @@ const AdminCMS = ({ defaultTab }) => {
                                                 <input className="cms-input" value={banner.title || ''} onChange={(e) => {
                                                     const updated = (settings.promoBanners || []).map((b,idx) => idx===i ? {...b, title: e.target.value} : b);
                                                     setSettings({ ...settings, promoBanners: updated });
-                                                }} placeholder="e.g. Smart Agriculture" />
+                                                }} placeholder="e.g. Smart Agriculture Spraying" />
                                             </div>
                                             <div className="input-group">
-                                                <label>Description</label>
-                                                <input className="cms-input" value={banner.description || ''} onChange={(e) => {
-                                                    const updated = (settings.promoBanners || []).map((b,idx) => idx===i ? {...b, description: e.target.value} : b);
+                                                <label>Tag / Category Badge</label>
+                                                <input className="cms-input" value={banner.subtitle || ''} onChange={(e) => {
+                                                    const updated = (settings.promoBanners || []).map((b,idx) => idx===i ? {...b, subtitle: e.target.value} : b);
                                                     setSettings({ ...settings, promoBanners: updated });
-                                                }} placeholder="Short description..." />
+                                                }} placeholder="e.g. Special Deal or Agriculture" />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Description (Displayed Below Banner)</label>
+                                                <RichTextEditor 
+                                                    value={banner.description || ''} 
+                                                    onChange={(val) => {
+                                                        const updated = (settings.promoBanners || []).map((b,idx) => idx===i ? {...b, description: val} : b);
+                                                        setSettings({ ...settings, promoBanners: updated });
+                                                    }} 
+                                                    placeholder="Detailed info displayed below the promo banner..." 
+                                                    height="120px"
+                                                    compact={true}
+                                                />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Button Label</label>
+                                                <input className="cms-input" value={banner.btnText || ''} onChange={(e) => {
+                                                    const updated = (settings.promoBanners || []).map((b,idx) => idx===i ? {...b, btnText: e.target.value} : b);
+                                                    setSettings({ ...settings, promoBanners: updated });
+                                                }} placeholder="e.g. Explore Now or Shop Collection" />
                                             </div>
                                             <div className="input-group">
                                                 <label>Link URL</label>
@@ -1377,11 +1398,12 @@ const AdminCMS = ({ defaultTab }) => {
                                         </div>
                                         <div className="input-group">
                                             <label>Description</label>
-                                            <textarea
-                                                value={service.description}
-                                                onChange={(e) => handleServiceInCatChange(ci, si, 'description', e.target.value)}
+                                            <RichTextEditor
+                                                value={service.description || ''}
+                                                onChange={(val) => handleServiceInCatChange(ci, si, 'description', val)}
                                                 placeholder="Describe the service details..."
-                                                rows={3}
+                                                height="130px"
+                                                compact={true}
                                             />
                                         </div>
                                         <div className="input-group">
@@ -1960,12 +1982,11 @@ const AdminCMS = ({ defaultTab }) => {
 
                             <div className="input-group" style={{ marginBottom: '20px' }}>
                                 <label style={{ fontWeight: 700, fontSize: '13.5px', marginBottom: '6px' }}>Store Story / Description (Multi-Paragraph)</label>
-                                <textarea 
-                                    rows={5} 
+                                <RichTextEditor 
                                     value={settings.aboutStore?.story || ''} 
-                                    onChange={(e) => handleAboutStoreFieldChange('story', e.target.value)} 
+                                    onChange={(val) => handleAboutStoreFieldChange('story', val)} 
                                     placeholder="Write your store narrative, engineering focus, and background..." 
-                                    style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', lineHeight: '1.6', fontFamily: 'inherit' }}
+                                    height="200px"
                                 />
                             </div>
 
@@ -2025,22 +2046,22 @@ const AdminCMS = ({ defaultTab }) => {
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <div className="input-group">
                                     <label style={{ fontWeight: 700, fontSize: '13.5px', marginBottom: '6px' }}>Our Mission Statement</label>
-                                    <textarea 
-                                        rows={4} 
+                                    <RichTextEditor 
                                         value={settings.aboutStore?.mission || ''} 
-                                        onChange={(e) => handleAboutStoreFieldChange('mission', e.target.value)} 
+                                        onChange={(val) => handleAboutStoreFieldChange('mission', val)} 
                                         placeholder="State your store mission..." 
-                                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', lineHeight: '1.6', fontFamily: 'inherit' }}
+                                        height="140px"
+                                        compact={true}
                                     />
                                 </div>
                                 <div className="input-group">
                                     <label style={{ fontWeight: 700, fontSize: '13.5px', marginBottom: '6px' }}>Our Vision Statement</label>
-                                    <textarea 
-                                        rows={4} 
+                                    <RichTextEditor 
                                         value={settings.aboutStore?.vision || ''} 
-                                        onChange={(e) => handleAboutStoreFieldChange('vision', e.target.value)} 
+                                        onChange={(val) => handleAboutStoreFieldChange('vision', val)} 
                                         placeholder="State your long-term vision..." 
-                                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', lineHeight: '1.6', fontFamily: 'inherit' }}
+                                        height="140px"
+                                        compact={true}
                                     />
                                 </div>
                             </div>

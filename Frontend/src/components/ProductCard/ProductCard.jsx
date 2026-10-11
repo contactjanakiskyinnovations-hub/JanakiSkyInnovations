@@ -30,7 +30,7 @@ const ProductCard = ({ product, showWishlist = true, onAddToCart = null }) => {
     const isInCart = !!cartItem;
     const cartQuantity = cartItem?.quantity || 0;
 
-    const formattedPrice = formatINR(withVat(price));
+    const formattedPrice = formatINR(withVat(price), { decimals: false });
 
     const formattedOldPrice = oldPrice ? formatINR(withVat(oldPrice), { decimals: false }) : null;
 

@@ -641,3 +641,46 @@
         height: 240px;
     }
 }
+
+/* Rich text (Quill) styling for About Store */
+.story-html-content {
+    color: #475569;
+    font-size: 15.5px;
+    line-height: 1.8;
+}
+
+.story-html-content p {
+    margin-bottom: 14px;
+}
+
+.story-html-content ul,
+.story-html-content ol {
+    padding-left: 24px;
+    margin-bottom: 14px;
+}
+
+.story-html-content li {
+    margin-bottom: 6px;
+}
+
+.story-html-content strong {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.mv-html-content {
+    color: #475569;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.mv-html-content p {
+    margin-bottom: 10px;
+}
+
+.mv-html-content ul,
+.mv-html-content ol {
+    padding-left: 20px;
+    margin-bottom: 10px;
+}
+

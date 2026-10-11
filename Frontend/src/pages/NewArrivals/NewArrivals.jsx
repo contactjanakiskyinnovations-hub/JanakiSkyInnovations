@@ -27,7 +27,7 @@ const NewArrivals = () => {
             try {
                 const params = new URLSearchParams();
                 params.append('pageNumber', page);
-                params.append('limit', 8);
+                params.append('limit', 12);
                 params.append('collection', 'new-arrivals');
                 params.append('sortBy', filterState.sort || 'newest');
                 if (filterState.minPrice) params.append('minPrice', filterState.minPrice);

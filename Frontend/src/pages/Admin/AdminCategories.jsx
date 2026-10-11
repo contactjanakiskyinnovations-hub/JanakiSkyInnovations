@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Plus, Edit, Trash2, Layers, Loader2, X, Search, SlidersHorizontal, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Layers, Loader2, X, Search, SlidersHorizontal, CheckCircle, AlertCircle, ChevronUp, ChevronDown, Check } from 'lucide-react';
 import api from '../../utils/api';
+import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
 import './Admin.css';
 
 const AdminCategories = () => {
@@ -39,6 +40,13 @@ const AdminCategories = () => {
     const [newSubName, setNewSubName] = useState('');
     const [newSubSubName, setNewSubSubName] = useState('');
     const [activeSubIndex, setActiveSubIndex] = useState(0);
+
+    // Inline edit / rename helper states
+    const [editingSubIndex, setEditingSubIndex] = useState(null);
+    const [editingSubText, setEditingSubText] = useState('');
+    const [editingSubSubIndex, setEditingSubSubIndex] = useState(null);
+    const [editingSubSubText, setEditingSubSubText] = useState('');
+    const [renameMap, setRenameMap] = useState({ subCategories: [], subSubCategories: [] });
 
     const fetchCategories = useCallback(async (keyword = '') => {
         setLoading(true);
@@ -110,6 +118,11 @@ const AdminCategories = () => {
         setActiveSubIndex(0);
         setNewSubName('');
         setNewSubSubName('');
+        setEditingSubIndex(null);
+        setEditingSubText('');
+        setEditingSubSubIndex(null);
+        setEditingSubSubText('');
+        setRenameMap({ subCategories: [], subSubCategories: [] });
         setIsModalOpen(true);
     };
 
@@ -126,6 +139,11 @@ const AdminCategories = () => {
         setActiveSubIndex(0);
         setNewSubName('');
         setNewSubSubName('');
+        setEditingSubIndex(null);
+        setEditingSubText('');
+        setEditingSubSubIndex(null);
+        setEditingSubSubText('');
+        setRenameMap({ subCategories: [], subSubCategories: [] });
         setIsModalOpen(true);
     };
 
@@ -149,6 +167,24 @@ const AdminCategories = () => {
         setCategoryForm({ ...categoryForm, subCategories: updatedSubs });
         if (activeSubIndex >= updatedSubs.length) {
             setActiveSubIndex(Math.max(0, updatedSubs.length - 1));
+        }
+    };
+
+    const handleMoveSubCategory = (index, direction) => {
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= categoryForm.subCategories.length) return;
+
+        const updatedSubs = [...categoryForm.subCategories];
+        const [movedItem] = updatedSubs.splice(index, 1);
+        updatedSubs.splice(newIndex, 0, movedItem);
+
+        setCategoryForm({ ...categoryForm, subCategories: updatedSubs });
+
+        // Keep active selection tracked with the item or swapped position
+        if (activeSubIndex === index) {
+            setActiveSubIndex(newIndex);
+        } else if (activeSubIndex === newIndex) {
+            setActiveSubIndex(index);
         }
     };
 
@@ -191,6 +227,133 @@ const AdminCategories = () => {
         setCategoryForm({ ...categoryForm, subCategories: updatedSubs });
     };
 
+    const handleMoveSubSubCategory = (subSubIndex, direction) => {
+        const currentSub = categoryForm.subCategories[activeSubIndex];
+        if (!currentSub || !currentSub.subSubCategories) return;
+
+        const list = currentSub.subSubCategories;
+        const newIndex = subSubIndex + direction;
+        if (newIndex < 0 || newIndex >= list.length) return;
+
+        const updatedList = [...list];
+        const [movedItem] = updatedList.splice(subSubIndex, 1);
+        updatedList.splice(newIndex, 0, movedItem);
+
+        const updatedSubs = categoryForm.subCategories.map((sub, i) => {
+            if (i === activeSubIndex) {
+                return {
+                    ...sub,
+                    subSubCategories: updatedList
+                };
+            }
+            return sub;
+        });
+        setCategoryForm({ ...categoryForm, subCategories: updatedSubs });
+    };
+
+    // Inline edit / rename handlers
+    const handleStartEditSubCategory = (index, e) => {
+        if (e) e.stopPropagation();
+        setEditingSubIndex(index);
+        setEditingSubText(categoryForm.subCategories[index].name);
+    };
+
+    const handleSaveEditSubCategory = (index, e) => {
+        if (e) e.stopPropagation();
+        const trimmed = editingSubText.trim();
+        if (!trimmed) {
+            setEditingSubIndex(null);
+            return;
+        }
+        const currentSub = categoryForm.subCategories[index];
+        if (trimmed !== currentSub.name) {
+            const isDuplicate = categoryForm.subCategories.some((sub, i) => i !== index && sub.name.toLowerCase() === trimmed.toLowerCase());
+            if (isDuplicate) {
+                alert('A sub-category with this name already exists.');
+                return;
+            }
+
+            setRenameMap(prev => {
+                const list = [...prev.subCategories];
+                const existing = list.find(r => r.newName === currentSub.name);
+                if (existing) {
+                    existing.newName = trimmed;
+                } else {
+                    list.push({ oldName: currentSub.name, newName: trimmed });
+                }
+                return { ...prev, subCategories: list };
+            });
+
+            const updatedSubs = categoryForm.subCategories.map((sub, i) => {
+                if (i === index) {
+                    return { ...sub, name: trimmed };
+                }
+                return sub;
+            });
+            setCategoryForm({ ...categoryForm, subCategories: updatedSubs });
+        }
+        setEditingSubIndex(null);
+    };
+
+    const handleCancelEditSubCategory = (e) => {
+        if (e) e.stopPropagation();
+        setEditingSubIndex(null);
+    };
+
+    const handleStartEditSubSubCategory = (idx, e) => {
+        if (e) e.stopPropagation();
+        const currentSub = categoryForm.subCategories[activeSubIndex];
+        if (!currentSub || !currentSub.subSubCategories) return;
+        setEditingSubSubIndex(idx);
+        setEditingSubSubText(currentSub.subSubCategories[idx]);
+    };
+
+    const handleSaveEditSubSubCategory = (idx, e) => {
+        if (e) e.stopPropagation();
+        const currentSub = categoryForm.subCategories[activeSubIndex];
+        if (!currentSub || !currentSub.subSubCategories) return;
+        const trimmed = editingSubSubText.trim();
+        if (!trimmed) {
+            setEditingSubSubIndex(null);
+            return;
+        }
+        const oldSubSub = currentSub.subSubCategories[idx];
+        if (trimmed !== oldSubSub) {
+            const isDuplicate = currentSub.subSubCategories.some((name, i) => i !== idx && name.toLowerCase() === trimmed.toLowerCase());
+            if (isDuplicate) {
+                alert('A sub-sub-category with this name already exists.');
+                return;
+            }
+
+            setRenameMap(prev => {
+                const list = [...prev.subSubCategories];
+                const existing = list.find(r => r.subCategory === currentSub.name && r.newName === oldSubSub);
+                if (existing) {
+                    existing.newName = trimmed;
+                } else {
+                    list.push({ subCategory: currentSub.name, oldName: oldSubSub, newName: trimmed });
+                }
+                return { ...prev, subSubCategories: list };
+            });
+
+            const updatedSubs = categoryForm.subCategories.map((sub, i) => {
+                if (i === activeSubIndex) {
+                    const updatedList = [...sub.subSubCategories];
+                    updatedList[idx] = trimmed;
+                    return { ...sub, subSubCategories: updatedList };
+                }
+                return sub;
+            });
+            setCategoryForm({ ...categoryForm, subCategories: updatedSubs });
+        }
+        setEditingSubSubIndex(null);
+    };
+
+    const handleCancelEditSubSubCategory = (e) => {
+        if (e) e.stopPropagation();
+        setEditingSubSubIndex(null);
+    };
+
     const handleSaveCategory = async () => {
         if (!categoryForm.name || !categoryForm.slug) {
             alert('Name and Slug are required');
@@ -215,7 +378,7 @@ const AdminCategories = () => {
                 });
                 imageUrl = data.url;
             }
-            const categoryPayload = { ...categoryForm, image: imageUrl };
+            const categoryPayload = { ...categoryForm, image: imageUrl, renameMap };
             delete categoryPayload.pendingImage;
 
                         if (editingCategory) {
@@ -231,6 +394,9 @@ const AdminCategories = () => {
             setIsModalOpen(false);
             setCategoryForm({ name: '', slug: '', description: '', image: '', isActive: true, subCategories: [] });
             setEditingCategory(null);
+            setRenameMap({ subCategories: [], subSubCategories: [] });
+            setEditingSubIndex(null);
+            setEditingSubSubIndex(null);
             fetchCategories();
         } catch (err) {
             setSaveError(err.response?.data?.message || 'Failed to save category');
@@ -438,12 +604,13 @@ const AdminCategories = () => {
                                 </div>
                                 <div className="input-group">
                                     <label>Description</label>
-                                    <textarea 
+                                    <RichTextEditor 
                                         value={categoryForm.description} 
-                                        onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })} 
-                                        rows="2"
-                                        placeholder="Detailed category specifications..."
-                                    ></textarea>
+                                        onChange={(val) => setCategoryForm({ ...categoryForm, description: val })} 
+                                        placeholder="Detailed category specifications and highlights..."
+                                        height="140px"
+                                        compact={true}
+                                    />
                                 </div>
                                 <div className="input-group">
                                     <label>Category Status</label>
@@ -529,7 +696,7 @@ const AdminCategories = () => {
                                                             display: 'flex', 
                                                             justifyContent: 'space-between', 
                                                             alignItems: 'center', 
-                                                            padding: '8px 10px', 
+                                                            padding: '7px 8px', 
                                                             borderRadius: '6px', 
                                                             background: activeSubIndex === index ? 'white' : 'transparent', 
                                                             border: activeSubIndex === index ? '1px solid #e2e8f0' : '1px solid transparent',
@@ -537,89 +704,393 @@ const AdminCategories = () => {
                                                             cursor: 'pointer',
                                                             fontWeight: activeSubIndex === index ? '700' : '500',
                                                             color: activeSubIndex === index ? 'var(--primary-orange)' : '#334155',
-                                                            fontSize: '13px'
+                                                            fontSize: '13px',
+                                                            gap: '6px'
                                                         }}
                                                     >
-                                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100px' }}>{sub.name}</span>
-                                                        <button 
-                                                            type="button" 
-                                                            onClick={(e) => { e.stopPropagation(); if (window.confirm(`Are you absolutely sure you want to delete the sub-category "${sub.name}"?`)) handleRemoveSubCategory(index); }} 
-                                                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
-                                                            onMouseOver={(e) => e.currentTarget.style.color = '#dc2626'}
-                                                            onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}
-                                                        >
-                                                            <Trash2 size={13} />
-                                                        </button>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Sub-Sub-categories List */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                        <label style={{ fontWeight: '700', fontSize: '12px', textTransform: 'uppercase', color: '#64748b' }}>
-                                            {categoryForm.subCategories[activeSubIndex] ? `Sub-Subs of "${categoryForm.subCategories[activeSubIndex].name}"` : 'Sub-Sub-Categories'}
-                                        </label>
-                                        {categoryForm.subCategories[activeSubIndex] ? (
-                                            <>
-                                                <div style={{ display: 'flex', gap: '5px' }}>
-                                                    <input 
-                                                        type="text" 
-                                                        value={newSubSubName} 
-                                                        onChange={(e) => setNewSubSubName(e.target.value)} 
-                                                        placeholder="Add Sub-Sub..." 
-                                                        style={{ padding: '8px 10px', fontSize: '13px', borderRadius: '6px', border: '1px solid #e2e8f0', flexGrow: 1 }}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') {
-                                                                e.preventDefault();
-                                                                handleAddSubSubCategory();
-                                                            }
-                                                        }}
-                                                    />
-                                                    <button 
-                                                        type="button" 
-                                                        onClick={handleAddSubSubCategory} 
-                                                        style={{ background: 'var(--primary-orange)', color: 'white', border: 'none', borderRadius: '6px', width: '32px', height: '35px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                    >
-                                                        <Plus size={16} />
-                                                    </button>
-                                                </div>
-                                                
-                                                <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '5px', maxHeight: '200px', overflowY: 'auto', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                                    {(categoryForm.subCategories[activeSubIndex].subSubCategories || []).length === 0 ? (
-                                                        <span style={{ fontSize: '12px', color: '#94a3b8', padding: '10px', textAlign: 'center' }}>No sub-sub categories.</span>
-                                                    ) : (
-                                                        categoryForm.subCategories[activeSubIndex].subSubCategories.map((subSub, idx) => (
-                                                            <div 
-                                                                key={idx} 
-                                                                style={{ 
-                                                                    display: 'flex', 
-                                                                    justifyContent: 'space-between', 
-                                                                    alignItems: 'center', 
-                                                                    padding: '8px 10px', 
-                                                                    borderRadius: '6px', 
-                                                                    background: 'white', 
-                                                                    border: '1px solid #e2e8f0',
-                                                                    fontSize: '13px',
-                                                                    color: '#334155'
+                                                    {editingSubIndex === index ? (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexGrow: 1, minWidth: 0 }} onClick={(e) => e.stopPropagation()}>
+                                                            <input
+                                                                type="text"
+                                                                autoFocus
+                                                                value={editingSubText}
+                                                                onChange={(e) => setEditingSubText(e.target.value)}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter') {
+                                                                        e.preventDefault();
+                                                                        handleSaveEditSubCategory(index, e);
+                                                                    } else if (e.key === 'Escape') {
+                                                                        e.preventDefault();
+                                                                        handleCancelEditSubCategory(e);
+                                                                    }
+                                                                }}
+                                                                style={{
+                                                                    padding: '4px 6px',
+                                                                    fontSize: '12.5px',
+                                                                    borderRadius: '4px',
+                                                                    border: '1px solid var(--primary-orange)',
+                                                                    outline: 'none',
+                                                                    flexGrow: 1,
+                                                                    minWidth: 0,
+                                                                    background: 'white'
+                                                                }}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => handleSaveEditSubCategory(index, e)}
+                                                                title="Confirm rename"
+                                                                style={{
+                                                                    background: '#22c55e',
+                                                                    color: 'white',
+                                                                    border: 'none',
+                                                                    borderRadius: '4px',
+                                                                    width: '22px',
+                                                                    height: '22px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    cursor: 'pointer',
+                                                                    flexShrink: 0
                                                                 }}
                                                             >
-                                                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100px' }}>{subSub}</span>
+                                                                <Check size={13} />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={handleCancelEditSubCategory}
+                                                                title="Cancel"
+                                                                style={{
+                                                                    background: '#e2e8f0',
+                                                                    color: '#64748b',
+                                                                    border: 'none',
+                                                                    borderRadius: '4px',
+                                                                    width: '22px',
+                                                                    height: '22px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    cursor: 'pointer',
+                                                                    flexShrink: 0
+                                                                }}
+                                                            >
+                                                                <X size={13} />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexGrow: 1, minWidth: 0 }} title={sub.name}>{sub.name}</span>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => handleStartEditSubCategory(index, e)}
+                                                                    title="Rename"
+                                                                    style={{
+                                                                        background: 'none',
+                                                                        border: 'none',
+                                                                        cursor: 'pointer',
+                                                                        color: '#64748b',
+                                                                        padding: '3px',
+                                                                        borderRadius: '4px',
+                                                                        display: 'inline-flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        transition: 'color 0.15s, background 0.15s'
+                                                                    }}
+                                                                    onMouseOver={(e) => { e.currentTarget.style.color = 'var(--primary-orange)'; e.currentTarget.style.background = '#fff7ed'; }}
+                                                                    onMouseOut={(e) => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.background = 'none'; }}
+                                                                >
+                                                                    <Edit size={13} />
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={index === 0}
+                                                                    onClick={() => handleMoveSubCategory(index, -1)}
+                                                                    title="Move Up"
+                                                                    style={{
+                                                                        background: 'none',
+                                                                        border: 'none',
+                                                                        cursor: index === 0 ? 'not-allowed' : 'pointer',
+                                                                        color: index === 0 ? '#cbd5e1' : '#64748b',
+                                                                        padding: '3px',
+                                                                        borderRadius: '4px',
+                                                                        display: 'inline-flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        transition: 'color 0.15s, background 0.15s'
+                                                                    }}
+                                                                    onMouseOver={(e) => { if (index !== 0) { e.currentTarget.style.color = 'var(--primary-orange)'; e.currentTarget.style.background = '#fff7ed'; } }}
+                                                                    onMouseOut={(e) => { e.currentTarget.style.color = index === 0 ? '#cbd5e1' : '#64748b'; e.currentTarget.style.background = 'none'; }}
+                                                                >
+                                                                    <ChevronUp size={15} />
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={index === categoryForm.subCategories.length - 1}
+                                                                    onClick={() => handleMoveSubCategory(index, 1)}
+                                                                    title="Move Down"
+                                                                    style={{
+                                                                        background: 'none',
+                                                                        border: 'none',
+                                                                        cursor: index === categoryForm.subCategories.length - 1 ? 'not-allowed' : 'pointer',
+                                                                        color: index === categoryForm.subCategories.length - 1 ? '#cbd5e1' : '#64748b',
+                                                                        padding: '3px',
+                                                                        borderRadius: '4px',
+                                                                        display: 'inline-flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        transition: 'color 0.15s, background 0.15s'
+                                                                    }}
+                                                                    onMouseOver={(e) => { if (index !== categoryForm.subCategories.length - 1) { e.currentTarget.style.color = 'var(--primary-orange)'; e.currentTarget.style.background = '#fff7ed'; } }}
+                                                                    onMouseOut={(e) => { e.currentTarget.style.color = index === categoryForm.subCategories.length - 1 ? '#cbd5e1' : '#64748b'; e.currentTarget.style.background = 'none'; }}
+                                                                >
+                                                                    <ChevronDown size={15} />
+                                                                </button>
                                                                 <button 
                                                                     type="button" 
-                                                                    onClick={() => { if (window.confirm(`Are you absolutely sure you want to delete the sub-sub-category "${subSub}"?`)) handleRemoveSubSubCategory(idx); }} 
-                                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
-                                                                    onMouseOver={(e) => e.currentTarget.style.color = '#dc2626'}
-                                                                    onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}
+                                                                    onClick={() => { if (window.confirm(`Are you absolutely sure you want to delete the sub-category "${sub.name}"?`)) handleRemoveSubCategory(index); }} 
+                                                                    title="Delete"
+                                                                    style={{
+                                                                        background: 'none',
+                                                                        border: 'none',
+                                                                        cursor: 'pointer',
+                                                                        color: '#94a3b8',
+                                                                        padding: '3px',
+                                                                        borderRadius: '4px',
+                                                                        display: 'inline-flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        transition: 'color 0.15s, background 0.15s'
+                                                                    }}
+                                                                    onMouseOver={(e) => { e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.background = '#fef2f2'; }}
+                                                                    onMouseOut={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.background = 'none'; }}
                                                                 >
                                                                     <Trash2 size={13} />
                                                                 </button>
                                                             </div>
-                                                        ))
+                                                        </>
                                                     )}
                                                 </div>
-                                            </>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Sub-Sub-categories List */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    <label style={{ fontWeight: '700', fontSize: '12px', textTransform: 'uppercase', color: '#64748b' }}>
+                                        {categoryForm.subCategories[activeSubIndex] ? `Sub-Subs of "${categoryForm.subCategories[activeSubIndex].name}"` : 'Sub-Sub-Categories'}
+                                    </label>
+                                    {categoryForm.subCategories[activeSubIndex] ? (
+                                        <>
+                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                <input 
+                                                    type="text" 
+                                                    value={newSubSubName} 
+                                                    onChange={(e) => setNewSubSubName(e.target.value)} 
+                                                    placeholder="Add Sub-Sub..." 
+                                                    style={{ padding: '8px 10px', fontSize: '13px', borderRadius: '6px', border: '1px solid #e2e8f0', flexGrow: 1 }}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            handleAddSubSubCategory();
+                                                        }
+                                                    }}
+                                                />
+                                                <button 
+                                                    type="button" 
+                                                    onClick={handleAddSubSubCategory} 
+                                                    style={{ background: 'var(--primary-orange)', color: 'white', border: 'none', borderRadius: '6px', width: '32px', height: '35px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                >
+                                                    <Plus size={16} />
+                                                </button>
+                                            </div>
+                                            
+                                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '5px', maxHeight: '200px', overflowY: 'auto', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                {(categoryForm.subCategories[activeSubIndex].subSubCategories || []).length === 0 ? (
+                                                    <span style={{ fontSize: '12px', color: '#94a3b8', padding: '10px', textAlign: 'center' }}>No sub-sub categories.</span>
+                                                ) : (
+                                                    categoryForm.subCategories[activeSubIndex].subSubCategories.map((subSub, idx) => (
+                                                        <div 
+                                                            key={idx} 
+                                                            style={{ 
+                                                                display: 'flex', 
+                                                                justifyContent: 'space-between', 
+                                                                alignItems: 'center', 
+                                                                padding: '7px 8px', 
+                                                                borderRadius: '6px', 
+                                                                background: 'white', 
+                                                                border: '1px solid #e2e8f0',
+                                                                fontSize: '13px',
+                                                                color: '#334155',
+                                                                gap: '6px'
+                                                            }}
+                                                        >
+                                                            {editingSubSubIndex === idx ? (
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexGrow: 1, minWidth: 0 }}>
+                                                                    <input
+                                                                        type="text"
+                                                                        autoFocus
+                                                                        value={editingSubSubText}
+                                                                        onChange={(e) => setEditingSubSubText(e.target.value)}
+                                                                        onKeyDown={(e) => {
+                                                                            if (e.key === 'Enter') {
+                                                                                e.preventDefault();
+                                                                                handleSaveEditSubSubCategory(idx, e);
+                                                                            } else if (e.key === 'Escape') {
+                                                                                e.preventDefault();
+                                                                                handleCancelEditSubSubCategory(e);
+                                                                            }
+                                                                        }}
+                                                                        style={{
+                                                                            padding: '4px 6px',
+                                                                            fontSize: '12.5px',
+                                                                            borderRadius: '4px',
+                                                                            border: '1px solid var(--primary-orange)',
+                                                                            outline: 'none',
+                                                                            flexGrow: 1,
+                                                                            minWidth: 0,
+                                                                            background: 'white'
+                                                                        }}
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => handleSaveEditSubSubCategory(idx, e)}
+                                                                        title="Confirm rename"
+                                                                        style={{
+                                                                            background: '#22c55e',
+                                                                            color: 'white',
+                                                                            border: 'none',
+                                                                            borderRadius: '4px',
+                                                                            width: '22px',
+                                                                            height: '22px',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center',
+                                                                            cursor: 'pointer',
+                                                                            flexShrink: 0
+                                                                        }}
+                                                                    >
+                                                                        <Check size={13} />
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={handleCancelEditSubSubCategory}
+                                                                        title="Cancel"
+                                                                        style={{
+                                                                            background: '#e2e8f0',
+                                                                            color: '#64748b',
+                                                                            border: 'none',
+                                                                            borderRadius: '4px',
+                                                                            width: '22px',
+                                                                            height: '22px',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center',
+                                                                            cursor: 'pointer',
+                                                                            flexShrink: 0
+                                                                        }}
+                                                                    >
+                                                                        <X size={13} />
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexGrow: 1, minWidth: 0 }} title={subSub}>{subSub}</span>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={(e) => handleStartEditSubSubCategory(idx, e)}
+                                                                            title="Rename"
+                                                                            style={{
+                                                                                background: 'none',
+                                                                                border: 'none',
+                                                                                cursor: 'pointer',
+                                                                                color: '#64748b',
+                                                                                padding: '3px',
+                                                                                borderRadius: '4px',
+                                                                                display: 'inline-flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                transition: 'color 0.15s, background 0.15s'
+                                                                            }}
+                                                                            onMouseOver={(e) => { e.currentTarget.style.color = 'var(--primary-orange)'; e.currentTarget.style.background = '#fff7ed'; }}
+                                                                            onMouseOut={(e) => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.background = 'none'; }}
+                                                                        >
+                                                                            <Edit size={13} />
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            disabled={idx === 0}
+                                                                            onClick={() => handleMoveSubSubCategory(idx, -1)}
+                                                                            title="Move Up"
+                                                                            style={{
+                                                                                background: 'none',
+                                                                                border: 'none',
+                                                                                cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                                                                                color: idx === 0 ? '#cbd5e1' : '#64748b',
+                                                                                padding: '3px',
+                                                                                borderRadius: '4px',
+                                                                                display: 'inline-flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                transition: 'color 0.15s, background 0.15s'
+                                                                            }}
+                                                                            onMouseOver={(e) => { if (idx !== 0) { e.currentTarget.style.color = 'var(--primary-orange)'; e.currentTarget.style.background = '#fff7ed'; } }}
+                                                                            onMouseOut={(e) => { e.currentTarget.style.color = idx === 0 ? '#cbd5e1' : '#64748b'; e.currentTarget.style.background = 'none'; }}
+                                                                        >
+                                                                            <ChevronUp size={15} />
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            disabled={idx === categoryForm.subCategories[activeSubIndex].subSubCategories.length - 1}
+                                                                            onClick={() => handleMoveSubSubCategory(idx, 1)}
+                                                                            title="Move Down"
+                                                                            style={{
+                                                                                background: 'none',
+                                                                                border: 'none',
+                                                                                cursor: idx === categoryForm.subCategories[activeSubIndex].subSubCategories.length - 1 ? 'not-allowed' : 'pointer',
+                                                                                color: idx === categoryForm.subCategories[activeSubIndex].subSubCategories.length - 1 ? '#cbd5e1' : '#64748b',
+                                                                                padding: '3px',
+                                                                                borderRadius: '4px',
+                                                                                display: 'inline-flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                transition: 'color 0.15s, background 0.15s'
+                                                                            }}
+                                                                            onMouseOver={(e) => { if (idx !== categoryForm.subCategories[activeSubIndex].subSubCategories.length - 1) { e.currentTarget.style.color = 'var(--primary-orange)'; e.currentTarget.style.background = '#fff7ed'; } }}
+                                                                            onMouseOut={(e) => { e.currentTarget.style.color = idx === categoryForm.subCategories[activeSubIndex].subSubCategories.length - 1 ? '#cbd5e1' : '#64748b'; e.currentTarget.style.background = 'none'; }}
+                                                                        >
+                                                                            <ChevronDown size={15} />
+                                                                        </button>
+                                                                        <button 
+                                                                            type="button" 
+                                                                            onClick={() => { if (window.confirm(`Are you absolutely sure you want to delete the sub-sub-category "${subSub}"?`)) handleRemoveSubSubCategory(idx); }} 
+                                                                            title="Delete"
+                                                                            style={{
+                                                                                background: 'none',
+                                                                                border: 'none',
+                                                                                cursor: 'pointer',
+                                                                                color: '#94a3b8',
+                                                                                padding: '3px',
+                                                                                borderRadius: '4px',
+                                                                                display: 'inline-flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                transition: 'color 0.15s, background 0.15s'
+                                                                            }}
+                                                                            onMouseOver={(e) => { e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.background = '#fef2f2'; }}
+                                                                            onMouseOut={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.background = 'none'; }}
+                                                                        >
+                                                                            <Trash2 size={13} />
+                                                                        </button>
+                                                                    </div>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </>
                                         ) : (
                                             <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '20px', background: '#f8fafc', textAlign: 'center', color: '#94a3b8', fontSize: '12px', flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 Select a sub-category first.

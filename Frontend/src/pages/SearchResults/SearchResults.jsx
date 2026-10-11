@@ -78,6 +78,7 @@ const SearchResults = () => {
             const params = new URLSearchParams();
             params.append('keyword', kw);
             params.append('pageNumber', pageNum);
+            params.append('limit', 12);
             if (filters.sort) params.append('sortBy', filters.sort);
             if (filters.minPrice) params.append('minPrice', filters.minPrice);
             if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);

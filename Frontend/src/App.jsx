@@ -19,6 +19,8 @@ import OurServices from "./pages/OurServices/OurServices";
 import Offers from "./pages/Offers/Offers";
 import SearchResults from "./pages/SearchResults/SearchResults";
 import AboutStore from "./pages/AboutStore/AboutStore";
+import SubCategoryPage from "./pages/SubCategoryPage/SubCategoryPage";
+
 
 import AdminLayout from "./pages/Admin/AdminLayout";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -77,6 +79,8 @@ const AppContent = () => {
               <Route path="/new-arrivals" element={<NewArrivals />} />
               <Route path="/best-sellers" element={<BestSellers />} />
               <Route path="/category/:id" element={<CategoryPage />} />
+              <Route path="/categories/:id" element={<SubCategoryPage />} />
+
               <Route path="/top-rated" element={<TopRated />} />
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/product/:id/related" element={<RelatedProducts />} />

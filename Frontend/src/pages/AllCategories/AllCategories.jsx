@@ -327,15 +327,17 @@ const AllCategories = () => {
 
             {/* Related Items Section */}
             {relatedLoading ? (
-                <div className="container" style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
                     <Loader2 className="spin" size={32} color="var(--primary-orange)" />
                 </div>
             ) : trendingProducts.length > 0 ? (
-                <ProductCarousel 
-                    title="Trending in these categories" 
-                    products={trendingProducts} 
-                    fullWidth={false} 
-                />
+                <div className="categories-trending-wrapper">
+                    <ProductCarousel 
+                        title="Trending in these categories" 
+                        products={trendingProducts} 
+                        fullWidth={true} 
+                    />
+                </div>
             ) : null}
         </div>
     );

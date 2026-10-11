@@ -1,119 +1,352 @@
+/* ============================================================
+   Category Banners Horizontal Automatic Slider
+   ============================================================ */
+
 .category-banners-section {
-    padding: 70px 4% 80px;
-    background: #fff;
-    border-bottom: 1px solid #eee;
+    padding: 60px 4% 70px;
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Section heading — kept consistent with the "Shop by top categories"
-   section right below (shared .section-title-clean pattern). */
+.category-banners-inner {
+    width: 100%;
+    margin: 0;
+}
+
+/* Header Group with Title & Slider Controls */
+.category-banners-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.category-banners-heading-group {
+    max-width: 700px;
+}
+
 .category-banners-section .section-title-clean {
     font-size: 28px;
     font-weight: 800;
-    color: var(--secondary-black);
+    color: var(--secondary-black, #1e293b);
     text-transform: uppercase;
     letter-spacing: -0.5px;
     position: relative;
     padding-left: 15px;
-    margin-bottom: 40px;
+    margin: 0 0 6px 0;
+    line-height: 1.2;
 }
 
 .category-banners-section .section-title-clean::before {
     content: '';
     position: absolute;
     left: 0;
-    top: 5px;
-    bottom: 5px;
+    top: 4px;
+    bottom: 4px;
     width: 5px;
-    background-color: var(--primary-orange);
+    background-color: var(--primary-orange, #ff8f00);
     border-radius: 4px;
 }
 
-/* Keep the banner grid from stretching too wide on large monitors. */
-.category-banners-section .category-banners-grid {
-    max-width: 1360px;
-    margin: 0 auto;
+.category-banners-subtitle {
+    font-size: 14.5px;
+    color: #64748b;
+    margin: 0;
+    padding-left: 15px;
+    font-weight: 500;
 }
 
-/* Flex layout: every banner card keeps the SAME size no matter how many
-   banners the CMS has — no ugly last-row stretching like CSS grid 1fr. */
-.category-banners-grid {
+/* Navigation Controls (Arrows + "All Categories" pill) */
+.category-banners-controls {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 26px;
+    align-items: center;
+    gap: 10px;
 }
 
-.category-banners-grid.single {
+.cat-nav-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    color: #334155;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
 }
 
+.cat-nav-btn:hover {
+    background: var(--primary-orange, #ff8f00);
+    border-color: var(--primary-orange, #ff8f00);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(255, 143, 0, 0.3);
+}
+
+.cat-nav-btn:active {
+    transform: translateY(0) scale(0.96);
+}
+
+.cat-view-all-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: 24px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--primary-orange, #ff8f00);
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    margin-left: 4px;
+}
+
+.cat-view-all-pill:hover {
+    background: var(--primary-orange, #ff8f00);
+    border-color: var(--primary-orange, #ff8f00);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 143, 0, 0.25);
+}
+
+/* Swiper Outer & Slider */
+.category-swiper-outer {
+    position: relative;
+    width: 100%;
+}
+
+.category-banners-swiper {
+    padding: 10px 4px 20px !important;
+    overflow: visible !important;
+}
+
+.category-banner-swiper-slide {
+    height: auto !important;
+    display: flex;
+}
+
+/* Card Styling */
 .category-banner-card {
-    display: block;
-    flex: 1 1 320px;
-    max-width: 440px;
-    min-width: 260px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
     text-decoration: none;
     color: inherit;
-    border-radius: 16px;
+    border-radius: 18px;
     overflow: hidden;
-    background: #fff;
-    border: 1px solid #eef2f7;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #ffffff;
+    border: 1.5px solid #edf2f7;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow 0.35s ease, 
+                border-color 0.35s ease;
 }
 
 .category-banner-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
+    transform: translateY(-7px);
+    box-shadow: 0 16px 36px rgba(255, 143, 0, 0.14), 0 4px 14px rgba(15, 23, 42, 0.08);
+    border-color: #ffd8bf;
 }
 
-/* Consistent image ratio so all banners line up perfectly,
-   whatever the uploaded image dimensions are. */
+/* Single card fallback layout */
+.category-banners-single-wrap {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Banner Image & Visuals */
 .category-banner-img {
     width: 100%;
     aspect-ratio: 16 / 9;
     overflow: hidden;
-    background: #f1f5f9;
+    position: relative;
+    background: #0f172a;
 }
 
 .category-banner-img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.35s ease;
+    display: block;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .category-banner-card:hover .category-banner-img img {
-    transform: scale(1.06);
+    transform: scale(1.07);
+}
+
+/* Image Hover Overlay */
+.category-banner-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(15, 23, 42, 0.65) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 12px 14px;
+}
+
+.category-banner-card:hover .category-banner-overlay {
+    opacity: 1;
+}
+
+.category-banner-badge {
+    background: var(--primary-orange, #ff8f00);
+    color: #ffffff;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+    transform: translateY(4px);
+    transition: transform 0.25s ease;
+}
+
+.category-banner-card:hover .category-banner-badge {
+    transform: translateY(0);
+}
+
+/* Footer / Title bar */
+.category-banner-footer {
+    padding: 14px 18px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #ffffff;
+    border-top: 1px solid #f8fafc;
+    flex-grow: 1;
 }
 
 .category-banner-title {
-    display: block;
-    padding: 15px 18px;
-    font-size: 16px;
+    font-size: 15.5px;
     font-weight: 700;
-    color: var(--secondary-black);
-    letter-spacing: 0.2px;
+    color: var(--secondary-black, #1e293b);
+    letter-spacing: 0.1px;
+    transition: color 0.25s ease;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.category-banner-card:hover .category-banner-title {
+    color: var(--primary-orange, #ff8f00);
+}
+
+.category-banner-action-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #f8fafc;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
+}
+
+.category-banner-card:hover .category-banner-action-icon {
+    background: var(--primary-orange, #ff8f00);
+    color: #ffffff;
+    transform: translateX(3px);
+}
+
+/* Pagination Dots */
+.category-swiper-pagination-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.cat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background: #cbd5e1;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-block;
+}
+
+.cat-dot:hover {
+    background: #94a3b8;
+}
+
+.cat-dot-active {
+    width: 26px;
+    background: var(--primary-orange, #ff8f00);
+    border-radius: 4px;
+}
+
+/* ============================================================
+   Responsive Breakpoints
+   ============================================================ */
+
+@media (max-width: 992px) {
+    .category-banners-section {
+        padding: 50px 4% 60px;
+    }
+    .category-banners-section .section-title-clean {
+        font-size: 24px;
+    }
+    .category-banner-footer {
+        padding: 12px 14px 14px;
+    }
+    .category-banner-title {
+        font-size: 14.5px;
+    }
 }
 
 @media (max-width: 768px) {
     .category-banners-section {
         padding: 40px 4% 50px;
     }
+    .category-banners-header {
+        margin-bottom: 20px;
+        align-items: flex-start;
+    }
+    .category-banners-heading-group {
+        width: 100%;
+    }
     .category-banners-section .section-title-clean {
-        font-size: 22px;
-        margin-bottom: 25px;
+        font-size: 21px;
     }
-    .category-banners-grid {
-        gap: 18px;
+    .category-banners-subtitle {
+        font-size: 13px;
+        padding-left: 12px;
     }
-    .category-banner-card {
-        flex: 0 1 100%;
-        min-width: 0;
-        max-width: 100%;
+    .category-banners-controls {
+        width: 100%;
+        justify-content: flex-end;
     }
-    .category-banner-img {
-        aspect-ratio: 16 / 10;
+    .cat-nav-btn {
+        width: 36px;
+        height: 36px;
+    }
+    .cat-view-all-pill {
+        padding: 7px 14px;
+        font-size: 12.5px;
     }
 }
 
@@ -121,8 +354,10 @@
     .category-banners-section {
         padding: 30px 4% 40px;
     }
+    .category-banner-card {
+        border-radius: 14px;
+    }
     .category-banner-title {
-        padding: 12px 14px;
-        font-size: 14.5px;
+        font-size: 13.5px;
     }
 }

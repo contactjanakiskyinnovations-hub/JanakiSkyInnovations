@@ -1,5 +1,6 @@
 // Express 5 natively handles async errors — asyncHandler is not needed
 const Category = require('../models/Category');
+const Product = require('../models/Product');
 const { deleteFilesInFolder, resolveImageKitFolder } = require('../utils/imagekitHelpers');
 
 // @desc    Get all categories (nested format)
@@ -64,11 +65,14 @@ const createCategory = async (req, res) => {
 // @route   PUT /api/categories/:id
 // @access  Private/Admin
 const updateCategory = async (req, res) => {
-    const { name, slug, description, image, subCategories, isActive } = req.body;
+    const { name, slug, description, image, subCategories, isActive, renameMap } = req.body;
 
     const category = await Category.findById(req.params.id);
 
     if (category) {
+        const oldCategoryName = category.name;
+        const oldSubCategories = category.subCategories ? [...category.subCategories] : [];
+
         category.name = name || category.name;
         category.slug = slug || category.slug;
         category.description = description !== undefined ? description : category.description;
@@ -77,6 +81,92 @@ const updateCategory = async (req, res) => {
         category.subCategories = subCategories !== undefined ? subCategories : category.subCategories;
 
         const updatedCategory = await category.save();
+
+        const targetCategory = (name && name.trim()) || oldCategoryName;
+
+        // 1. Cascade main category rename to existing products if changed
+        if (name && name.trim() && name.trim() !== oldCategoryName) {
+            try {
+                await Product.updateMany(
+                    { category: oldCategoryName },
+                    { $set: { category: name.trim() } }
+                );
+            } catch (err) {
+                console.error('Failed to cascade main category rename to products:', err);
+            }
+        }
+
+        // 2. Cascade subcategory renames via explicit renameMap
+        if (renameMap) {
+            if (Array.isArray(renameMap.subCategories)) {
+                for (const item of renameMap.subCategories) {
+                    if (item.oldName && item.newName && item.oldName.trim() !== item.newName.trim()) {
+                        try {
+                            await Product.updateMany(
+                                {
+                                    $or: [
+                                        { category: oldCategoryName, subCategory: item.oldName.trim() },
+                                        { category: targetCategory, subCategory: item.oldName.trim() }
+                                    ]
+                                },
+                                { $set: { subCategory: item.newName.trim() } }
+                            );
+                        } catch (err) {
+                            console.error(`Failed to cascade subCategory rename "${item.oldName}" -> "${item.newName}":`, err);
+                        }
+                    }
+                }
+            }
+
+            if (Array.isArray(renameMap.subSubCategories)) {
+                for (const item of renameMap.subSubCategories) {
+                    if (item.oldName && item.newName && item.oldName.trim() !== item.newName.trim()) {
+                        try {
+                            const query = {
+                                $or: [
+                                    { category: oldCategoryName, subSubCategory: item.oldName.trim() },
+                                    { category: targetCategory, subSubCategory: item.oldName.trim() }
+                                ]
+                            };
+                            if (item.subCategory) {
+                                query.subCategory = item.subCategory;
+                            }
+                            await Product.updateMany(
+                                query,
+                                { $set: { subSubCategory: item.newName.trim() } }
+                            );
+                        } catch (err) {
+                            console.error(`Failed to cascade subSubCategory rename "${item.oldName}" -> "${item.newName}":`, err);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Auto-detect subcategory rename via _id comparison as fallback
+        if (Array.isArray(subCategories) && oldSubCategories.length > 0) {
+            for (const newSub of subCategories) {
+                if (newSub && newSub._id) {
+                    const matchOld = oldSubCategories.find(s => s._id && s._id.toString() === newSub._id.toString());
+                    if (matchOld && matchOld.name && newSub.name && matchOld.name.trim() !== newSub.name.trim()) {
+                        try {
+                            await Product.updateMany(
+                                {
+                                    $or: [
+                                        { category: oldCategoryName, subCategory: matchOld.name.trim() },
+                                        { category: targetCategory, subCategory: matchOld.name.trim() }
+                                    ]
+                                },
+                                { $set: { subCategory: newSub.name.trim() } }
+                            );
+                        } catch (err) {
+                            console.error(`Failed to cascade subCategory rename via _id "${matchOld.name}" -> "${newSub.name}":`, err);
+                        }
+                    }
+                }
+            }
+        }
+
         res.json(updatedCategory);
     } else {
         res.status(404);

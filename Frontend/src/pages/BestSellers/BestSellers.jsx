@@ -27,7 +27,7 @@ const BestSellers = () => {
             try {
                 const params = new URLSearchParams();
                 params.append('pageNumber', page);
-                params.append('limit', 8);
+                params.append('limit', 12);
                 params.append('collection', 'best-sellers');
                 params.append('sortBy', filterState.sort || 'best-sellers');
                 if (filterState.minPrice) params.append('minPrice', filterState.minPrice);

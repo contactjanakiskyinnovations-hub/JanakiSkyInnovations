@@ -794,3 +794,57 @@
         justify-content: center;
     }
 }
+
+/* Rich Text / Quill Content Styling in Product Detail */
+.overview-html-content,
+.key-features-html-content,
+.in-box-html-content,
+.instruction-html-content {
+    color: #334155;
+    font-size: 14.5px;
+    line-height: 1.7;
+}
+
+.overview-html-content p,
+.key-features-html-content p,
+.in-box-html-content p,
+.instruction-html-content p {
+    margin-bottom: 10px;
+}
+
+.overview-html-content ul,
+.key-features-html-content ul,
+.in-box-html-content ul,
+.instruction-html-content ul,
+.overview-html-content ol,
+.key-features-html-content ol,
+.in-box-html-content ol,
+.instruction-html-content ol {
+    padding-left: 24px;
+    margin-bottom: 12px;
+}
+
+.overview-html-content li,
+.key-features-html-content li,
+.in-box-html-content li,
+.instruction-html-content li {
+    margin-bottom: 6px;
+}
+
+.overview-html-content strong,
+.key-features-html-content strong,
+.in-box-html-content strong,
+.instruction-html-content strong {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.overview-html-content blockquote,
+.instruction-html-content blockquote {
+    border-left: 4px solid var(--primary-orange);
+    padding-left: 12px;
+    color: #64748b;
+    margin: 12px 0;
+    font-style: italic;
+}
+

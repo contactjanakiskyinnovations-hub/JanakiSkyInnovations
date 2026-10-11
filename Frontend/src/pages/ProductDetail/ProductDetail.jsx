@@ -160,9 +160,19 @@ const ProductDetail = () => {
         toggleWishlist(product);
     };
 
-    // Parse description for paragraph splitting or bullet points
+    // Parse description for rich HTML or legacy plain text bullet points
     const renderDescription = () => {
         if (!product.description) return null;
+
+        // If content contains HTML tags from Quill
+        if (/<[a-z][\s\S]*>/i.test(product.description)) {
+            return (
+                <div 
+                    className="overview-html-content"
+                    dangerouslySetInnerHTML={{ __html: product.description }} 
+                />
+            );
+        }
         
         const lines = product.description.split('\n').map(l => l.trim()).filter(Boolean);
         return lines.map((line, idx) => {
@@ -191,7 +201,7 @@ const ProductDetail = () => {
         });
     };
 
-    // Render In the Box items list
+    // Render In the Box items list (HTML or plain text)
     const renderInTheBox = () => {
         if (!product.inTheBox) {
             return (
@@ -199,6 +209,15 @@ const ProductDetail = () => {
                     <Info size={18} />
                     <span>Refer to the product manual for standard package details.</span>
                 </div>
+            );
+        }
+
+        if (/<[a-z][\s\S]*>/i.test(product.inTheBox)) {
+            return (
+                <div 
+                    className="in-box-html-content"
+                    dangerouslySetInnerHTML={{ __html: product.inTheBox }}
+                />
             );
         }
         
@@ -283,7 +302,7 @@ const ProductDetail = () => {
                                 <span className="detail-old-price">{formatINR(withVat(product.oldPrice || product.price), { decimals: false })}</span>
                             )}
                             <div className="detail-current-price-row">
-                                <span className="detail-current-price">{formatINR(withVat(product.discountPrice > 0 && product.discountPrice < product.price ? product.discountPrice : product.price))}</span>
+                                <span className="detail-current-price">{formatINR(withVat(product.discountPrice > 0 && product.discountPrice < product.price ? product.discountPrice : product.price), { decimals: false })}</span>
                                 <span className="detail-gst-text">(VAT Included)</span>
                             </div>
                         </div>
@@ -392,22 +411,29 @@ const ProductDetail = () => {
                                     <h2>Key Features</h2>
                                 </div>
                                 <div className="card-body">
-                                    <div className="key-features-list">
-                                        {product.keyFeatures
-                                            .split('\n')
-                                            .map(f => f.trim())
-                                            .filter(f => f.length > 0)
-                                            .map((feature, idx) => {
-                                                const cleanFeature = feature.startsWith('●') ? feature.substring(1).trim() : feature;
-                                                if (!cleanFeature) return null;
-                                                return (
-                                                    <div key={idx} className="key-feature-item">
-                                                        <span className="feature-number">{idx + 1}</span>
-                                                        <p>{cleanFeature}</p>
-                                                    </div>
-                                                );
-                                            })}
-                                    </div>
+                                    {/<[a-z][\s\S]*>/i.test(product.keyFeatures) ? (
+                                        <div 
+                                            className="key-features-html-content"
+                                            dangerouslySetInnerHTML={{ __html: product.keyFeatures }}
+                                        />
+                                    ) : (
+                                        <div className="key-features-list">
+                                            {product.keyFeatures
+                                                .split('\n')
+                                                .map(f => f.trim())
+                                                .filter(f => f.length > 0)
+                                                .map((feature, idx) => {
+                                                    const cleanFeature = feature.startsWith('●') ? feature.substring(1).trim() : feature;
+                                                    if (!cleanFeature) return null;
+                                                    return (
+                                                        <div key={idx} className="key-feature-item">
+                                                            <span className="feature-number">{idx + 1}</span>
+                                                            <p>{cleanFeature}</p>
+                                                        </div>
+                                                    );
+                                                })}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ) : null}
@@ -432,6 +458,14 @@ const ProductDetail = () => {
                                 >
                                     Specifications
                                 </button>
+                                {(product.howToUse?.trim() || product.assemblyMaintenance?.trim()) && (
+                                    <button 
+                                        className={`tab-nav-btn ${activeTab === 'instructions' ? 'active' : ''}`}
+                                        onClick={() => setActiveTab('instructions')}
+                                    >
+                                        Instructions & Guide
+                                    </button>
+                                )}
                                 {hasComparisonTable && (
                                     <button 
                                         className={`tab-nav-btn ${activeTab === 'comparison' ? 'active' : ''}`}
@@ -485,6 +519,31 @@ const ProductDetail = () => {
                                                 </tbody>
                                             </table>
                                         </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'instructions' && (
+                                    <div className="instructions-tab-view animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                        {product.howToUse?.trim() && (
+                                            <div className="instruction-block">
+                                                <h4 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '10px', color: '#1e293b' }}>How to Use</h4>
+                                                {/<[a-z][\s\S]*>/i.test(product.howToUse) ? (
+                                                    <div className="instruction-html-content" dangerouslySetInnerHTML={{ __html: product.howToUse }} />
+                                                ) : (
+                                                    <p style={{ whiteSpace: 'pre-line', lineHeight: '1.6', color: '#475569' }}>{product.howToUse}</p>
+                                                )}
+                                            </div>
+                                        )}
+                                        {product.assemblyMaintenance?.trim() && (
+                                            <div className="instruction-block" style={{ borderTop: product.howToUse?.trim() ? '1px solid #f1f5f9' : 'none', paddingTop: product.howToUse?.trim() ? '16px' : '0' }}>
+                                                <h4 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '10px', color: '#1e293b' }}>Assembly & Maintenance</h4>
+                                                {/<[a-z][\s\S]*>/i.test(product.assemblyMaintenance) ? (
+                                                    <div className="instruction-html-content" dangerouslySetInnerHTML={{ __html: product.assemblyMaintenance }} />
+                                                ) : (
+                                                    <p style={{ whiteSpace: 'pre-line', lineHeight: '1.6', color: '#475569' }}>{product.assemblyMaintenance}</p>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 

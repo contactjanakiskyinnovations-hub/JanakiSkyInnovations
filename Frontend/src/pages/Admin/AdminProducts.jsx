@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, Search, Filter, Edit, Trash2, ExternalLink, Loader2, X, SlidersHorizontal, Columns3, MoreVertical, MessageSquare, Star, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import api from '../../utils/api';
+import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
 import './Admin.css';
 
 
@@ -882,21 +883,22 @@ const AdminProducts = () => {
 
                             <div className="input-group" style={{ gridColumn: 'span 2' }}>
                                 <label>Product Description</label>
-                                <textarea 
+                                <RichTextEditor 
                                     value={productForm.description} 
-                                    onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} 
-                                    rows="3"
+                                    onChange={(val) => setProductForm({ ...productForm, description: val })} 
                                     placeholder="Detailed descriptive outline..."
-                                ></textarea>
+                                    height="200px"
+                                />
                             </div>
                             <div className="input-group" style={{ gridColumn: 'span 2' }}>
                                 <label>Short Summary</label>
-                                <textarea 
+                                <RichTextEditor 
                                     value={productForm.shortSummary} 
-                                    onChange={(e) => setProductForm({ ...productForm, shortSummary: e.target.value })} 
-                                    rows="2"
+                                    onChange={(val) => setProductForm({ ...productForm, shortSummary: val })} 
                                     placeholder="Brief product summary for the detail page..."
-                                ></textarea>
+                                    height="120px"
+                                    compact={true}
+                                />
                             </div>
 
                             <div className="input-group" style={{ gridColumn: 'span 2' }}>
@@ -996,44 +998,42 @@ const AdminProducts = () => {
 
                             <div className="input-group" style={{ gridColumn: 'span 2' }}>
                                 <label>How to Use Instructions</label>
-                                <textarea 
+                                <RichTextEditor 
                                     value={productForm.howToUse} 
-                                    onChange={(e) => setProductForm({ ...productForm, howToUse: e.target.value })} 
-                                    rows="4"
+                                    onChange={(val) => setProductForm({ ...productForm, howToUse: val })} 
                                     placeholder="Step-by-step product guidelines..."
-                                ></textarea>
+                                    height="180px"
+                                />
                             </div>
 
                             <div className="input-group" style={{ gridColumn: 'span 2' }}>
                                 <label>Assembly & Maintenance Guide</label>
-                                <textarea 
+                                <RichTextEditor 
                                     value={productForm.assemblyMaintenance} 
-                                    onChange={(e) => setProductForm({ ...productForm, assemblyMaintenance: e.target.value })} 
-                                    rows="3"
+                                    onChange={(val) => setProductForm({ ...productForm, assemblyMaintenance: val })} 
                                     placeholder="Pre-assembly status, maintenance check procedures..."
-                                ></textarea>
+                                    height="180px"
+                                />
                             </div>
 
                             <div className="input-group" style={{ gridColumn: 'span 2' }}>
                                 <label>Key Features</label>
-                                <textarea 
+                                <RichTextEditor 
                                     value={productForm.keyFeatures} 
-                                    onChange={(e) => setProductForm({ ...productForm, keyFeatures: e.target.value })} 
-                                    rows="5"
-                                    placeholder={`● Ultra-lightweight design (~135g) – easy to carry.\n● 4K video with stabilization.\n● 18 minutes flight time per battery.`}
-                                ></textarea>
-                                <small style={{ color: '#94a3b8', fontSize: '12px', marginTop: '4px', display: 'block' }}>Each feature on its own line. Start with ● for bullet styling.</small>
+                                    onChange={(val) => setProductForm({ ...productForm, keyFeatures: val })} 
+                                    placeholder="List features using bullet points or paragraphs..."
+                                    height="200px"
+                                />
                             </div>
 
                             <div className="input-group" style={{ gridColumn: 'span 2' }}>
                                 <label>Accessorise in the Box</label>
-                                <textarea 
+                                <RichTextEditor 
                                     value={productForm.inTheBox} 
-                                    onChange={(e) => setProductForm({ ...productForm, inTheBox: e.target.value })} 
-                                    rows="5"
-                                    placeholder={`● DJI Neo Aircraft\n● Intelligent Flight Battery\n● Propeller Guards (Pair)\n● Quick Start Guide`}
-                                ></textarea>
-                                <small style={{ color: '#94a3b8', fontSize: '12px', marginTop: '4px', display: 'block' }}>Each item on its own line. Start with ● for bullet styling.</small>
+                                    onChange={(val) => setProductForm({ ...productForm, inTheBox: val })} 
+                                    placeholder="List package contents (e.g. Drone Aircraft, Batteries, Cables, Manual)..."
+                                    height="180px"
+                                />
                             </div>
 
                             <div className="input-group" style={{ gridColumn: 'span 2' }}>
