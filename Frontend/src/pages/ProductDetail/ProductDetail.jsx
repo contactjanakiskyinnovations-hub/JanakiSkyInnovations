@@ -493,20 +493,6 @@ const ProductDetail = () => {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr>
-                                                        <td><strong>Model SKU</strong></td>
-                                                        <td>{product.sku}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Main Category</strong></td>
-                                                        <td>{product.category?.name || product.category || 'N/A'}</td>
-                                                    </tr>
-                                                    {product.subCategory && (
-                                                        <tr>
-                                                            <td><strong>Sub-Category</strong></td>
-                                                            <td>{product.subCategory}</td>
-                                                        </tr>
-                                                    )}
                                                     {product.specifications && Object.entries(product.specifications).length > 0 ? (
                                                         Object.entries(product.specifications).map(([key, value]) => (
                                                             <tr key={key}>

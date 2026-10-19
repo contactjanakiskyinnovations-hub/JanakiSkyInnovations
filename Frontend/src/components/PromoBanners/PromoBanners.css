@@ -228,8 +228,12 @@
 }
 
 .promo-overlay-desc p {
-    margin: 0;
-    display: inline;
+    margin: 0 0 4px 0;
+    min-height: 1.25em;
+}
+
+.promo-overlay-desc p:last-child {
+    margin-bottom: 0;
 }
 
 .promo-overlay-desc strong {

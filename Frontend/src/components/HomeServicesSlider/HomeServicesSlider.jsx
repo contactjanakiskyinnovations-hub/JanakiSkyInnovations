@@ -23,6 +23,7 @@ const DEFAULT_SERVICES = [
     {
         title: 'Industrial & Agricultural UAV Spraying',
         category: 'Agricultural Drones',
+        categorySlug: 'agricultural-drones',
         iconName: 'Wind',
         description: 'Automated precision crop spraying, multispectral orchard mapping, and pest control using heavy-payload multi-rotor UAV systems.',
         features: ['Up to 25L Payload Tanks', 'Autonomous GPS Waypoints', '98% Drift Reduction Tech'],
@@ -31,6 +32,7 @@ const DEFAULT_SERVICES = [
     {
         title: 'Aerial Cinematography & Flower Showering',
         category: 'Events & Celebrations',
+        categorySlug: 'events-celebrations',
         iconName: 'Sparkles',
         description: 'Spectacular floral showers for grand celebrations, religious ceremonies, and cinematic 4K FPV aerial media capture.',
         features: ['Automated Flower Dispersion Mechanism', 'Custom Height & Drop Scheduling', 'Redundant Safety Parachutes'],
@@ -39,6 +41,7 @@ const DEFAULT_SERVICES = [
     {
         title: 'Custom Drone Assembly & STEM Robotics',
         category: 'Engineering & DIY',
+        categorySlug: 'engineering-diy',
         iconName: 'Hammer',
         description: 'Bespoke carbon-fiber frame builds, brushless motor calibration, flight controller tuning, and institutional STEM lab kits.',
         features: ['Precision CNC Carbon Fiber', 'Custom ESC & Firmware Flash', 'Complete Bench Testing & QA'],
@@ -47,6 +50,7 @@ const DEFAULT_SERVICES = [
     {
         title: 'Security, Surveillance & Mapping',
         category: 'Inspection & GIS',
+        categorySlug: 'inspection-gis',
         iconName: 'Shield',
         description: 'Thermal imaging, perimeter patrol, stockpile volume estimation, and high-accuracy LiDAR mapping for enterprise infrastructure.',
         features: ['Dual Thermal & 4K Optical Gimbals', 'AES-256 Encrypted Telemetry', 'RTK Centimeter Accuracy'],
@@ -141,77 +145,87 @@ const HomeServicesSlider = ({ services = [] }) => {
                         }}
                         className="services-swiper"
                     >
-                        {effectiveServices.map((service, idx) => (
-                            <SwiperSlide key={idx} className="services-swiper-slide">
-                                <div className={`service-slider-card${service.image ? ' has-image' : ''}`}>
-                                    {service.image ? (
-                                        <div className="service-slider-img-wrap">
-                                            <img
-                                                src={service.image}
-                                                alt={service.title}
-                                                className="service-slider-img"
-                                                loading="lazy"
-                                            />
-                                            <div className="service-slider-img-overlay"></div>
-                                            {service.category && (
-                                                <span className="service-category-tag">
-                                                    {service.category}
-                                                </span>
-                                            )}
-                                            <div className="service-icon-floating-badge">
-                                                {getServiceIcon(service.iconName)}
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="service-slider-no-img-header">
-                                            <div className="service-icon-box-fallback">
-                                                {getServiceIcon(service.iconName)}
-                                            </div>
-                                            {service.category && (
-                                                <span className="service-category-tag no-img">
-                                                    {service.category}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <div className="service-slider-body">
-                                        <h3 className="service-slider-card-title">{service.title}</h3>
-                                        {service.description && (
-                                            /<[a-z][\s\S]*>/i.test(service.description) ? (
-                                                <div
-                                                    className="service-slider-desc service-slider-html-content"
-                                                    dangerouslySetInnerHTML={{ __html: service.description }}
-                                                />
+                        {effectiveServices.map((service, idx) => {
+                            const slug = service.categorySlug || service.category?.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || '';
+                            const targetUrl = `/services?category=${encodeURIComponent(slug)}&service=${encodeURIComponent(service.title || '')}`;
+                            return (
+                                <SwiperSlide key={idx} className="services-swiper-slide">
+                                    <div className={`service-slider-card${service.image ? ' has-image' : ''}`}>
+                                        <Link to={targetUrl} className="service-slider-card-media-link" aria-label={service.title}>
+                                            {service.image ? (
+                                                <div className="service-slider-img-wrap">
+                                                    <img
+                                                        src={service.image}
+                                                        alt={service.title}
+                                                        className="service-slider-img"
+                                                        loading="lazy"
+                                                    />
+                                                    <div className="service-slider-img-overlay"></div>
+                                                    {service.category && (
+                                                        <span className="service-category-tag">
+                                                            {service.category}
+                                                        </span>
+                                                    )}
+                                                    <div className="service-icon-floating-badge">
+                                                        {getServiceIcon(service.iconName)}
+                                                    </div>
+                                                </div>
                                             ) : (
-                                                <p className="service-slider-desc">{service.description}</p>
-                                            )
-                                        )}
+                                                <div className="service-slider-no-img-header">
+                                                    <div className="service-icon-box-fallback">
+                                                        {getServiceIcon(service.iconName)}
+                                                    </div>
+                                                    {service.category && (
+                                                        <span className="service-category-tag no-img">
+                                                            {service.category}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </Link>
 
-                                        {service.features && service.features.length > 0 && (
-                                            <ul className="service-slider-feature-list">
-                                                {service.features.slice(0, 3).map((feat, fIdx) => (
-                                                    <li key={fIdx}>
-                                                        <CheckCircle2 size={15} className="feature-check-icon" />
-                                                        <span>{feat}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
+                                        <div className="service-slider-body">
+                                            <h3 className="service-slider-card-title">
+                                                <Link to={targetUrl} className="service-title-link">
+                                                    {service.title}
+                                                </Link>
+                                            </h3>
+                                            {service.description && (
+                                                /<[a-z][\s\S]*>/i.test(service.description) ? (
+                                                    <div
+                                                        className="service-slider-desc service-slider-html-content"
+                                                        dangerouslySetInnerHTML={{ __html: service.description }}
+                                                    />
+                                                ) : (
+                                                    <p className="service-slider-desc">{service.description}</p>
+                                                )
+                                            )}
 
-                                        <div className="service-slider-action-wrap">
-                                            <Link
-                                                to={service.category ? `/services?category=${encodeURIComponent(service.category)}` : '/services'}
-                                                className="service-enquire-btn"
-                                            >
-                                                <span>Enquire Service</span>
-                                                <ArrowRight size={15} className="service-btn-arrow" />
-                                            </Link>
+                                            {service.features && service.features.length > 0 && (
+                                                <ul className="service-slider-feature-list">
+                                                    {service.features.slice(0, 3).map((feat, fIdx) => (
+                                                        <li key={fIdx}>
+                                                            <CheckCircle2 size={15} className="feature-check-icon" />
+                                                            <span>{feat}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+
+                                            <div className="service-slider-action-wrap">
+                                                <Link
+                                                    to={targetUrl}
+                                                    className="service-enquire-btn"
+                                                >
+                                                    <span>Enquire Service</span>
+                                                    <ArrowRight size={15} className="service-btn-arrow" />
+                                                </Link>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </SwiperSlide>
-                        ))}
+                                </SwiperSlide>
+                            );
+                        })}
                     </Swiper>
                     <div className="services-swiper-pagination-dots"></div>
                 </div>

@@ -129,10 +129,56 @@ const deleteFileByName = async (folderPath, name) => {
     return matches.length;
 };
 
+// Delete a file directly by its public ImageKit URL
+const deleteFileByUrl = async (url) => {
+    if (!url || typeof url !== 'string') return 0;
+    // Only attempt deletion for ImageKit-hosted URLs
+    if (!url.includes('imagekit.io')) return 0;
+
+    try {
+        const cleanUrl = url.split('?')[0];
+        const fileName = cleanUrl.split('/').pop();
+        if (!fileName) return 0;
+
+        // Try listing files with this name
+        const files = await imagekit.listFiles({ name: fileName, limit: 10 });
+        let deleted = 0;
+        if (files && files.length > 0) {
+            for (const file of files) {
+                try {
+                    await imagekit.deleteFile(file.fileId);
+                    deleted++;
+                } catch (delErr) {
+                    console.error(`[ImageKit] Failed to delete fileId ${file.fileId}:`, delErr.message);
+                }
+            }
+        }
+        return deleted;
+    } catch (err) {
+        console.error(`[ImageKit] Error in deleteFileByUrl for ${url}:`, err.message);
+        return 0;
+    }
+};
+
+// Delete an array of ImageKit URLs
+const deleteFilesByUrls = async (urls = []) => {
+    if (!Array.isArray(urls) || urls.length === 0) return 0;
+    let total = 0;
+    for (const u of urls) {
+        if (u) {
+            const count = await deleteFileByUrl(u);
+            total += count;
+        }
+    }
+    return total;
+};
+
 module.exports = {
     sanitizeSegment,
     resolveImageKitFolder,
     extensionForMime,
     deleteFilesInFolder,
     deleteFileByName,
+    deleteFileByUrl,
+    deleteFilesByUrls,
 };

@@ -1,5 +1,24 @@
 // Express 5 natively handles async errors — asyncHandler is not needed
 const HomeSettings = require('../models/HomeSettings');
+const { deleteFileByUrl, deleteFilesByUrls } = require('../utils/imagekitHelpers');
+
+// Helper to collect all image URLs from a settings object
+const collectAllImages = (obj) => {
+    if (!obj) return [];
+    const imgs = [
+        obj.logoImage,
+        ...((obj.heroSliders || []).map((s) => s?.image)),
+        ...((obj.promoBanners || []).map((p) => p?.image)),
+        ...((obj.featuredCategories || []).map((f) => f?.image)),
+        ...((obj.categoryBanners || []).map((b) => b?.image)),
+        ...((obj.offers?.bundleDeals || []).map((b) => b?.image)),
+        ...((obj.services || []).map((s) => s?.image)),
+        ...((obj.serviceCategories || []).flatMap((c) => (c.services || []).map((s) => s?.image))),
+        obj.aboutStore?.bannerImage,
+        obj.aboutStore?.storeImage,
+    ];
+    return imgs.filter((url) => typeof url === 'string' && url.trim().length > 0);
+};
 
 // @desc    Get Home Settings
 // @route   GET /api/cms
@@ -25,25 +44,11 @@ const getHomeSettings = async (req, res) => {
 // @access  Private/Admin
 const updateHomeSettings = async (req, res) => {
     try {
-                let settings = await HomeSettings.findOne();
+        let settings = await HomeSettings.findOne();
 
-        // Capture OLD image signature BEFORE merge so we can detect changes
-        // and bump the version counter when any CMS-managed image URL changes.
-        const imageSignature = (obj) => {
-            const imgs = [
-                obj?.logoImage,
-                ...((obj?.heroSliders || []).map((s) => s?.image).filter(Boolean)),
-                ...((obj?.promoBanners || []).map((p) => p?.image).filter(Boolean)),
-                ...((obj?.featuredCategories || []).map((f) => f?.image).filter(Boolean)),
-                ...((obj?.categoryBanners || []).map((b) => b?.image).filter(Boolean)),
-                ...((obj?.offers?.bundleDeals || []).map((b) => b?.image).filter(Boolean)),
-                obj?.aboutStore?.bannerImage,
-                obj?.aboutStore?.storeImage,
-            ].filter(Boolean).sort();
-            return imgs.join('|');
-        };
-
-        const oldSignature = settings ? imageSignature(settings.toObject()) : '';
+        // Capture OLD image list BEFORE merge so we can detect changes
+        const oldImages = settings ? collectAllImages(settings.toObject()) : [];
+        const oldSignature = oldImages.slice().sort().join('|');
 
         if (!settings) {
             // Create new settings with provided data
@@ -66,8 +71,31 @@ const updateHomeSettings = async (req, res) => {
             if (req.body.aboutStore) settings.aboutStore = req.body.aboutStore;
         }
 
+        // Capture NEW image list AFTER merge
+        const newImages = collectAllImages(settings.toObject());
+        const newImagesSet = new Set(newImages);
+
+        // Any image in oldImages that is NOT in newImages has been replaced or deleted!
+        const removedImages = oldImages.filter((img) => !newImagesSet.has(img));
+
+        // Also add any explicitly requested deletions from frontend
+        if (Array.isArray(req.body.removedImageUrls)) {
+            for (const u of req.body.removedImageUrls) {
+                if (u && !removedImages.includes(u)) {
+                    removedImages.push(u);
+                }
+            }
+        }
+
+        // Clean up obsolete images from ImageKit asynchronously
+        if (removedImages.length > 0) {
+            deleteFilesByUrls(removedImages).catch((err) => {
+                console.error('[CMS] Failed to delete obsolete images:', err.message);
+            });
+        }
+
         // Detect image changes: if signature changed, bump the version for cache-busting
-        if (imageSignature(settings.toObject()) !== oldSignature) {
+        if (newImages.slice().sort().join('|') !== oldSignature) {
             settings.imageVersion = (settings.imageVersion || 0) + 1;
         }
 
@@ -77,7 +105,8 @@ const updateHomeSettings = async (req, res) => {
         console.error('Error saving CMS settings:', error);
         res.status(500).json({
             message: 'Failed to save settings',
-            error: 'Internal server error. Please try again.' });
+            error: 'Internal server error. Please try again.'
+        });
     }
 };
 

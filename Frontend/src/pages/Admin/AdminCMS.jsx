@@ -131,6 +131,7 @@ const AdminCMS = ({ defaultTab }) => {
     // Raw text for the payment methods input so commas are preserved while typing.
     // Committed to settings.footer.paymentMethods (array) on blur / save.
     const [paymentMethodsText, setPaymentMethodsText] = useState('VISA, MasterCard, UPI, Rupay');
+    const [removedImageUrls, setRemovedImageUrls] = useState([]);
 
     // Sync the text whenever the loaded payment methods change (e.g. after fetching CMS data).
     // NOTE: typing only updates paymentMethodsText, so this never clobbers an in-progress edit.
@@ -206,6 +207,7 @@ const AdminCMS = ({ defaultTab }) => {
                 formData.append('image', logoPendingFile);
                 formData.append('context', 'logo');
                 formData.append('name', 'logo-image');
+                if (settings.logoImage) formData.append('oldImageUrl', settings.logoImage);
                 const { data } = await api.post('/api/upload', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
@@ -226,6 +228,7 @@ const AdminCMS = ({ defaultTab }) => {
                     formData.append('context', 'homebanner');
                     formData.append('index', String(i + 1));
                     formData.append('name', `homebanner-image${i + 1}`);
+                    if (heroSliders[i].image) formData.append('oldImageUrl', heroSliders[i].image);
                     const { data } = await api.post('/api/upload', formData, {
                         headers: { 'Content-Type': 'multipart/form-data' }
                     });
@@ -244,6 +247,7 @@ const AdminCMS = ({ defaultTab }) => {
                     formData.append('context', 'cms');
                     formData.append('folderPath', 'category-banners');
                     formData.append('index', String(i + 1));
+                    if (categoryBanners[i].image) formData.append('oldImageUrl', categoryBanners[i].image);
                     const { data } = await api.post('/api/upload', formData, {
                         headers: { 'Content-Type': 'multipart/form-data' }
                     });
@@ -262,6 +266,7 @@ const AdminCMS = ({ defaultTab }) => {
                     formData.append('context', 'homebanner');
                     formData.append('index', String(i + 1));
                     formData.append('name', `homebanner-promo${i + 1}`);
+                    if (promoBanners[i].image) formData.append('oldImageUrl', promoBanners[i].image);
                     const { data } = await api.post('/api/upload', formData, {
                         headers: { 'Content-Type': 'multipart/form-data' }
                     });
@@ -307,6 +312,7 @@ const AdminCMS = ({ defaultTab }) => {
                 formData.append('context', 'cms');
                 formData.append('folderPath', 'about-store');
                 formData.append('name', 'about-banner');
+                if (settings.aboutStore?.bannerImage) formData.append('oldImageUrl', settings.aboutStore.bannerImage);
                 const { data } = await api.post('/api/upload', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
@@ -323,6 +329,7 @@ const AdminCMS = ({ defaultTab }) => {
                 formData.append('context', 'cms');
                 formData.append('folderPath', 'about-store');
                 formData.append('name', 'about-store-image');
+                if (settings.aboutStore?.storeImage) formData.append('oldImageUrl', settings.aboutStore.storeImage);
                 const { data } = await api.post('/api/upload', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
@@ -347,9 +354,11 @@ const AdminCMS = ({ defaultTab }) => {
                 footer: {
                     ...settings.footer,
                     paymentMethods: paymentMethodsText.split(',').map(m => m.trim()).filter(Boolean)
-                }
+                },
+                removedImageUrls
             };
             await api.put('/api/cms', finalSettings);
+            setRemovedImageUrls([]);
             alert('CMS Settings published successfully!');
         } catch (err) {
             setError('Failed to save settings');
@@ -424,6 +433,9 @@ const AdminCMS = ({ defaultTab }) => {
         if (aboutBannerPreview) URL.revokeObjectURL(aboutBannerPreview);
         setAboutBannerPendingFile(null);
         setAboutBannerPreview(null);
+        if (settings.aboutStore?.bannerImage) {
+            setRemovedImageUrls((prev) => [...prev, settings.aboutStore.bannerImage]);
+        }
         handleAboutStoreFieldChange('bannerImage', '');
     };
 
@@ -448,6 +460,9 @@ const AdminCMS = ({ defaultTab }) => {
         if (aboutStorePreview) URL.revokeObjectURL(aboutStorePreview);
         setAboutStorePendingFile(null);
         setAboutStorePreview(null);
+        if (settings.aboutStore?.storeImage) {
+            setRemovedImageUrls((prev) => [...prev, settings.aboutStore.storeImage]);
+        }
         handleAboutStoreFieldChange('storeImage', '');
     };
 
@@ -461,12 +476,20 @@ const AdminCMS = ({ defaultTab }) => {
 
     const handleRemoveSlide = (index) => {
         if (!window.confirm('Are you absolutely sure you want to delete this hero slider?')) return;
+        const target = settings.heroSliders[index];
+        if (target?.image) {
+            setRemovedImageUrls((prev) => [...prev, target.image]);
+        }
         const newSliders = [...settings.heroSliders];
         newSliders.splice(index, 1);
         setSettings({ ...settings, heroSliders: newSliders });
     };
 
     const handleRemoveSlideImage = (index) => {
+        const target = settings.heroSliders[index];
+        if (target?.image) {
+            setRemovedImageUrls((prev) => [...prev, target.image]);
+        }
         const newSliders = [...settings.heroSliders];
         newSliders[index] = { ...newSliders[index], image: '' };
         delete newSliders[index].pendingFile;
@@ -499,6 +522,10 @@ const AdminCMS = ({ defaultTab }) => {
     };
 
     const handleRemovePromoBannerImage = (index) => {
+        const target = settings.promoBanners[index];
+        if (target?.image) {
+            setRemovedImageUrls((prev) => [...prev, target.image]);
+        }
         const newBanners = [...settings.promoBanners];
         newBanners[index] = { ...newBanners[index], image: '' };
         delete newBanners[index].pendingFile;
@@ -531,6 +558,10 @@ const AdminCMS = ({ defaultTab }) => {
 
     const handleRemoveCategoryBanner = (index) => {
         if (!window.confirm('Are you absolutely sure you want to delete this category banner?')) return;
+        const target = settings.categoryBanners[index];
+        if (target?.image) {
+            setRemovedImageUrls((prev) => [...prev, target.image]);
+        }
         const newBanners = [...settings.categoryBanners];
         newBanners.splice(index, 1);
         setSettings({ ...settings, categoryBanners: newBanners });
@@ -1085,6 +1116,10 @@ const AdminCMS = ({ defaultTab }) => {
                                         {/* FULL BANNER REMOVAL BUTTON */}
                                         <button className="danger-btn btn-sm" style={{ margin: '8px 12px 12px' }} onClick={() => {
                                             if (!window.confirm('Delete this promo banner completely?')) return;
+                                            const target = settings.promoBanners[i];
+                                            if (target?.image) {
+                                                setRemovedImageUrls((prev) => [...prev, target.image]);
+                                            }
                                             const updated = (settings.promoBanners || []).filter((_,idx) => idx !== i);
                                             setSettings({ ...settings, promoBanners: updated });
                                         }}>

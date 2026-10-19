@@ -29,7 +29,13 @@ const Home = () => {
                 // Priority: services inside serviceCategories (flattened).
                 // Fallback: legacy flat services field.
                 const cats = cmsRes.data?.serviceCategories || [];
-                const catServices = cats.flatMap(cat => (cat.services || []).map(svc => ({ ...svc, category: cat.name })));
+                const catServices = cats.flatMap(cat => 
+                    (cat.services || []).map(svc => ({ 
+                        ...svc, 
+                        category: cat.name,
+                        categorySlug: cat.slug || cat.name?.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+                    }))
+                );
                 if (catServices.length > 0) {
                     setServices(catServices);
                 } else if (cmsRes.data?.services && cmsRes.data.services.length > 0) {

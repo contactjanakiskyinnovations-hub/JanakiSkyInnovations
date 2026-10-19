@@ -150,6 +150,7 @@
     font-size: 18px;
     font-weight: 800;
     color: #111827;
+    white-space: nowrap;
 }
 
 /* Summary Section */
@@ -551,6 +552,11 @@ hr {
 
     .item-sku {
         font-size: 11px;
+    }
+
+    .item-price {
+        font-size: 15px !important;
+        white-space: nowrap !important;
     }
 
     .item-actions {

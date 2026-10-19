@@ -278,6 +278,13 @@
     flex-grow: 1;
 }
 
+.service-slider-card-media-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
 .service-slider-card-title {
     font-size: 19px;
     font-weight: 800;
@@ -287,6 +294,14 @@
     transition: color 0.2s ease;
 }
 
+.service-title-link {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s ease;
+}
+
+.service-title-link:hover,
+.service-slider-card:hover .service-title-link,
 .service-slider-card:hover .service-slider-card-title {
     color: var(--primary-orange, #ff8f00);
 }

@@ -72,6 +72,80 @@
     padding: 60px 0;
 }
 
+/* Category Switcher Tabs */
+.services-category-tabs-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 35px;
+    width: 100%;
+}
+
+.services-category-tabs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    background: #ffffff;
+    padding: 8px 12px;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+    border: 1px solid #e2e8f0;
+}
+
+.services-cat-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 40px;
+    border: none;
+    background: transparent;
+    color: #475569;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.services-cat-tab:hover {
+    color: #0f172a;
+    background: #f1f5f9;
+}
+
+.services-cat-tab.active {
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8f00 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);
+}
+
+.cat-tab-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cat-tab-name {
+    white-space: nowrap;
+}
+
+.cat-tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(0, 0, 0, 0.08);
+    color: inherit;
+}
+
+.services-cat-tab.active .cat-tab-count {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
 .section-header-center {
     text-align: center;
     max-width: 650px;
@@ -126,6 +200,30 @@
 .service-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+}
+
+.service-card.is-selected-service {
+    border: 2px solid var(--primary-orange, #ff6b00) !important;
+    box-shadow: 0 12px 35px rgba(255, 107, 0, 0.22) !important;
+    transform: translateY(-4px);
+}
+
+.service-selected-pill {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8f00 100%);
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(255, 107, 0, 0.4);
+    letter-spacing: 0.3px;
 }
 
 /* Service Card Image Header - shows the FULL image without any cropping */
@@ -298,6 +396,42 @@
     color: var(--primary-orange, #ff6b00);
     margin-top: 2px;
     flex-shrink: 0;
+}
+
+/* Service Card Action Button */
+.service-card-actions {
+    margin-top: auto;
+    padding-top: 18px;
+}
+
+.service-action-btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.service-action-btn:hover {
+    background: #ff6b00;
+    color: #ffffff;
+    border-color: #ff6b00;
+    box-shadow: 0 4px 14px rgba(255, 107, 0, 0.25);
+}
+
+.service-action-btn.active {
+    background: #ff6b00;
+    color: #ffffff;
+    border-color: #ff6b00;
 }
 
 /* Booking Row */
@@ -685,6 +819,35 @@
 
     .section-header-center p {
         font-size: 13px;
+    }
+
+    .services-category-tabs-wrapper {
+        margin-bottom: 24px;
+    }
+
+    .services-category-tabs {
+        padding: 5px 8px;
+        border-radius: 16px;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .services-cat-tab {
+        padding: 7px 12px;
+        font-size: 12.5px;
+        border-radius: 8px;
+        gap: 6px;
+    }
+
+    .cat-tab-icon svg {
+        width: 15px;
+        height: 15px;
+    }
+
+    .service-action-btn {
+        padding: 10px 14px;
+        font-size: 13px;
+        border-radius: 10px;
     }
 
     .service-card {

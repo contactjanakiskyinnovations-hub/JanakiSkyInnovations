@@ -398,7 +398,12 @@
     }
 
     .current-price {
-        font-size: 15px;
+        font-size: 14px;
+        white-space: nowrap;
+        display: inline-block;
+    }
+
+    .old-price-strikethrough {
         white-space: nowrap;
     }
 
@@ -442,5 +447,36 @@
     .quantity-stepper .qty-value {
         font-size: 15px;
         min-width: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .current-price {
+        font-size: 13px !important;
+        white-space: nowrap !important;
+        letter-spacing: -0.2px;
+    }
+
+    .old-price-strikethrough {
+        font-size: 11px !important;
+        white-space: nowrap !important;
+    }
+
+    .price-details {
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .current-price-row {
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 360px) {
+    .current-price {
+        font-size: 11.5px !important;
+        white-space: nowrap !important;
+        letter-spacing: -0.4px;
     }
 }

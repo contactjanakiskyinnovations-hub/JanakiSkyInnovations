@@ -5,10 +5,13 @@ import './RichTextEditor.css';
 
 const DEFAULT_MODULES = {
     toolbar: [
-        [{ 'header': [1, 2, 3, 4, false] }],
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{ 'size': ['small', false, 'large', 'huge'] }],
         ['bold', 'italic', 'underline', 'strike'],
         [{ 'color': [] }, { 'background': [] }],
+        [{ 'script': 'sub' }, { 'script': 'super' }],
         [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        [{ 'indent': '-1' }, { 'indent': '+1' }],
         [{ 'align': [] }],
         ['link', 'blockquote', 'code-block'],
         ['clean']
@@ -17,20 +20,25 @@ const DEFAULT_MODULES = {
 
 const COMPACT_MODULES = {
     toolbar: [
+        [{ 'header': [1, 2, 3, false] }],
+        [{ 'size': ['small', false, 'large'] }],
         ['bold', 'italic', 'underline'],
-        [{ 'color': [] }],
+        [{ 'color': [] }, { 'background': [] }],
         [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        [{ 'indent': '-1' }, { 'indent': '+1' }],
+        [{ 'align': [] }],
         ['link'],
         ['clean']
     ]
 };
 
 const FORMATS = [
-    'header',
+    'header', 'size',
     'bold', 'italic', 'underline', 'strike',
     'color', 'background',
-    'list', 'bullet',
-    'align',
+    'script',
+    'list', 'bullet', 'indent',
+    'align', 'direction',
     'link', 'blockquote', 'code-block'
 ];
 

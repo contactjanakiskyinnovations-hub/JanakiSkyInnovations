@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Shield, Hammer, MapPin, Wind, Sparkles, Send, CheckCircle, Loader2 } from 'lucide-react';
+import { Shield, Hammer, MapPin, Wind, Sparkles, Send, CheckCircle, Loader2, ArrowRight, Check } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../utils/api';
 import './OurServices.css';
@@ -13,12 +13,113 @@ const iconMapping = {
     'Sparkles': <Sparkles size={28} />,
 };
 
+// Fallback category catalog matching default home services
+const DEFAULT_CATEGORIES = [
+    {
+        name: 'Agricultural Drones',
+        slug: 'agricultural-drones',
+        iconName: 'Wind',
+        description: 'Automated precision crop spraying, multispectral orchard mapping, and pest control using heavy-payload multi-rotor UAV systems.',
+        services: [
+            {
+                title: 'Industrial & Agricultural UAV Spraying',
+                iconName: 'Wind',
+                description: 'Automated precision crop spraying, multispectral orchard mapping, and pest control using heavy-payload multi-rotor UAV systems.',
+                features: ['Up to 25L Payload Tanks', 'Autonomous GPS Waypoints', '98% Drift Reduction Tech'],
+                image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=2070&auto=format&fit=crop'
+            }
+        ]
+    },
+    {
+        name: 'Events & Celebrations',
+        slug: 'events-celebrations',
+        iconName: 'Sparkles',
+        description: 'Spectacular floral showers for grand celebrations, religious ceremonies, and cinematic 4K FPV aerial media capture.',
+        services: [
+            {
+                title: 'Aerial Cinematography & Flower Showering',
+                iconName: 'Sparkles',
+                description: 'Spectacular floral showers for grand celebrations, religious ceremonies, and cinematic 4K FPV aerial media capture.',
+                features: ['Automated Flower Dispersion Mechanism', 'Custom Height & Drop Scheduling', 'Redundant Safety Parachutes'],
+                image: 'https://images.unsplash.com/photo-1527977966376-1c8408f9f108?q=80&w=2000&auto=format&fit=crop'
+            }
+        ]
+    },
+    {
+        name: 'Engineering & DIY',
+        slug: 'engineering-diy',
+        iconName: 'Hammer',
+        description: 'Bespoke carbon-fiber frame builds, brushless motor calibration, flight controller tuning, and institutional STEM lab kits.',
+        services: [
+            {
+                title: 'Custom Drone Assembly & STEM Robotics',
+                iconName: 'Hammer',
+                description: 'Bespoke carbon-fiber frame builds, brushless motor calibration, flight controller tuning, and institutional STEM lab kits.',
+                features: ['Precision CNC Carbon Fiber', 'Custom ESC & Firmware Flash', 'Complete Bench Testing & QA'],
+                image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=2070&auto=format&fit=crop'
+            }
+        ]
+    },
+    {
+        name: 'Inspection & GIS',
+        slug: 'inspection-gis',
+        iconName: 'Shield',
+        description: 'Thermal imaging, perimeter patrol, stockpile volume estimation, and high-accuracy LiDAR mapping for enterprise infrastructure.',
+        services: [
+            {
+                title: 'Security, Surveillance & Mapping',
+                iconName: 'Shield',
+                description: 'Thermal imaging, perimeter patrol, stockpile volume estimation, and high-accuracy LiDAR mapping for enterprise infrastructure.',
+                features: ['Dual Thermal & 4K Optical Gimbals', 'AES-256 Encrypted Telemetry', 'RTK Centimeter Accuracy'],
+                image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?q=80&w=2070&auto=format&fit=crop'
+            }
+        ]
+    }
+];
+
+const normalize = (str) =>
+    (str || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+
+const findTargetCategory = (cats, catQuery, svcQuery) => {
+    if (!cats || cats.length === 0) return null;
+
+    // 1. If service query is given, prioritize finding the category that owns this service
+    if (svcQuery) {
+        const normSvc = normalize(svcQuery);
+        const matchBySvc = cats.find(c =>
+            (c.services || []).some(s =>
+                s.title?.toLowerCase() === svcQuery.toLowerCase() ||
+                normalize(s.title) === normSvc
+            )
+        );
+        if (matchBySvc) return matchBySvc;
+    }
+
+    // 2. Match by category query (slug or name)
+    if (catQuery) {
+        const normCat = normalize(catQuery);
+        const match = cats.find(c =>
+            c.slug === catQuery ||
+            normalize(c.slug) === normCat ||
+            normalize(c.name) === normCat ||
+            c.name?.toLowerCase() === catQuery.toLowerCase()
+        );
+        if (match) return match;
+    }
+
+    return cats[0] || null;
+};
+
 const OurServices = () => {
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [categories, setCategories] = useState([]);
     const [fallbackServices, setFallbackServices] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedSlug, setSelectedSlug] = useState(searchParams.get('category') || '');
+    const [selectedSlug, setSelectedSlug] = useState('');
     const [formCategory, setFormCategory] = useState('');
     const [formService, setFormService] = useState('');
     const [formData, setFormData] = useState({
@@ -30,17 +131,31 @@ const OurServices = () => {
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
-    // Build effective categories (fallback to flat services as "All Services")
+    // Build effective categories (fallback to flat services or default catalog)
     const effectiveCategories = useMemo(() => {
-        if (categories.length > 0) return categories;
-        if (fallbackServices.length > 0) {
+        if (categories && categories.length > 0) return categories;
+        if (fallbackServices && fallbackServices.length > 0) {
             return [{ name: 'All Services', slug: 'all', description: '', iconName: 'Shield', services: fallbackServices }];
         }
-        return [];
+        return DEFAULT_CATEGORIES;
     }, [categories, fallbackServices]);
 
     // Determine the currently displayed category
-    const currentCategory = effectiveCategories.find(c => c.slug === selectedSlug) || effectiveCategories[0] || null;
+    const currentCategory = useMemo(() => {
+        if (effectiveCategories.length === 0) return null;
+        if (selectedSlug) {
+            const found = effectiveCategories.find(c =>
+                c.slug === selectedSlug ||
+                normalize(c.slug) === normalize(selectedSlug) ||
+                normalize(c.name) === normalize(selectedSlug) ||
+                c.name === selectedSlug
+            );
+            if (found) return found;
+        }
+        const catParam = searchParams.get('category');
+        const svcParam = searchParams.get('service');
+        return findTargetCategory(effectiveCategories, catParam, svcParam) || effectiveCategories[0];
+    }, [effectiveCategories, selectedSlug, searchParams]);
 
     useEffect(() => {
         const fetchServices = async () => {
@@ -58,17 +173,58 @@ const OurServices = () => {
         fetchServices();
     }, []);
 
-    // Sync selected category from URL and preselect in the form
+    // Sync selected category and service from URL query params
     useEffect(() => {
         if (effectiveCategories.length === 0) return;
-        const param = searchParams.get('category');
-        const target = effectiveCategories.find(c => c.slug === param) || effectiveCategories[0];
+        const catQuery = searchParams.get('category');
+        const svcQuery = searchParams.get('service');
+        const target = findTargetCategory(effectiveCategories, catQuery, svcQuery);
         if (target) {
-            setSelectedSlug(target.slug);
+            const slug = target.slug || normalize(target.name);
+            setSelectedSlug(slug);
             setFormCategory(target.name);
-            setFormService('');
+
+            if (svcQuery) {
+                const matchedSvc = (target.services || []).find(s =>
+                    s.title?.toLowerCase() === svcQuery.toLowerCase() ||
+                    normalize(s.title) === normalize(svcQuery)
+                );
+                if (matchedSvc) {
+                    setFormService(matchedSvc.title);
+                }
+            }
         }
     }, [effectiveCategories, searchParams]);
+
+    // Smooth-scroll to the targeted service card if specified in URL
+    useEffect(() => {
+        const svcQuery = searchParams.get('service');
+        if (!svcQuery || loading) return;
+        const timer = setTimeout(() => {
+            const el = document.getElementById(`service-${normalize(svcQuery)}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchParams, loading, currentCategory]);
+
+    const handleSelectCategory = (cat) => {
+        const slug = cat.slug || normalize(cat.name);
+        setSelectedSlug(slug);
+        setFormCategory(cat.name);
+        setFormService('');
+        setSearchParams({ category: slug });
+    };
+
+    const handleSelectService = (service) => {
+        setFormCategory(currentCategory?.name || '');
+        setFormService(service.title);
+        const bookingEl = document.getElementById('booking-section');
+        if (bookingEl) {
+            bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
 
     // Services belonging to the form's selected category
     const formCatObj = effectiveCategories.find(c => c.name === formCategory);
@@ -124,7 +280,41 @@ const OurServices = () => {
             </div>
 
             <div className="container py-60">
-                {/* Services Grid */}
+                {/* Category Switcher Tabs */}
+                {effectiveCategories.length > 1 && (
+                    <div className="services-category-tabs-wrapper">
+                        <div className="services-category-tabs" role="tablist">
+                            {effectiveCategories.map((cat, idx) => {
+                                const catSlug = cat.slug || normalize(cat.name);
+                                const isCatActive = currentCategory && (
+                                    currentCategory.slug === cat.slug ||
+                                    normalize(currentCategory.slug) === normalize(catSlug) ||
+                                    currentCategory.name === cat.name
+                                );
+                                return (
+                                    <button
+                                        key={cat.slug || idx}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={isCatActive}
+                                        className={`services-cat-tab ${isCatActive ? 'active' : ''}`}
+                                        onClick={() => handleSelectCategory(cat)}
+                                    >
+                                        <span className="cat-tab-icon">
+                                            {iconMapping[cat.iconName] || <Shield size={18} />}
+                                        </span>
+                                        <span className="cat-tab-name">{cat.name}</span>
+                                        {cat.services && cat.services.length > 0 && (
+                                            <span className="cat-tab-count">{cat.services.length}</span>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* Section Header */}
                 <div className="section-header-center">
                     <h2>{currentCategory ? `${currentCategory.name} Services` : 'Our Service Offerings'}</h2>
                     {(() => {
@@ -136,61 +326,87 @@ const OurServices = () => {
                     })()}
                 </div>
 
+                {/* Services Grid */}
                 {currentCategory && currentCategory.services && currentCategory.services.length > 0 ? (
                     <div className="services-grid">
-                        {currentCategory.services.map((service, idx) => (
-                            <div
-                                key={idx}
-                                className={`service-card shadow-sm${service.image ? ' has-image' : ''}`}
-                            >
-                                {service.image ? (
-                                    <div className="service-card-image-wrapper">
-                                        <img src={service.image} alt={service.title} className="service-card-img" />
-                                        <div className="service-icon-badge">
-                                            {iconMapping[service.iconName] || <Shield size={20} />}
+                        {currentCategory.services.map((service, idx) => {
+                            const activeServiceParam = searchParams.get('service');
+                            const isSelected = activeServiceParam && (
+                                service.title?.toLowerCase() === activeServiceParam.toLowerCase() ||
+                                normalize(service.title) === normalize(activeServiceParam)
+                            );
+
+                            return (
+                                <div
+                                    key={idx}
+                                    id={`service-${normalize(service.title)}`}
+                                    className={`service-card shadow-sm${service.image ? ' has-image' : ''}${isSelected ? ' is-selected-service' : ''}`}
+                                >
+                                    {isSelected && (
+                                        <div className="service-selected-pill">
+                                            <Check size={14} />
+                                            <span>Selected Service</span>
+                                        </div>
+                                    )}
+                                    {service.image ? (
+                                        <div className="service-card-image-wrapper">
+                                            <img src={service.image} alt={service.title} className="service-card-img" />
+                                            <div className="service-icon-badge">
+                                                {iconMapping[service.iconName] || <Shield size={20} />}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="service-no-image-header">
+                                            <div className="service-icon-box">
+                                                {iconMapping[service.iconName] || <Shield size={26} />}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="service-card-content">
+                                        <h3>{service.title}</h3>
+                                        {service.description && (
+                                            /<[a-z][\s\S]*>/i.test(service.description) ? (
+                                                <div
+                                                    className="service-desc service-html-content"
+                                                    dangerouslySetInnerHTML={{ __html: service.description }}
+                                                />
+                                            ) : (
+                                                <p className="service-desc">{service.description}</p>
+                                            )
+                                        )}
+                                        {service.features && service.features.length > 0 && (
+                                            <ul className="service-features">
+                                                {service.features.map((feat, fIdx) => (
+                                                    <li key={fIdx}>
+                                                        <Shield size={14} className="shield-icon" />
+                                                        <span>{feat}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                        <div className="service-card-actions">
+                                            <button
+                                                type="button"
+                                                className={`service-action-btn ${isSelected ? 'active' : ''}`}
+                                                onClick={() => handleSelectService(service)}
+                                            >
+                                                <span>{isSelected ? 'Service Selected • Book Below' : 'Book Consultation'}</span>
+                                                <ArrowRight size={15} />
+                                            </button>
                                         </div>
                                     </div>
-                                ) : (
-                                    <div className="service-no-image-header">
-                                        <div className="service-icon-box">
-                                            {iconMapping[service.iconName] || <Shield size={26} />}
-                                        </div>
-                                    </div>
-                                )}
-                                <div className="service-card-content">
-                                    <h3>{service.title}</h3>
-                                    {service.description && (
-                                        /<[a-z][\s\S]*>/i.test(service.description) ? (
-                                            <div
-                                                className="service-desc service-html-content"
-                                                dangerouslySetInnerHTML={{ __html: service.description }}
-                                            />
-                                        ) : (
-                                            <p className="service-desc">{service.description}</p>
-                                        )
-                                    )}
-                                    {service.features && service.features.length > 0 && (
-                                        <ul className="service-features">
-                                            {service.features.map((feat, fIdx) => (
-                                                <li key={fIdx}>
-                                                    <Shield size={14} className="shield-icon" />
-                                                    <span>{feat}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
                     <div className="section-header-center">
-                        <p>No services available yet. Please check back soon.</p>
+                        <p>No services available yet for this category. Please check back soon.</p>
                     </div>
                 )}
 
                 {/* Enquiry & Booking Section */}
-                <div className="booking-row">
+                <div className="booking-row" id="booking-section">
                     <div className="booking-info">
                         <h2>Need a custom solution or live flight booking?</h2>
                         <p>Our expert licensed pilots and system engineers are ready to build, calibrate, and deploy advanced drone payloads to fit your unique operations.</p>
@@ -263,7 +479,17 @@ const OurServices = () => {
                                         <label>Service Category</label>
                                         <select
                                             value={formCategory}
-                                            onChange={(e) => { setFormCategory(e.target.value); setFormService(''); }}
+                                            onChange={(e) => { 
+                                                const newCat = e.target.value;
+                                                setFormCategory(newCat); 
+                                                setFormService('');
+                                                const catMatch = effectiveCategories.find(c => c.name === newCat);
+                                                if (catMatch) {
+                                                    const slug = catMatch.slug || normalize(catMatch.name);
+                                                    setSelectedSlug(slug);
+                                                    setSearchParams({ category: slug });
+                                                }
+                                            }}
                                         >
                                             {effectiveCategories.length === 0 && <option value="">Select category</option>}
                                             {effectiveCategories.map((cat, idx) => (

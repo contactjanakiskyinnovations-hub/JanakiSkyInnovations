@@ -668,6 +668,7 @@
 
 .story-html-content p {
     margin-bottom: 14px;
+    min-height: 1.25em;
     overflow-wrap: break-word;
     word-break: break-word;
 }
@@ -706,6 +707,7 @@
 
 .mv-html-content p {
     margin-bottom: 10px;
+    min-height: 1.25em;
     overflow-wrap: break-word;
     word-break: break-word;
 }

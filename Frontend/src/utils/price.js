@@ -13,9 +13,9 @@ export const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 10
 // Return a price with 13% VAT already added on top of the base price.
 export const withVat = (amount) => round2(Number(amount || 0) * (1 + VAT_RATE));
 
-// Format an amount as Indian Rupees.
-export const formatINR = (amount, { decimals = true } = {}) =>
-    'Rs. ' +
+// Format an amount as Indian Rupees (using non-breaking space so Rs. and amount never split onto 2 lines).
+export const formatINR = (amount, { decimals = false } = {}) =>
+    'Rs.\u00A0' +
     Number(amount || 0).toLocaleString('en-IN', decimals
         ? { minimumFractionDigits: 2, maximumFractionDigits: 2 }
         : { maximumFractionDigits: 0 });

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Plus, Search, Filter, Edit, Trash2, ExternalLink, Loader2, X, SlidersHorizontal, Columns3, MoreVertical, MessageSquare, Star, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, ExternalLink, Loader2, X, SlidersHorizontal, Columns3, MoreVertical, MessageSquare, Star, RefreshCw, CheckCircle, AlertCircle, Upload, FileJson } from 'lucide-react';
 import api from '../../utils/api';
 import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
 import './Admin.css';
@@ -135,12 +135,66 @@ const AdminProducts = () => {
 
     // Specifications & Category State Handlers
     const [specFields, setSpecFields] = useState([{ key: '', value: '' }]);
+    const specJsonInputRef = useRef(null);
     const handleAddSpec = () => setSpecFields([...specFields, { key: '', value: '' }]);
     const handleRemoveSpec = (index) => setSpecFields(specFields.filter((_, i) => i !== index));
     const handleSpecChange = (index, field, value) => {
         const newFields = [...specFields];
         newFields[index][field] = value;
         setSpecFields(newFields);
+    };
+
+    // JSON Import handler — parses uploaded .json file and loads into spec fields
+    const handleImportSpecsJSON = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Reset the input so the same file can be re-imported if needed
+        e.target.value = '';
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const parsed = JSON.parse(evt.target.result);
+                let entries = [];
+
+                if (Array.isArray(parsed)) {
+                    // Format: [{ feature: "...", value: "..." }, ...]
+                    // or: [{ key: "...", value: "..." }, ...]
+                    // or: [["Feature", "Value"], ...]
+                    entries = parsed.flatMap(item => {
+                        if (Array.isArray(item) && item.length >= 2) {
+                            return [{ key: String(item[0] || '').trim(), value: String(item[1] || '').trim() }];
+                        }
+                        if (item && typeof item === 'object') {
+                            const k = (item.feature || item.key || item.name || item.spec || '').trim();
+                            const v = (item.value || item.val || item.description || '').trim();
+                            return k ? [{ key: k, value: String(v) }] : [];
+                        }
+                        return [];
+                    });
+                } else if (parsed && typeof parsed === 'object') {
+                    // Format: { "Voltage": "5V", "Weight": "250g", ... }
+                    entries = Object.entries(parsed)
+                        .filter(([k]) => k.trim())
+                        .map(([k, v]) => ({ key: String(k).trim(), value: String(v ?? '').trim() }));
+                }
+
+                if (entries.length === 0) {
+                    alert('No valid specifications found in the JSON file.\n\nSupported formats:\n• { "Feature": "Value", ... }\n• [{ "feature": "...", "value": "..." }, ...]');
+                    return;
+                }
+
+                // Merge imported entries with existing non-empty fields
+                const existingFilled = specFields.filter(s => s.key.trim() || s.value.trim());
+                const merged = [...existingFilled, ...entries];
+                setSpecFields(merged.length > 0 ? merged : [{ key: '', value: '' }]);
+                alert(`✅ Successfully imported ${entries.length} specification${entries.length !== 1 ? 's' : ''} from JSON.`);
+            } catch {
+                alert('❌ Invalid JSON file. Please check the file format and try again.');
+            }
+        };
+        reader.readAsText(file);
     };
     const handleComparisonTableChange = (field, value) => {
         setProductForm(previous => ({ ...previous, comparisonTable: { ...previous.comparisonTable, [field]: value } }));
@@ -904,9 +958,45 @@ const AdminProducts = () => {
                             <div className="input-group" style={{ gridColumn: 'span 2' }}>
                                 <div className="section-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
                                     <label style={{fontWeight: '700'}}>Technical Specifications</label>
-                                    <button type="button" onClick={handleAddSpec} className="icon-btn-sm primary" style={{background: 'var(--primary-orange)', color: 'white', border: 'none', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'}}>
-                                        <Plus size={14} /> Add Spec
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        {/* Hidden JSON file input */}
+                                        <input
+                                            ref={specJsonInputRef}
+                                            type="file"
+                                            accept=".json,application/json"
+                                            style={{ display: 'none' }}
+                                            onChange={handleImportSpecsJSON}
+                                        />
+                                        {/* Import JSON button */}
+                                        <button
+                                            type="button"
+                                            onClick={() => specJsonInputRef.current?.click()}
+                                            title="Import specifications from a .json file"
+                                            style={{
+                                                background: '#f0fdf4',
+                                                color: '#16a34a',
+                                                border: '1px solid #bbf7d0',
+                                                borderRadius: '6px',
+                                                padding: '5px 10px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '5px',
+                                                fontSize: '13px',
+                                                fontWeight: '600',
+                                                transition: 'all 0.2s ease'
+                                            }}
+                                            onMouseEnter={e => { e.currentTarget.style.background = '#dcfce7'; e.currentTarget.style.borderColor = '#86efac'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = '#f0fdf4'; e.currentTarget.style.borderColor = '#bbf7d0'; }}
+                                        >
+                                            <FileJson size={14} />
+                                            Import JSON
+                                        </button>
+                                        {/* Add manually button */}
+                                        <button type="button" onClick={handleAddSpec} className="icon-btn-sm primary" style={{background: 'var(--primary-orange)', color: 'white', border: 'none', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px', fontWeight: '600'}}>
+                                            <Plus size={14} /> Add Spec
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="specs-list" style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
                                     {specFields.map((spec, index) => (
@@ -930,6 +1020,18 @@ const AdminProducts = () => {
                                             </button>
                                         </div>
                                     ))}
+                                </div>
+                                {/* JSON format hint */}
+                                <div style={{ marginTop: '10px', padding: '10px 14px', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1', fontSize: '12px', color: '#64748b', lineHeight: '1.6' }}>
+                                    <strong style={{ color: '#475569', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
+                                        <FileJson size={13} /> JSON Import — Supported formats:
+                                    </strong>
+                                    <code style={{ fontSize: '11px', display: 'block', color: '#334155' }}>
+                                        {'{ "Voltage": "5V", "Weight": "250g" }'}
+                                    </code>
+                                    <code style={{ fontSize: '11px', display: 'block', color: '#334155' }}>
+                                        {'[{ "feature": "Voltage", "value": "5V" }, ...]'}
+                                    </code>
                                 </div>
                             </div>
 

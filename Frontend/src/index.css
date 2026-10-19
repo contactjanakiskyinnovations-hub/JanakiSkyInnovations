@@ -254,3 +254,188 @@ button, a {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ============================================================
+   Quill inline formatting classes — applied as span/block classes
+   directly inside Quill-generated HTML. Must be global (not nested).
+   ============================================================ */
+.ql-align-center  { text-align: center; }
+.ql-align-right   { text-align: right; }
+.ql-align-justify { text-align: justify; }
+.ql-size-small    { font-size: 0.8em; }
+.ql-size-large    { font-size: 1.25em; }
+.ql-size-huge     { font-size: 1.6em; }
+.ql-direction-rtl { direction: rtl; text-align: inherit; }
+.ql-indent-1 { padding-left: 2em; }
+.ql-indent-2 { padding-left: 4em; }
+.ql-indent-3 { padding-left: 6em; }
+.ql-indent-4 { padding-left: 8em; }
+.ql-indent-5 { padding-left: 10em; }
+.ql-indent-6 { padding-left: 12em; }
+.ql-indent-7 { padding-left: 14em; }
+.ql-indent-8 { padding-left: 16em; }
+
+/* ============================================================
+   Rich-Text / Quill HTML Content — List & Bullet Rendering
+   The global `ul { list-style: none }` reset above strips bullets
+   from any HTML produced by the Quill editor. These scoped rules
+   restore bullets, numbers, indents, and spacing for every
+   container that renders editor HTML via dangerouslySetInnerHTML.
+   ============================================================ */
+
+/* All rich-text containers that render Quill HTML output */
+.overview-html-content,
+.key-features-html-content,
+.in-box-html-content,
+.instruction-html-content,
+.short-summary.overview-html-content,
+.service-slider-html-content,
+.service-html-content,
+.service-cat-desc-html,
+.promo-overlay-html-desc,
+.story-html-content,
+.mv-html-content,
+.feature-html-desc {
+
+  /* ---- Unordered lists (bullet points) ---- */
+  ul {
+    list-style: disc !important;
+    padding-left: 1.6em !important;
+    margin: 0.5em 0 0.75em 0 !important;
+  }
+
+  ul li {
+    display: list-item !important;
+    list-style: disc !important;
+    padding: 2px 0 !important;
+    line-height: 1.6 !important;
+  }
+
+  /* Nested unordered lists */
+  ul ul {
+    list-style: circle !important;
+    margin-top: 0.25em !important;
+    margin-bottom: 0.25em !important;
+  }
+
+  ul ul ul {
+    list-style: square !important;
+  }
+
+  /* ---- Ordered lists (numbered) ---- */
+  ol {
+    list-style: decimal !important;
+    padding-left: 1.6em !important;
+    margin: 0.5em 0 0.75em 0 !important;
+  }
+
+  ol li {
+    display: list-item !important;
+    list-style: decimal !important;
+    padding: 2px 0 !important;
+    line-height: 1.6 !important;
+  }
+
+  /* Nested ordered lists */
+  ol ol {
+    list-style: lower-alpha !important;
+    margin-top: 0.25em !important;
+    margin-bottom: 0.25em !important;
+  }
+
+  ol ol ol {
+    list-style: lower-roman !important;
+  }
+
+  /* ---- Quill-specific list classes ---- */
+  /* Quill renders lists differently — li elements with data-list attribute */
+  li[data-list="bullet"] {
+    display: list-item !important;
+    list-style-type: disc !important;
+  }
+
+  li[data-list="ordered"] {
+    display: list-item !important;
+    list-style-type: decimal !important;
+  }
+
+  /* ---- Quill list container (.ql-editor inside rendered HTML) ---- */
+  .ql-editor ul,
+  .ql-editor ol {
+    padding-left: 1.6em !important;
+  }
+
+  /* ---- Paragraph spacing ---- */
+  p {
+    margin: 0 0 0.4em 0;
+    line-height: 1.65;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* ---- Headings inside rich text ---- */
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0.6em 0 0.3em 0;
+    line-height: 1.3;
+    font-weight: 700;
+  }
+
+  /* ---- Blockquote ---- */
+  blockquote {
+    border-left: 4px solid var(--primary-orange, #ff8f00);
+    padding-left: 1em;
+    margin: 0.75em 0;
+    color: #475569;
+    font-style: italic;
+  }
+
+  /* ---- Code ---- */
+  code, pre {
+    background: #f1f5f9;
+    border-radius: 4px;
+    font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+    font-size: 0.88em;
+    padding: 0.15em 0.4em;
+  }
+
+  pre {
+    padding: 0.75em 1em;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  /* ---- Links ---- */
+  a {
+    color: var(--primary-orange, #ff8f00);
+    text-decoration: underline;
+  }
+
+  /* ---- Strong / Em ---- */
+  strong { font-weight: 700; }
+  em { font-style: italic; }
+}
+
+/* Ensure empty paragraphs rendered by rich text editors act as visible extra lines */
+.overview-html-content p:empty,
+.overview-html-content p > br:only-child,
+.key-features-html-content p:empty,
+.key-features-html-content p > br:only-child,
+.in-box-html-content p:empty,
+.in-box-html-content p > br:only-child,
+.instruction-html-content p:empty,
+.instruction-html-content p > br:only-child,
+.service-desc p:empty,
+.service-desc p > br:only-child,
+.service-slider-desc p:empty,
+.service-slider-desc p > br:only-child,
+.promo-overlay-desc p:empty,
+.promo-overlay-desc p > br:only-child,
+.story-html-content p:empty,
+.story-html-content p > br:only-child,
+.mv-html-content p:empty,
+.mv-html-content p > br:only-child {
+  min-height: 1.3em;
+  display: block;
+}
