@@ -162,7 +162,7 @@ const Header = () => {
     { slug: 'tools', label: 'TOOLS' },
   ];
   // Convert a sub-category / sub-sub-category name into a URL slug
-  const slugify = (s) => String(s || '').toLowerCase().replace(/\s+/g, '-');
+  const slugify = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
   const getDisplayPhone = () => {
     return isLoggedIn && user && user.mobile ? '+977-9842228345' : '+977-9842228345';
@@ -383,7 +383,11 @@ const Header = () => {
               // Match the canonical nav slug, and also support legacy seeded slugs
               // (e.g. 'drones' vs 'drones-products') so the DRONES dropdown's
               // sub-categories / sub-sub-categories always resolve.
-              const cat = navCategories.find(c => (c.slug === slug || c.slug === `${slug}-products`) && c.isActive !== false);
+              const cat = navCategories.find(c => {
+                if (c.isActive === false) return false;
+                const candidates = [c.slug, c.name].map(slugify).filter(Boolean);
+                return candidates.some(candidate => candidate === slug || candidate === `${slug}-products`);
+              });
               const hasSubs = cat && cat.subCategories && cat.subCategories.length > 0;
               const currentHoveredSubName = hoveredSubByNav[slug];
               const activeSubObj = hasSubs && currentHoveredSubName 

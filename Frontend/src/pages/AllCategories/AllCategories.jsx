@@ -7,220 +7,39 @@ import './AllCategories.css';
 import Seo from '../../utils/seo';
 
 const AllCategories = () => {
+    const [categoryHierarchy, setCategoryHierarchy] = useState([]);
     const [activeMainCategory, setActiveMainCategory] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
+    const [categoriesError, setCategoriesError] = useState('');
     const [trendingProducts, setTrendingProducts] = useState([]);
     const [relatedLoading, setRelatedLoading] = useState(true);
 
-    // Define the hierarchy
-    const categoryHierarchy = [
-        {
-            id: 'electronics',
-            name: 'Electronics',
-            icon: <Layers size={24} />,
-            description: 'The foundation of every project - Basic components, LEDs, ICs, and more.',
-            subCategories: [
-                {
-                    name: 'Basic Components',
-                    subSubCategories: ['Resistors', 'Oscillator', 'Diode', 'Transistor', 'Capacitor']
-                },
-                {
-                    name: 'LED',
-                    subSubCategories: ['LED', 'Through-Hole LEDs']
-                },
-                {
-                    name: 'Potentiometers',
-                    subSubCategories: []
-                },
-                {
-                    name: 'Switch',
-                    subSubCategories: ['DPDT Switch', 'Push Button Switches', 'Joystick Switches', 'Slide Switches']
-                },
-                {
-                    name: 'Integrated Circuit (IC)',
-                    subSubCategories: ['CD4X IC Series', '74HC IC Series', 'Clock and Timer IC', 'Motor Driver IC', 'Atmega IC', 'IC Base']
-                },
-                {
-                    name: 'Connector',
-                    subSubCategories: ['Berg Strip']
-                },
-                {
-                    name: 'Prototyping Breadboards',
-                    subSubCategories: []
-                },
-                {
-                    name: 'Buzzers & Siren',
-                    subSubCategories: []
-                },
-                {
-                    name: 'Transformers',
-                    subSubCategories: []
-                },
-                {
-                    name: 'Aluminium Heat Sinks',
-                    subSubCategories: []
-                }
-            ]
-        },
-        {
-            id: 'developments-boards',
-            name: 'Developments Boards',
-            icon: <Cpu size={24} />,
-            description: 'High-performance development boards and microcontroller platforms.',
-            subCategories: [
-                { name: 'STM32 Microcontroller Boards', subSubCategories: [] },
-                { name: 'Development Board Accessories', subSubCategories: [] }
-            ]
-        },
-        {
-            id: 'arduino',
-            name: 'Arduino',
-            icon: <Award size={24} />,
-            description: 'The world\'s most popular open-source electronics platform.',
-            subCategories: [
-                { name: 'Compatible Arduino Boards', subSubCategories: [] },
-                { name: 'Arduino Boards', subSubCategories: [] },
-                { name: 'Arduino Case & USB Cable', subSubCategories: [] }
-            ]
-        },
-        {
-            id: 'raspberry-pi',
-            name: 'Raspberry Pi',
-            icon: <Package size={24} />,
-            description: 'Credit-card sized computers for endless possibilities.',
-            subCategories: [
-                { name: 'Raspberry Pi Boards', subSubCategories: [] },
-                { name: 'Raspberry Pi Cases', subSubCategories: [] }
-            ]
-        },
-        {
-            id: 'electronic-modules',
-            name: 'Electronic Modules',
-            icon: <Layers size={24} />,
-            description: 'Pre-assembled modules to simplify your circuit design.',
-            subCategories: [
-                {
-                    name: 'Relay',
-                    subSubCategories: ['5V Relay Modules', '12V Relay Modules']
-                },
-                { name: 'Breakout Boards', subSubCategories: [] },
-                { name: 'Logic Level Converters', subSubCategories: [] }
-            ]
-        },
-        {
-            id: 'sensors',
-            name: 'Sensors',
-            icon: <Activity size={24} />,
-            description: 'Interact with the physical world using advanced sensing technology.',
-            subCategories: [
-                { name: 'Sensor Kits', subSubCategories: [] },
-                { name: 'Accelerometers & Gyro Sensors', subSubCategories: [] },
-                { name: 'Biomedical Sensors', subSubCategories: [] },
-                { name: 'Camera Sensors', subSubCategories: [] }
-            ]
-        },
-        {
-            id: 'iot-wireless-modules',
-            name: 'IoT & Wireless Modules',
-            icon: <Wifi size={24} />,
-            description: 'Connect your projects to the internet and communicate wirelessly.',
-            subCategories: [
-                { name: 'ESP Modules', subSubCategories: [] },
-                { name: 'Wifi Switch & Antenna', subSubCategories: [] }
-            ]
-        },
-        {
-            id: 'connector',
-            name: 'Connector',
-            icon: <Link size={24} />,
-            description: 'High-quality connectors for secure and reliable connections.',
-            subCategories: [
-                { name: 'XT30', subSubCategories: [] },
-                { name: 'XT60', subSubCategories: [] },
-                { name: 'General Connector', subSubCategories: [] },
-                { name: 'JST Connector', subSubCategories: [] }
-            ]
-        },
-        {
-            id: 'servo-motor-accessories',
-            name: 'Servo Motor & Accessorise',
-            icon: <Settings size={24} />,
-            description: 'Precise motion control for your robotic and drone projects.',
-            subCategories: [
-                { name: 'Servo Motor', subSubCategories: [] },
-                { name: 'Servo Motor Tester', subSubCategories: [] },
-                { name: 'Payload Mechanism', subSubCategories: [] },
-                { name: 'Control Hurn', subSubCategories: [] }
-            ]
-        },
-        {
-            id: 'motor-mechanical-parts',
-            name: 'Motor & Mechanical Parts',
-            icon: <Cog size={24} />,
-            description: 'Drive systems, gears, and mechanical components.',
-            subCategories: [
-                { name: 'BO Motors', subSubCategories: [] },
-                { name: 'Gear Motors', subSubCategories: [] },
-                { name: 'Robot Wheels, Chassis', subSubCategories: [] }
-            ]
-        },
-        {
-            id: 'display-modules',
-            name: 'Display Modules',
-            icon: <Monitor size={24} />,
-            description: 'Visual interfaces for your electronic projects.',
-            subCategories: [
-                { name: 'Capacitive Touch Screen', subSubCategories: [] }
-            ]
-        },
-        {
-            id: 'silicon-wire-cable',
-            name: 'Silicon wire & Cable',
-            icon: <Cable size={24} />,
-            description: 'Flexible and heat-resistant wiring for high-current applications.',
-            subCategories: [
-                { name: 'Silicon wire', subSubCategories: [] }
-            ]
-        },
-        {
-            id: 'screw-nut-bolt',
-            name: 'Screw, Nut, Bolt, Washer, Specer',
-            icon: <Wrench size={24} />,
-            description: 'Essential hardware for assembly and mounting.',
-            subCategories: [
-                {
-                    name: 'Hex(Allen)',
-                    subSubCategories: ['Socket Head', 'Button Head', 'Allen Countersunk(CSK)', 'Nyloc Nuts', 'Hex Nu', 'Plain Washer', 'Brass Inserts', 'Hex Spacers(Brass)', 'Hex Spacers(Nylon)']
-                }
-            ]
-        },
-        {
-            id: '3d-printers-parts',
-            name: '3D Printers Parts',
-            icon: <Printer size={24} />,
-            description: 'Filaments and components for 3D printing enthusiasts.',
-            subCategories: [
-                {
-                    name: 'Filaments',
-                    subSubCategories: ['PLA+', 'PETG', 'ABS', 'Silk PLA', 'Wood PLA', 'ASA']
-                }
-            ]
-        },
-        {
-            id: 'battery-power-supply',
-            name: 'Battery & Power Supply',
-            icon: <Battery size={24} />,
-            description: 'Reliable power sources for your portable electronics.',
-            subCategories: [
-                { name: 'B1', subSubCategories: [] }
-            ]
-        }
-    ];
-
     useEffect(() => {
-        if (!activeMainCategory) {
-            setActiveMainCategory(categoryHierarchy[0]);
-        }
+        let isMounted = true;
+        api.get('/api/categories')
+            .then(({ data }) => {
+                if (!isMounted) return;
+                const categories = (Array.isArray(data) ? data : [])
+                    .filter(category => category.isActive !== false)
+                    .map(category => ({
+                        ...category,
+                        id: category._id || category.slug || category.name,
+                        icon: category.icon || 'Layers',
+                        subCategories: (Array.isArray(category.subCategories) ? category.subCategories : [])
+                            .map(sub => ({ ...sub, subSubCategories: Array.isArray(sub.subSubCategories) ? sub.subSubCategories : [] })),
+                    }));
+                setCategoryHierarchy(categories);
+                setActiveMainCategory(current => categories.find(category => category.id === current?.id) || categories[0] || null);
+                setCategoriesError('');
+            })
+            .catch(() => {
+                if (isMounted) setCategoriesError('Categories could not be loaded. Please refresh and try again.');
+            })
+            .finally(() => {
+                if (isMounted) setCategoriesLoading(false);
+            });
+        return () => { isMounted = false; };
     }, []);
 
     // Fetch trending products from live API instead of static mock data
@@ -242,8 +61,15 @@ const AllCategories = () => {
 
     const filteredCategories = categoryHierarchy.filter(cat => 
         cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        cat.subCategories.some(sub => sub.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        cat.subCategories.some(sub => sub.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            sub.subSubCategories.some(name => name.toLowerCase().includes(searchQuery.toLowerCase())))
     );
+
+    const CategoryIcon = ({ name }) => {
+        const icons = { Cpu, Settings, Award, Package, Activity, Wifi, Link, Cog, Monitor, Cable, Wrench, Printer, Battery, Layers };
+        const Icon = icons[name] || Layers;
+        return <Icon size={24} />;
+    };
 
     return (
         <div className="all-categories-page">
@@ -274,13 +100,13 @@ const AllCategories = () => {
                 <div className="explorer-layout">
                     {/* Sidebar: Main Categories */}
                     <aside className="main-cat-sidebar">
-                        {filteredCategories.map((cat) => (
+                        {categoriesLoading ? <p className="category-load-state">Loading categories…</p> : categoriesError ? <p className="category-load-state">{categoriesError}</p> : filteredCategories.map((cat) => (
                             <button 
                                 key={cat.id}
                                 className={`main-cat-item ${activeMainCategory?.id === cat.id ? 'active' : ''}`}
                                 onClick={() => setActiveMainCategory(cat)}
                             >
-                                <span className="cat-icon">{cat.icon}</span>
+                                <span className="cat-icon"><CategoryIcon name={cat.icon} /></span>
                                 <span className="cat-name">{cat.name}</span>
                                 <ChevronRight size={16} className="arrow" />
                             </button>
@@ -289,7 +115,7 @@ const AllCategories = () => {
 
                     {/* Main Content: Sub and Sub-Sub Categories */}
                     <main className="sub-cat-content">
-                        {activeMainCategory && (
+                        {!categoriesLoading && !categoriesError && activeMainCategory && (
                             <>
                                 <div className="content-header">
                                     <h2>{activeMainCategory.name}</h2>
@@ -304,7 +130,7 @@ const AllCategories = () => {
                                                 <ul className="sub-sub-list">
                                                     {sub.subSubCategories.map((ssub, sidx) => (
                                                         <li key={sidx}>
-                                                            <RouterLink to={`/category/${ssub.toLowerCase().replace(/\s+/g, '-')}`}>
+                                                            <RouterLink to={`/category/${ssub.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
                                                                 {ssub}
                                                             </RouterLink>
                                                         </li>
@@ -313,7 +139,7 @@ const AllCategories = () => {
                                             ) : (
                                                 <p className="direct-items-msg">Direct selection of products available for this category.</p>
                                             )}
-                                            <RouterLink to={`/category/${sub.name.toLowerCase().replace(/\s+/g, '-')}`} className="view-all-link">
+                                            <RouterLink to={`/category/${sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} className="view-all-link">
                                                 Explore All <ArrowRight size={14} />
                                             </RouterLink>
                                         </div>
