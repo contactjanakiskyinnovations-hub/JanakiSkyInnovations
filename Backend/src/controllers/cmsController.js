@@ -24,10 +24,11 @@ const collectAllImages = (obj) => {
 // @route   GET /api/cms
 // @access  Public
 const getHomeSettings = async (req, res) => {
-    let settings = await HomeSettings.findOne();
+    let settings = await HomeSettings.findOne().lean();
     if (!settings) {
         // Create default if none exists
-        settings = await HomeSettings.create({});
+        const created = await HomeSettings.create({});
+        settings = created.toObject();
     }
     // Ensure contactIcons defaults are provided if empty
     if (!settings.contactIcons || settings.contactIcons.length === 0) {

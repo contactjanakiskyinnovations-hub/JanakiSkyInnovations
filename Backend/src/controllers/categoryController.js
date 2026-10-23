@@ -17,7 +17,7 @@ const getCategories = async (req, res) => {
             ]
         };
     }
-    const categories = await Category.find(query);
+    const categories = await Category.find(query).lean();
     res.json(categories);
 };
 

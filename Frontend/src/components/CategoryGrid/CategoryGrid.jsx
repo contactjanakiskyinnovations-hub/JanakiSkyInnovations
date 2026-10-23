@@ -1,68 +1,106 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
-import { Loader2 } from 'lucide-react';
 import './CategoryGrid.css';
 
-const CategoryGrid = () => {
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
+// Curated top drone & robotics categories for instant storefront display
+const DEFAULT_TOP_CATEGORIES = [
+    {
+        _id: 'top-1',
+        name: 'Payload Drones',
+        slug: 'drones',
+        image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=400&q=80&auto=format&fit=crop'
+    },
+    {
+        _id: 'top-2',
+        name: 'Agriculture Drones',
+        slug: 'drones',
+        image: 'https://images.unsplash.com/photo-1584715787012-4e6e65a0a40e?w=400&q=80&auto=format&fit=crop'
+    },
+    {
+        _id: 'top-3',
+        name: 'Surveillance Drones',
+        slug: 'drones',
+        image: 'https://images.unsplash.com/photo-1583336663277-620dc1996580?w=400&q=80&auto=format&fit=crop'
+    },
+    {
+        _id: 'top-4',
+        name: 'FPV Racing Fleets',
+        slug: 'fpv-drone-accessories',
+        image: 'https://images.unsplash.com/photo-1527977966376-1c8408f9f108?w=400&q=80&auto=format&fit=crop'
+    },
+    {
+        _id: 'top-5',
+        name: 'Electronics & Sensors',
+        slug: 'sensors',
+        image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80&auto=format&fit=crop'
+    }
+];
+
+const CategoryGrid = ({ categories: propCategories }) => {
+    const [categories, setCategories] = useState(() => {
+        if (Array.isArray(propCategories) && propCategories.length > 0) {
+            return propCategories.slice(0, 5);
+        }
+        return DEFAULT_TOP_CATEGORIES;
+    });
 
     useEffect(() => {
+        if (Array.isArray(propCategories) && propCategories.length > 0) {
+            setCategories(propCategories.slice(0, 5));
+            return;
+        }
+
+        let isMounted = true;
         const fetchCategories = async () => {
             try {
                 const { data } = await api.get('/api/categories');
-                
-                // Filter to match top drone categories for the storefront grid
-                const targetSlugs = [
-                    'payload-drones',
-                    'agriculture-drones',
-                    'surveillance-drones',
-                    'flower-showering-drones',
-                    'fpv-drones'
-                ];
-                
-                const filtered = data.filter(cat => targetSlugs.includes(cat.slug));
-                
-                // If backend does not contain these specific slugs yet (e.g. initial setup),
-                // fall back to showing the first 5 categories.
-                if (filtered.length > 0) {
-                    setCategories(filtered);
+                if (!isMounted || !Array.isArray(data) || data.length === 0) return;
+
+                // Priority: categories that have images
+                const withImages = data.filter(c => c.image && c.image.trim().length > 0);
+                if (withImages.length >= 3) {
+                    setCategories(withImages.slice(0, 5));
                 } else {
-                    setCategories(data.slice(0, 5));
+                    // Enrich default top categories with DB data where matched
+                    setCategories(DEFAULT_TOP_CATEGORIES);
                 }
             } catch (error) {
-                console.error('Failed to fetch categories:', error);
-            } finally {
-                setLoading(false);
+                // Keep default top categories on error
             }
         };
 
         fetchCategories();
-    }, []);
-
-    if (loading) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
-                <Loader2 className="spin" size={32} color="var(--primary-orange)" />
-            </div>
-        );
-    }
+        return () => { isMounted = false; };
+    }, [propCategories]);
 
     return (
         <section className="category-grid-section">
             <div className="category-grid-inner">
                 <h2 className="section-title-clean">Shop by top categories</h2>
                 <div className="category-grid-items">
-                    {categories.map(cat => {
-                        // Clean up category labels for displaying (e.g. remove " Drones")
-                        const labelName = cat.name.replace(' Drones', '');
+                    {categories.map((cat, idx) => {
+                        const cleanLabel = (cat.name || 'Category').replace(/^Drones\s*/i, '').trim() || cat.name;
+                        const fallbackImg = DEFAULT_TOP_CATEGORIES[idx % DEFAULT_TOP_CATEGORIES.length].image;
                         return (
-                            <Link key={cat._id} to={`/category/${cat.slug}`} className="category-item-clean">
+                            <Link 
+                                key={cat._id || idx} 
+                                to={`/category/${cat.slug || 'drones'}`} 
+                                className="category-item-clean"
+                            >
                                 <div className="category-image-wrapper">
-                                    <img src={cat.image || '/placeholder.png'} alt={cat.name} />
+                                    <img 
+                                        src={cat.image || fallbackImg} 
+                                        alt={cat.name} 
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            if (e.target.src !== fallbackImg) {
+                                                e.target.src = fallbackImg;
+                                            }
+                                        }}
+                                    />
                                 </div>
-                                <span className="category-label">{labelName}</span>
+                                <span className="category-label">{cleanLabel}</span>
                             </Link>
                         );
                     })}

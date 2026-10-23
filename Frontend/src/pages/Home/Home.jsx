@@ -15,17 +15,21 @@ const Home = () => {
     const [products, setProducts] = useState([]);
     const [services, setServices] = useState([]);
     const [cms, setCms] = useState(null);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchHomeData = async () => {
             try {
-                const [productsRes, cmsRes] = await Promise.all([
-                    api.get('/api/products?limit=100'),
-                    api.get('/api/cms')
+                const [productsRes, cmsRes, catRes] = await Promise.all([
+                    api.get('/api/products?limit=36'),
+                    api.get('/api/cms'),
+                    api.get('/api/categories')
                 ]);
-                setProducts(productsRes.data.products);
+                setProducts(productsRes.data.products || []);
                 setCms(cmsRes.data);
+                setCategories(Array.isArray(catRes.data) ? catRes.data : []);
+
                 // Priority: services inside serviceCategories (flattened).
                 // Fallback: legacy flat services field.
                 const cats = cmsRes.data?.serviceCategories || [];
@@ -89,9 +93,10 @@ const Home = () => {
 
             
             {/* Shop by Category - Horizontal Automatic Slider */}
-            <CategoryBanners title="Shop by Category" />
+            <CategoryBanners title="Shop by Category" banners={cms?.categoryBanners} />
             
-            <CategoryGrid />
+            {/* Shop by top categories */}
+            <CategoryGrid categories={categories} />
             
             {bestsellers.length > 0 && <ProductCarousel title="Shop our bestsellers" products={bestsellers} fullWidth={true} />}
             {newLaunches.length > 0 && <ProductCarousel title="NEW LAUNCH PRODUCTS" products={newLaunches} fullWidth={true} />}

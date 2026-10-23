@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
@@ -6,62 +6,101 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import api from '../../utils/api';
-import { Loader2, ChevronLeft, ChevronRight, ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight, ArrowUpRight } from 'lucide-react';
 import './CategoryBanners.css';
 
-// Append a cache-busting `?v=` (or `&v=`) query param so overwritten CMS images
-// (re-uploaded into the same ImageKit slot) bypass CDN + browser stale caches.
+// Cache-busting helper
 const withVersion = (url, version) => {
     if (!url) return '';
     if (!version) return url;
     return url + (url.includes('?') ? '&' : '?') + `v=${version}`;
 };
 
-// Renders the CMS-managed category banners as a modern, interactive horizontal
-// slider with auto-sliding, pause-on-hover, and responsive touch navigation.
-const CategoryBanners = ({ category, title }) => {
-    const [banners, setBanners] = useState([]);
-    const [loading, setLoading] = useState(true);
+// High-performance curated fallback category banners for instant loading
+const DEFAULT_BANNERS = [
+    {
+        title: 'Payload Drones',
+        category: 'drones',
+        image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=800&q=80&auto=format&fit=crop',
+        link: '/category/drones',
+        isActive: true,
+        _id: 'def-1'
+    },
+    {
+        title: 'FPV Racing Fleets',
+        category: 'fpv-drone-accessories',
+        image: 'https://images.unsplash.com/photo-1527977966376-1c8408f9f108?w=800&q=80&auto=format&fit=crop',
+        link: '/category/fpv-drone-accessories',
+        isActive: true,
+        _id: 'def-2'
+    },
+    {
+        title: 'Agriculture Sprayers',
+        category: 'drones',
+        image: 'https://images.unsplash.com/photo-1584715787012-4e6e65a0a40e?w=800&q=80&auto=format&fit=crop',
+        link: '/category/drones',
+        isActive: true,
+        _id: 'def-3'
+    },
+    {
+        title: 'Sensors & Controllers',
+        category: 'sensors',
+        image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80&auto=format&fit=crop',
+        link: '/category/sensors',
+        isActive: true,
+        _id: 'def-4'
+    },
+    {
+        title: 'Surveillance & Rescue',
+        category: 'drones',
+        image: 'https://images.unsplash.com/photo-1583336663277-620dc1996580?w=800&q=80&auto=format&fit=crop',
+        link: '/category/drones',
+        isActive: true,
+        _id: 'def-5'
+    }
+];
+
+const CategoryBanners = ({ category, title, banners: propBanners }) => {
+    const [banners, setBanners] = useState(() => {
+        if (Array.isArray(propBanners) && propBanners.length > 0) return propBanners;
+        return DEFAULT_BANNERS;
+    });
     const [swiperInstance, setSwiperInstance] = useState(null);
 
+    // Sync from propBanners if updated
     useEffect(() => {
+        if (Array.isArray(propBanners) && propBanners.length > 0) {
+            setBanners(propBanners);
+        }
+    }, [propBanners]);
+
+    // Background revalidation without blocking UI
+    useEffect(() => {
+        if (Array.isArray(propBanners) && propBanners.length > 0) return;
+
+        let isMounted = true;
         const fetchBanners = async () => {
-            setLoading(true);
             try {
                 const { data } = await api.get('/api/cms');
-                const all = Array.isArray(data?.categoryBanners) ? data.categoryBanners : [];
+                const cmsList = Array.isArray(data?.categoryBanners) ? data.categoryBanners : [];
                 const version = data?.imageVersion || 0;
-                setBanners(all.map(b => ({ ...b, _version: version })));
+                if (isMounted && cmsList.length > 0) {
+                    setBanners(cmsList.map(b => ({ ...b, _version: version })));
+                }
             } catch (err) {
-                console.error('Failed to load category banners:', err);
-                setBanners([]);
-            } finally {
-                setLoading(false);
+                // Keep default banners on error
             }
         };
+
         fetchBanners();
-        window.addEventListener('focus', fetchBanners);
-        const timer = setInterval(() => {
-            if (document.visibilityState === 'visible') fetchBanners();
-        }, 20000);
-        return () => {
-            window.removeEventListener('focus', fetchBanners);
-            clearInterval(timer);
-        };
-    }, []);
+        return () => { isMounted = false; };
+    }, [propBanners]);
 
     const list = (banners || []).filter(b => b?.isActive !== false);
     const visible = category
         ? list.filter(b => (b.category || '').toLowerCase() === (category || '').toLowerCase())
-        : list;
+        : (list.length > 0 ? list : DEFAULT_BANNERS);
 
-    if (loading) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '50px 0' }}>
-                <Loader2 className="spin" size={32} color="var(--primary-orange)" />
-            </div>
-        );
-    }
     if (!visible.length) return null;
 
     const isSingle = visible.length === 1;

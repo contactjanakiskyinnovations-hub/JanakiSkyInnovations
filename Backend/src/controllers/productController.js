@@ -223,9 +223,11 @@ const getProducts = async (req, res) => {
 
     const count = await Product.countDocuments(query);
     const products = await Product.find(query)
+        .select('-technicalSpecs -comparisonTable -specifications')
         .sort(sortOptions)
         .limit(pageSize)
-        .skip(pageSize * (page - 1));
+        .skip(pageSize * (page - 1))
+        .lean();
 
     res.json({ 
         products, 

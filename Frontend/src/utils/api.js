@@ -46,4 +46,71 @@ api.interceptors.request.use(
     }
 );
 
+// In-memory request deduplication and short-lived GET cache for static/cms endpoints
+const getCache = new Map();
+const inFlightRequests = new Map();
+const CACHEABLE_PREFIXES = ['/api/cms', '/api/categories'];
+
+const originalGet = api.get.bind(api);
+const originalPost = api.post.bind(api);
+const originalPut = api.put.bind(api);
+const originalDelete = api.delete.bind(api);
+
+api.get = function (url, config) {
+    const isCacheable = CACHEABLE_PREFIXES.some(prefix => String(url).startsWith(prefix));
+
+    if (isCacheable) {
+        const cached = getCache.get(url);
+        if (cached && (Date.now() - cached.timestamp < 12000)) {
+            return Promise.resolve({ ...cached.response });
+        }
+    }
+
+    if (inFlightRequests.has(url)) {
+        return inFlightRequests.get(url);
+    }
+
+    const requestPromise = originalGet(url, config)
+        .then((response) => {
+            if (isCacheable) {
+                getCache.set(url, { timestamp: Date.now(), response });
+            }
+            return response;
+        })
+        .finally(() => {
+            inFlightRequests.delete(url);
+        });
+
+    inFlightRequests.set(url, requestPromise);
+    return requestPromise;
+};
+
+// Invalidate cache on mutations
+const clearCacheForUrl = (url) => {
+    if (!url) {
+        getCache.clear();
+        return;
+    }
+    for (const key of getCache.keys()) {
+        if (key.includes('cms') || key.includes('categories')) {
+            getCache.delete(key);
+        }
+    }
+};
+
+api.post = function (url, data, config) {
+    clearCacheForUrl(url);
+    return originalPost(url, data, config);
+};
+
+api.put = function (url, data, config) {
+    clearCacheForUrl(url);
+    return originalPut(url, data, config);
+};
+
+api.delete = function (url, config) {
+    clearCacheForUrl(url);
+    return originalDelete(url, config);
+};
+
 export default api;
