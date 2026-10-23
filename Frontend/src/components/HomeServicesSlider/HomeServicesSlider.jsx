@@ -17,6 +17,7 @@ import {
     CheckCircle2 
 } from 'lucide-react';
 import './HomeServicesSlider.css';
+import { preserveHyphenatedText } from '../../utils/richText';
 
 // High-fidelity fallback services if none are configured in CMS
 const DEFAULT_SERVICES = [
@@ -194,10 +195,10 @@ const HomeServicesSlider = ({ services = [] }) => {
                                                 /<[a-z][\s\S]*>/i.test(service.description) ? (
                                                     <div
                                                         className="service-slider-desc service-slider-html-content"
-                                                        dangerouslySetInnerHTML={{ __html: service.description }}
+                                                        dangerouslySetInnerHTML={{ __html: preserveHyphenatedText(service.description) }}
                                                     />
                                                 ) : (
-                                                    <p className="service-slider-desc">{service.description}</p>
+                                                    <p className="service-slider-desc">{preserveHyphenatedText(service.description)}</p>
                                                 )
                                             )}
 

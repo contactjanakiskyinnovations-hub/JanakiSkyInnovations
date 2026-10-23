@@ -187,7 +187,7 @@
     color: #475569;
     margin-bottom: 30px;
     overflow-wrap: break-word;
-    word-break: break-word;
+    word-break: normal;
     max-width: 100%;
     overflow: hidden;
 }
@@ -279,7 +279,7 @@
 /* Two-Column Details Layout */
 .details-two-column-layout {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     gap: 30px;
     margin-top: 40px;
 }
@@ -289,6 +289,7 @@
     display: flex;
     flex-direction: column;
     gap: 30px;
+    min-width: 0;
 }
 
 .details-card {
@@ -464,15 +465,34 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .tabs-header-nav {
     display: flex;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     border-bottom: 1px solid #e2e8f0;
     background: #fafbfd;
     overflow-x: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
+}
+
+.tabs-header-nav.fit-tabs {
+    overflow-x: hidden;
+}
+
+.tabs-header-nav.fit-tabs .tab-nav-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 14px 8px;
+    font-size: clamp(11px, 1vw, 13px);
+}
+
+.tabs-header-nav.scrollable-tabs .tab-nav-btn {
+    flex: 0 0 auto;
 }
 
 .tabs-header-nav::-webkit-scrollbar {
@@ -708,6 +728,11 @@
         padding: 14px 16px;
         font-size: 14px;
     }
+
+    .tabs-header-nav.fit-tabs .tab-nav-btn {
+        padding: 12px 6px;
+        font-size: 12px;
+    }
 }
 
 @media (max-width: 380px) {
@@ -839,7 +864,7 @@
     /* Prevent horizontal overflow from long content */
     max-width: 100%;
     overflow-wrap: break-word;
-    word-break: break-word;
+    word-break: normal;
     overflow: hidden;
 }
 
@@ -850,7 +875,7 @@
     margin-bottom: 10px;
     min-height: 1.25em;
     overflow-wrap: break-word;
-    word-break: break-word;
+    word-break: normal;
 }
 
 .overview-html-content ul,
@@ -871,7 +896,7 @@
 .instruction-html-content li {
     margin-bottom: 6px;
     overflow-wrap: break-word;
-    word-break: break-word;
+    word-break: normal;
 }
 
 .overview-html-content strong,
@@ -890,7 +915,7 @@
     margin: 12px 0;
     font-style: italic;
     overflow-wrap: break-word;
-    word-break: break-word;
+    word-break: normal;
 }
 
 /* Prevent any image or media inside rich text from overflowing */

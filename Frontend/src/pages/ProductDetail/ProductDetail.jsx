@@ -8,11 +8,34 @@ import ProductFilterSort from '../../components/ProductFilterSort/ProductFilterS
 import ViewToggle from '../../components/ViewToggle/ViewToggle';
 import '../../components/ViewToggle/ViewToggle.css';
 import WhatsappIcon from '../../components/icons/WhatsappIcon';
-import './ProductDetail.css';
 import { withVat, formatINR } from '../../utils/price';
 import Seo, { buildProductSchema, buildBreadcrumbSchema } from '../../utils/seo';
+import { preserveHyphenatedText } from '../../utils/richText';
+import './ProductDetail.css';
 
+const preserveHyphenatedWords = preserveHyphenatedText;
 
+const getPlainShortSummary = (content) => {
+    const withBreakSpaces = String(content || '')
+        .replace(/<br\s*\/?\s*>/gi, ' ')
+        .replace(/<\/(?:p|div|li|h[1-6])\s*>/gi, ' ');
+    const text = new DOMParser().parseFromString(withBreakSpaces, 'text/html').body.textContent;
+    return text.replace(/\s+/g, ' ').trim()
+        .replace(/(\S)\s+-\s+(\S)/g, '$1\u00a0-\u00a0$2')
+        .replace(/(\S)-(?=\S)/g, '$1\u2011');
+};
+
+const hasHyphenatedLineBreak = (content) => {
+    const source = String(content || '');
+    if (!/<[a-z][\s\S]*>/i.test(source)) return /\S\s*-\s*[\r\n]+\s*\S/.test(source);
+
+    const lineBreakMarker = '\uE000';
+    const marked = source
+        .replace(/<br\s*\/?\s*>/gi, lineBreakMarker)
+        .replace(/<\/(?:p|div|li|h[1-6])\s*>/gi, lineBreakMarker);
+    const text = new DOMParser().parseFromString(marked, 'text/html').body.textContent;
+    return new RegExp(`\\S\\s*-\\s*${lineBreakMarker}\\s*\\S`).test(text);
+};
 const ProductDetail = () => {
     const { id } = useParams();
     const { addToCart, toggleWishlist, wishlistItems, cartItems, updateQuantity } = useCart();
@@ -164,16 +187,24 @@ const ProductDetail = () => {
     const renderDescription = () => {
         if (!product.description) return null;
 
+        // Quill's saved line break after a dash is intentional markup, so render
+        // only this affected description as normalized text to remove it.
+        if (hasHyphenatedLineBreak(product.description)) {
+            return <p className="overview-paragraph">{getPlainShortSummary(product.description)}</p>;
+        }
+
         // If content contains HTML tags from Quill
         if (/<[a-z][\s\S]*>/i.test(product.description)) {
             return (
                 <div 
                     className="overview-html-content"
-                    dangerouslySetInnerHTML={{ __html: product.description }} 
+                    dangerouslySetInnerHTML={{ __html: preserveHyphenatedWords(product.description) }}
                 />
             );
         }
-        
+
+        // A plain-text editor newline immediately after a dash is a soft wrap,
+        // not a new overview paragraph. Keep that phrase together as well.
         const lines = product.description.split('\n').map(l => l.trim()).filter(Boolean);
         return lines.map((line, idx) => {
             if (line.startsWith('●')) {
@@ -185,7 +216,7 @@ const ProductDetail = () => {
                         <div key={idx} className="overview-bullet-item">
                             <span className="bullet-dot"></span>
                             <p>
-                                <strong>{parts[0].trim()}</strong> – {parts.slice(1).join('–').trim()}
+                                <strong>{preserveHyphenatedWords(parts[0].trim())}</strong> – {preserveHyphenatedWords(parts.slice(1).join('–').trim())}
                             </p>
                         </div>
                     );
@@ -193,11 +224,11 @@ const ProductDetail = () => {
                 return (
                     <div key={idx} className="overview-bullet-item">
                         <span className="bullet-dot"></span>
-                        <p>{cleanLine}</p>
+                        <p>{preserveHyphenatedWords(cleanLine)}</p>
                     </div>
                 );
             }
-            return <p key={idx} className="overview-paragraph">{line}</p>;
+            return <p key={idx} className="overview-paragraph">{preserveHyphenatedWords(line)}</p>;
         });
     };
 
@@ -216,7 +247,7 @@ const ProductDetail = () => {
             return (
                 <div 
                     className="in-box-html-content"
-                    dangerouslySetInnerHTML={{ __html: product.inTheBox }}
+                    dangerouslySetInnerHTML={{ __html: preserveHyphenatedWords(product.inTheBox) }}
                 />
             );
         }
@@ -229,7 +260,7 @@ const ProductDetail = () => {
                     return (
                         <div key={idx} className="in-box-item">
                             <CheckCircle2 className="in-box-icon" size={18} />
-                            <span>{cleanItem}</span>
+                            <span>{preserveHyphenatedWords(cleanItem)}</span>
                         </div>
                     );
                 })}
@@ -239,6 +270,8 @@ const ProductDetail = () => {
 
     const comparisonTable = product.comparisonTable;
     const hasComparisonTable = comparisonTable?.isEnabled && comparisonTable.rows?.length > 0;
+    const hasInstructions = Boolean(product.howToUse?.trim() || product.assemblyMaintenance?.trim());
+    const tabCount = 1 + Number(hasInstructions) + Number(Boolean(hasComparisonTable));
 
     return (
         <div className="product-detail-page">
@@ -310,10 +343,7 @@ const ProductDetail = () => {
                         {(() => {
                             const summary = product.shortSummary || product.description;
                             if (!summary) return null;
-                            if (/<[a-z][\s\S]*>/i.test(summary)) {
-                                return <div className="short-summary overview-html-content" dangerouslySetInnerHTML={{ __html: summary }} />;
-                            }
-                            return <p className="short-summary">{summary}</p>;
+                            return <p className="short-summary">{getPlainShortSummary(summary)}</p>;
                         })()}
 
                         {/* Stock availability indicator */}
@@ -419,7 +449,7 @@ const ProductDetail = () => {
                                     {/<[a-z][\s\S]*>/i.test(product.keyFeatures) ? (
                                         <div 
                                             className="key-features-html-content"
-                                            dangerouslySetInnerHTML={{ __html: product.keyFeatures }}
+                                            dangerouslySetInnerHTML={{ __html: preserveHyphenatedWords(product.keyFeatures) }}
                                         />
                                     ) : (
                                         <div className="key-features-list">
@@ -433,7 +463,7 @@ const ProductDetail = () => {
                                                     return (
                                                         <div key={idx} className="key-feature-item">
                                                             <span className="feature-number">{idx + 1}</span>
-                                                            <p>{cleanFeature}</p>
+                                                    <p>{preserveHyphenatedWords(cleanFeature)}</p>
                                                         </div>
                                                     );
                                                 })}
@@ -456,14 +486,14 @@ const ProductDetail = () => {
                     {/* Right Column: Tabbed Specifications & Comparison Table */}
                     <div className="right-details-column">
                         <div className="details-card interactive-tabs-card">
-                            <div className="tabs-header-nav">
+                            <div className={`tabs-header-nav ${tabCount > 2 ? 'scrollable-tabs' : 'fit-tabs'}`}>
                                 <button 
                                     className={`tab-nav-btn ${activeTab === 'specs' ? 'active' : ''}`}
                                     onClick={() => setActiveTab('specs')}
                                 >
                                     Specifications
                                 </button>
-                                {(product.howToUse?.trim() || product.assemblyMaintenance?.trim()) && (
+                                {hasInstructions && (
                                     <button 
                                         className={`tab-nav-btn ${activeTab === 'instructions' ? 'active' : ''}`}
                                         onClick={() => setActiveTab('instructions')}
@@ -519,9 +549,9 @@ const ProductDetail = () => {
                                             <div className="instruction-block">
                                                 <h4 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '10px', color: '#1e293b' }}>How to Use</h4>
                                                 {/<[a-z][\s\S]*>/i.test(product.howToUse) ? (
-                                                    <div className="instruction-html-content" dangerouslySetInnerHTML={{ __html: product.howToUse }} />
+                                                    <div className="instruction-html-content" dangerouslySetInnerHTML={{ __html: preserveHyphenatedWords(product.howToUse) }} />
                                                 ) : (
-                                                    <p style={{ whiteSpace: 'pre-line', lineHeight: '1.6', color: '#475569' }}>{product.howToUse}</p>
+                                                    <p style={{ whiteSpace: 'pre-line', lineHeight: '1.6', color: '#475569' }}>{preserveHyphenatedWords(product.howToUse)}</p>
                                                 )}
                                             </div>
                                         )}
@@ -529,9 +559,9 @@ const ProductDetail = () => {
                                             <div className="instruction-block" style={{ borderTop: product.howToUse?.trim() ? '1px solid #f1f5f9' : 'none', paddingTop: product.howToUse?.trim() ? '16px' : '0' }}>
                                                 <h4 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '10px', color: '#1e293b' }}>Assembly & Maintenance</h4>
                                                 {/<[a-z][\s\S]*>/i.test(product.assemblyMaintenance) ? (
-                                                    <div className="instruction-html-content" dangerouslySetInnerHTML={{ __html: product.assemblyMaintenance }} />
+                                                    <div className="instruction-html-content" dangerouslySetInnerHTML={{ __html: preserveHyphenatedWords(product.assemblyMaintenance) }} />
                                                 ) : (
-                                                    <p style={{ whiteSpace: 'pre-line', lineHeight: '1.6', color: '#475569' }}>{product.assemblyMaintenance}</p>
+                                                    <p style={{ whiteSpace: 'pre-line', lineHeight: '1.6', color: '#475569' }}>{preserveHyphenatedWords(product.assemblyMaintenance)}</p>
                                                 )}
                                             </div>
                                         )}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Shield, Hammer, MapPin, Wind, Sparkles, Send, CheckCircle, Loader2, ArrowRight, Check } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../utils/api';
+import { preserveHyphenatedText } from '../../utils/richText';
 import './OurServices.css';
 import Seo, { buildServiceCategorySchema } from '../../utils/seo';
 
@@ -320,9 +321,9 @@ const OurServices = () => {
                     {(() => {
                         const catDesc = currentCategory?.description || 'High-end technical expertise paired with state-of-the-art drone fleets to guarantee unmatched performance.';
                         if (/<[a-z][\s\S]*>/i.test(catDesc)) {
-                            return <div className="service-cat-desc-html" dangerouslySetInnerHTML={{ __html: catDesc }} />;
+                            return <div className="service-cat-desc-html" dangerouslySetInnerHTML={{ __html: preserveHyphenatedText(catDesc) }} />;
                         }
-                        return <p>{catDesc}</p>;
+                        return <p>{preserveHyphenatedText(catDesc)}</p>;
                     })()}
                 </div>
 
@@ -368,10 +369,10 @@ const OurServices = () => {
                                             /<[a-z][\s\S]*>/i.test(service.description) ? (
                                                 <div
                                                     className="service-desc service-html-content"
-                                                    dangerouslySetInnerHTML={{ __html: service.description }}
+                                                    dangerouslySetInnerHTML={{ __html: preserveHyphenatedText(service.description) }}
                                                 />
                                             ) : (
-                                                <p className="service-desc">{service.description}</p>
+                                                <p className="service-desc">{preserveHyphenatedText(service.description)}</p>
                                             )
                                         )}
                                         {service.features && service.features.length > 0 && (

@@ -5,6 +5,7 @@ import ProductCarousel from '../../components/ProductCarousel/ProductCarousel';
 import api from '../../utils/api';
 import './AllCategories.css';
 import Seo from '../../utils/seo';
+import { isRichTextHtml, preserveHyphenatedText } from '../../utils/richText';
 
 const AllCategories = () => {
     const [categoryHierarchy, setCategoryHierarchy] = useState([]);
@@ -119,7 +120,11 @@ const AllCategories = () => {
                             <>
                                 <div className="content-header">
                                     <h2>{activeMainCategory.name}</h2>
-                                    <p>{activeMainCategory.description}</p>
+                                    {isRichTextHtml(activeMainCategory.description) ? (
+                                        <div className="category-description-html" dangerouslySetInnerHTML={{ __html: preserveHyphenatedText(activeMainCategory.description) }} />
+                                    ) : (
+                                        <p>{preserveHyphenatedText(activeMainCategory.description)}</p>
+                                    )}
                                 </div>
 
                                 <div className="sub-cat-grid">

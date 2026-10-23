@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import api from '../../utils/api';
 import Seo from '../../utils/seo';
+import { preserveHyphenatedText } from '../../utils/richText';
 import './AboutStore.css';
 
 const DEFAULT_ABOUT = {
@@ -196,11 +197,11 @@ const AboutStore = () => {
                                 {/<[a-z][\s\S]*>/i.test(aboutData.story) ? (
                                     <div 
                                         className="story-html-content" 
-                                        dangerouslySetInnerHTML={{ __html: aboutData.story }} 
+                                        dangerouslySetInnerHTML={{ __html: preserveHyphenatedText(aboutData.story) }}
                                     />
                                 ) : (
                                     (aboutData.story || '').split('\n\n').map((paragraph, idx) => (
-                                        <p key={idx}>{paragraph}</p>
+                                        <p key={idx}>{preserveHyphenatedText(paragraph)}</p>
                                     ))
                                 )}
                             </div>
@@ -254,10 +255,10 @@ const AboutStore = () => {
                             {/<[a-z][\s\S]*>/i.test(aboutData.mission) ? (
                                 <div 
                                     className="mv-html-content" 
-                                    dangerouslySetInnerHTML={{ __html: aboutData.mission }} 
+                                    dangerouslySetInnerHTML={{ __html: preserveHyphenatedText(aboutData.mission) }}
                                 />
                             ) : (
-                                <p>{aboutData.mission}</p>
+                                <p>{preserveHyphenatedText(aboutData.mission)}</p>
                             )}
                         </div>
 
@@ -271,10 +272,10 @@ const AboutStore = () => {
                             {/<[a-z][\s\S]*>/i.test(aboutData.vision) ? (
                                 <div 
                                     className="mv-html-content" 
-                                    dangerouslySetInnerHTML={{ __html: aboutData.vision }} 
+                                    dangerouslySetInnerHTML={{ __html: preserveHyphenatedText(aboutData.vision) }}
                                 />
                             ) : (
-                                <p>{aboutData.vision}</p>
+                                <p>{preserveHyphenatedText(aboutData.vision)}</p>
                             )}
                         </div>
                     </div>
@@ -300,9 +301,9 @@ const AboutStore = () => {
                                     <h4 className="feature-title">{feat.title}</h4>
                                     {feat.description && (
                                         /<[a-z][\s\S]*>/i.test(feat.description) ? (
-                                            <div className="feature-desc feature-html-desc" dangerouslySetInnerHTML={{ __html: feat.description }} />
+                                            <div className="feature-desc feature-html-desc" dangerouslySetInnerHTML={{ __html: preserveHyphenatedText(feat.description) }} />
                                         ) : (
-                                            <p className="feature-desc">{feat.description}</p>
+                                            <p className="feature-desc">{preserveHyphenatedText(feat.description)}</p>
                                         )
                                     )}
                                 </div>
