@@ -17,9 +17,6 @@ const orderRoutes = require('./routes/orderRoutes');
 const serviceRequestRoutes = require('./routes/serviceRequestRoutes');
 const seoRoutes = require('./routes/seoRoutes');
 
-// Connect to Database
-connectDB();
-
 // Sync Mongoose indexes after connection to fix stale unique indexes
 // (e.g. a non-sparse email_1 unique index causing E11000 on null emails).
 mongoose.connection.once('open', async () => {
@@ -72,7 +69,23 @@ app.use((req, res, next) => {
     next();
 });
 
+// Serverless instances can receive requests before a background MongoDB
+// connection has completed. Gate database-backed routes on the shared
+// connection promise so they never wait in Mongoose's query buffer.
+const requireDatabase = async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        res.status(503).json({
+            message: 'Database is unavailable. Please try again shortly.',
+        });
+    }
+};
+
 // Routes
+app.use('/api', requireDatabase);
+app.use('/sitemap.xml', requireDatabase);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
