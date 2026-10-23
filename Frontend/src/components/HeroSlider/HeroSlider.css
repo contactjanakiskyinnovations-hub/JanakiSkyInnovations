@@ -34,14 +34,14 @@
     object-fit: cover;
     object-position: center;
     display: block;
-    filter: brightness(1.10);
+    filter: brightness(1.22);
 }
 
 .hero-slide-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to right, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.35) 45%, rgba(0, 0, 0, 0) 80%),
-                linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 45%);
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.20) 45%, rgba(0, 0, 0, 0) 80%),
+                linear-gradient(to top, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 45%);
     display: flex;
     align-items: flex-end;
     padding-bottom: 48px;

@@ -5,16 +5,29 @@ import ProductFilterSort from '../../components/ProductFilterSort/ProductFilterS
 import ViewToggle from '../../components/ViewToggle/ViewToggle';
 import '../../components/ViewToggle/ViewToggle.css';
 import api from '../../utils/api';
-import { Loader2, Layers, ChevronRight, Check, RotateCcw } from 'lucide-react';
+import { Loader2, Layers, ChevronRight, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
 import './CategoryPage.css';
 import Seo, { buildItemListSchema, humanize } from '../../utils/seo';
 
-/* ── Emoji map for sub-categories ── */
+/* ── Rich Emoji map for sub-categories ── */
 const SUB_EMOJIS = {
-    'payload': '📦',
-    'agriculture': '🌾',
-    'surveillance': '🛡️',
     'dji': '🛸',
+    'autel': '✈️',
+    'flower': '🌸',
+    'fpv': '🥽',
+    'agriculture': '🌾',
+    'payload': '📦',
+    'surveillance': '🛡️',
+    'cleaning': '🧼',
+    'rescue': '🚁',
+    'disaster': '🚁',
+    'water': '🌊',
+    'underwater': '🌊',
+    'fire': '🚒',
+    'firefighting': '🚒',
+    'tethered': '⚓',
+    'drone': '✈️',
+    'robot': '🤖',
     'basic components': '🔧',
     'led': '💡',
     'potentiometer': '🎛️',
@@ -56,23 +69,13 @@ const SUB_EMOJIS = {
     'filament': '🖨️',
     'battery': '🔋',
     'power': '⚡',
-    'drone': '✈️',
-    'frame': '🏗️',
-    'flight': '🕹️',
-    'controller': '🕹️',
-    'propeller': '🌀',
-    'esc': '⚡',
-    'fpv': '🥽',
-    'goggle': '🥽',
-    'transmitter': '📡',
-    'receiver': '📡',
     'tools': '🔧'
 };
 
 const getSubEmoji = (name) => {
     const lower = String(name || '').toLowerCase();
     const match = Object.keys(SUB_EMOJIS).find(k => lower.includes(k));
-    return match ? SUB_EMOJIS[match] : '📂';
+    return match ? SUB_EMOJIS[match] : '✈️';
 };
 
 const slugifyKey = (v) => String(v || '').trim().toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
@@ -82,9 +85,12 @@ const CategoryPage = () => {
     const { id } = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
 
+    // Direct mode check: from navbar or explicit ?direct=1
+    const isDirect = searchParams.get('direct') === '1' || searchParams.get('from') === 'nav';
+
     const [allCategories, setAllCategories] = useState([]);
     const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [pages, setPages] = useState(1);
     const [viewMode, setViewMode] = useState('grid');
@@ -100,8 +106,6 @@ const CategoryPage = () => {
     const [cmsBanners, setCmsBanners] = useState([]);
     const [cmsImageVersion, setCmsImageVersion] = useState(0);
     const cmsFetchInFlight = useRef(false);
-    const cmsLastVersion = useRef(0);
-    const cmsLastJson = useRef('');
 
     // Fetch CMS banners
     const fetchCms = useCallback(async () => {
@@ -111,15 +115,10 @@ const CategoryPage = () => {
             const { data } = await api.get('/api/cms');
             const banners = Array.isArray(data?.categoryBanners) ? data.categoryBanners : [];
             const version = data?.imageVersion || 0;
-            const json = JSON.stringify(banners);
-            if (json !== cmsLastJson.current || version !== cmsLastVersion.current) {
-                cmsLastJson.current = json;
-                cmsLastVersion.current = version;
-                setCmsBanners(banners);
-                setCmsImageVersion(version);
-            }
+            setCmsBanners(banners);
+            setCmsImageVersion(version);
         } catch (error) {
-            console.error('Failed to load category banners:', error);
+            // Keep fallback
         } finally {
             cmsFetchInFlight.current = false;
         }
@@ -140,14 +139,6 @@ const CategoryPage = () => {
     useEffect(() => {
         fetchCms();
         fetchCategories();
-        window.addEventListener('focus', fetchCms);
-        const timer = setInterval(() => {
-            if (document.visibilityState === 'visible') fetchCms();
-        }, 20000);
-        return () => {
-            window.removeEventListener('focus', fetchCms);
-            clearInterval(timer);
-        };
     }, [fetchCms, fetchCategories]);
 
     // Resolve matching category & hierarchy from DB
@@ -210,8 +201,10 @@ const CategoryPage = () => {
     }, [id, allCategories]);
 
     const activeCategory = activeHierarchy.category;
-    const currentSub = searchParams.get('sub') || activeHierarchy.subCategory || '';
-    const currentSubSub = searchParams.get('subsub') || activeHierarchy.subSubCategory || '';
+
+    // Active sub and subsub from URL or hierarchy match
+    const currentSub = searchParams.get('sub') || (isDirect ? activeHierarchy.subCategory : '') || '';
+    const currentSubSub = searchParams.get('subsub') || (isDirect ? activeHierarchy.subSubCategory : '') || '';
 
     // Find the currently selected sub-category object
     const selectedSubObj = useMemo(() => {
@@ -232,7 +225,6 @@ const CategoryPage = () => {
         });
 
         if (!match || !match.image) {
-            // Fall back to category's image in DB if available
             if (activeCategory?.image) {
                 return { bannerImage: activeCategory.image, bannerLink: '' };
             }
@@ -246,13 +238,38 @@ const CategoryPage = () => {
         return { bannerImage: versionedUrl, bannerLink: (match.link || '').startsWith('/') ? match.link : '' };
     }, [cmsBanners, id, cmsImageVersion, activeCategory]);
 
-    // Reset pagination on category change
+    // Reset pagination on category or filter change
     useEffect(() => {
         setPage(1);
-    }, [id]);
+    }, [id, currentSub, currentSubSub]);
 
-    // Fetch Products (respecting hierarchy selection)
+    // ── Drill-down Decision: Should products be displayed on this step? ──
+    // Rule:
+    // 1. If isDirect (from navbar) -> always show products
+    // 2. If category has no subcategories -> show products
+    // 3. If in Level 1 (no sub selected) -> DO NOT show products (show related sub-categories only)
+    // 4. If in Level 2 (sub selected):
+    //    - If sub has sub-sub-categories AND no sub-sub selected -> DO NOT show products (show sub-subcategories only)
+    //    - If sub has NO sub-sub-categories -> show all products for that subcategory
+    // 5. If in Level 3 (sub-sub selected) -> show products for that sub-sub-category
+    const hasSubCategories = activeCategory && Array.isArray(activeCategory.subCategories) && activeCategory.subCategories.length > 0;
+    const hasSubSubCategories = selectedSubObj && Array.isArray(selectedSubObj.subSubCategories) && selectedSubObj.subSubCategories.length > 0;
+
+    const shouldShowProducts = Boolean(
+        isDirect ||
+        !hasSubCategories ||
+        (currentSub && (!hasSubSubCategories || currentSubSub))
+    );
+
+    // Fetch Products only when products are supposed to be displayed
     useEffect(() => {
+        if (!shouldShowProducts) {
+            setProducts([]);
+            setLoading(false);
+            return;
+        }
+
+        let isMounted = true;
         const fetchCategoryProducts = async () => {
             setLoading(true);
             try {
@@ -280,41 +297,50 @@ const CategoryPage = () => {
                 if (filterState.name) params.append('name', filterState.name);
 
                 const { data } = await api.get(`/api/products?${params.toString()}`);
-                setProducts(data.products || []);
-                setPages(data.pages || 1);
+                if (isMounted) {
+                    setProducts(data.products || []);
+                    setPages(data.pages || 1);
+                }
             } catch (error) {
                 console.error('Failed to fetch category products:', error);
-                setProducts([]);
+                if (isMounted) setProducts([]);
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
 
         fetchCategoryProducts();
-    }, [id, activeCategory?.name, currentSub, currentSubSub, page, filterState]);
+        return () => { isMounted = false; };
+    }, [shouldShowProducts, id, activeCategory?.name, currentSub, currentSubSub, page, filterState]);
 
-    // Hierarchy interactions
+    // ── Drilldown Handlers ──
     const handleSubClick = (subName) => {
-        setPage(1);
-        if (currentSub.toLowerCase() === subName.toLowerCase() && !currentSubSub) {
-            setSearchParams({});
-        } else {
-            setSearchParams({ sub: subName });
-        }
+        setSearchParams({ sub: subName });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleSubSubClick = (subSubName) => {
-        setPage(1);
-        if (currentSubSub.toLowerCase() === subSubName.toLowerCase()) {
-            setSearchParams({ sub: currentSub });
-        } else {
-            setSearchParams({ sub: currentSub, subsub: subSubName });
-        }
+        setSearchParams({ sub: currentSub, subsub: subSubName });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleClearAllFilters = () => {
-        setPage(1);
+    const handleBackToSubs = () => {
         setSearchParams({});
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleBackToSubSubs = () => {
+        setSearchParams({ sub: currentSub });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleBypassToProducts = () => {
+        const nextParams = {};
+        if (currentSub) nextParams.sub = currentSub;
+        if (currentSubSub) nextParams.subsub = currentSubSub;
+        nextParams.direct = '1';
+        setSearchParams(nextParams);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // Derived headings
@@ -332,7 +358,7 @@ const CategoryPage = () => {
                 jsonLd={buildItemListSchema(`${humanize(productsTitle)} Products`, products, (p) => `/product/${p._id}`)}
             />
 
-            {/* Category Hero Banner */}
+            {/* Category Hero Banner (No overlaid text - clean visual banner) */}
             {bannerImage && (
                 <div 
                     className="category-hero" 
@@ -342,11 +368,13 @@ const CategoryPage = () => {
                 </div>
             )}
 
-            <div className="container" style={{ padding: '40px 0 60px' }}>
+            <div className="container" style={{ padding: '30px 0 60px' }}>
 
-                {/* ── Category Hierarchy Section ── */}
-                {activeCategory && activeCategory.subCategories && activeCategory.subCategories.length > 0 && (
-                    <section className="category-hierarchy-container" aria-label="Category Hierarchy">
+                {/* ═══════════════════════════════════════════════════════════════════
+                    LEVEL 1: CATEGORY CLICKED → SHOW RELATED SUB-CATEGORIES ONLY
+                    ═══════════════════════════════════════════════════════════════════ */}
+                {!isDirect && hasSubCategories && !currentSub && (
+                    <section className="category-hierarchy-container" aria-label="Sub Categories">
                         <div className="category-hierarchy-header">
                             <div className="category-hierarchy-title-group">
                                 <h2 className="category-hierarchy-title">
@@ -358,63 +386,26 @@ const CategoryPage = () => {
                                     <ChevronRight size={13} />
                                     <Link to="/all-categories">All Categories</Link>
                                     <ChevronRight size={13} />
-                                    <button 
-                                        type="button" 
-                                        className={`crumb-btn ${!currentSub ? 'crumb-active' : ''}`}
-                                        onClick={handleClearAllFilters}
-                                    >
-                                        {activeCategory.name}
-                                    </button>
-                                    {currentSub && (
-                                        <>
-                                            <ChevronRight size={13} />
-                                            <button 
-                                                type="button" 
-                                                className={`crumb-btn ${!currentSubSub ? 'crumb-active' : ''}`}
-                                                onClick={() => setSearchParams({ sub: currentSub })}
-                                            >
-                                                {currentSub}
-                                            </button>
-                                        </>
-                                    )}
-                                    {currentSubSub && (
-                                        <>
-                                            <ChevronRight size={13} />
-                                            <span className="crumb-active">{currentSubSub}</span>
-                                        </>
-                                    )}
+                                    <span className="crumb-active">{activeCategory.name}</span>
                                 </div>
                             </div>
-
-                            {(currentSub || currentSubSub) && (
-                                <button 
-                                    type="button" 
-                                    className="cat-reset-all-btn" 
-                                    onClick={handleClearAllFilters}
-                                    title="View all products across entire category"
-                                >
-                                    <RotateCcw size={13} />
-                                    <span>View All {activeCategory.name}</span>
-                                </button>
-                            )}
                         </div>
 
-                        {/* Sub-categories grid */}
+                        {/* Grid of Sub-Category Cards (matching customer-facing cards in image) */}
                         <div className="category-hierarchy-grid">
                             {activeCategory.subCategories.map((sub, idx) => {
-                                const isActive = currentSub.toLowerCase() === sub.name.toLowerCase();
                                 const subSubCount = (sub.subSubCategories || []).length;
                                 return (
                                     <button
                                         key={sub._id || idx}
                                         type="button"
-                                        className={`cat-hierarchy-card ${isActive ? 'active' : ''}`}
+                                        className="cat-hierarchy-card"
                                         onClick={() => handleSubClick(sub.name)}
                                     >
                                         <div className="cat-hierarchy-card-top">
                                             <span className="cat-hierarchy-card-emoji">{getSubEmoji(sub.name)}</span>
                                             <span className="cat-hierarchy-card-status">
-                                                {isActive ? 'Active' : (subSubCount > 0 ? `${subSubCount} Types` : 'Browse')}
+                                                {subSubCount > 0 ? `${subSubCount} TYPES` : 'BROWSE'}
                                             </span>
                                         </div>
                                         <span className="cat-hierarchy-card-name">{sub.name}</span>
@@ -429,164 +420,219 @@ const CategoryPage = () => {
                             })}
                         </div>
 
-                        {/* Sub-sub-categories row for selected sub-category */}
-                        {selectedSubObj && selectedSubObj.subSubCategories && selectedSubObj.subSubCategories.length > 0 && (
-                            <div className="cat-subsubs-panel">
-                                <span className="cat-subsubs-label">
-                                    <span>Types in {selectedSubObj.name}:</span>
-                                </span>
-                                <div className="cat-subsubs-pills">
-                                    <button
-                                        type="button"
-                                        className={`cat-subsub-pill ${!currentSubSub ? 'active' : ''}`}
-                                        onClick={() => setSearchParams({ sub: currentSub })}
-                                    >
-                                        <span>All {selectedSubObj.name}</span>
-                                    </button>
-                                    {selectedSubObj.subSubCategories.map((ssub, sidx) => {
-                                        const isSubSubActive = currentSubSub.toLowerCase() === ssub.toLowerCase();
-                                        return (
-                                            <button
-                                                key={sidx}
-                                                type="button"
-                                                className={`cat-subsub-pill ${isSubSubActive ? 'active' : ''}`}
-                                                onClick={() => handleSubSubClick(ssub)}
-                                            >
-                                                <span>{ssub}</span>
-                                                {isSubSubActive && <Check size={14} />}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
+                        <div className="cat-bypass-wrap">
+                            <button 
+                                type="button" 
+                                className="cat-bypass-link" 
+                                onClick={handleBypassToProducts}
+                            >
+                                <span>Or view all {activeCategory.name} products directly</span>
+                                <ArrowRight size={14} />
+                            </button>
+                        </div>
                     </section>
                 )}
 
-                {/* ── Active Selection Indicator Bar ── */}
-                {activeCategory && (currentSub || currentSubSub) && (
-                    <div className="cat-active-context-bar">
-                        <span className="cat-active-context-tag">
-                            <span>Filtering by:</span>
-                            <strong>{activeCategory.name}</strong>
-                            {currentSub && <><span>›</span><strong>{currentSub}</strong></>}
-                            {currentSubSub && <><span>›</span><strong>{currentSubSub}</strong></>}
-                        </span>
+                {/* ═══════════════════════════════════════════════════════════════════
+                    LEVEL 2: SUB-CATEGORY CLICKED → SHOW SUB-SUBCATEGORIES ONLY (IF PRESENT)
+                    ═══════════════════════════════════════════════════════════════════ */}
+                {!isDirect && currentSub && hasSubSubCategories && !currentSubSub && (
+                    <section className="category-hierarchy-container" aria-label="Sub-Sub Categories">
                         <button 
                             type="button" 
-                            className="cat-active-clear-link" 
-                            onClick={handleClearAllFilters}
+                            className="cat-drilldown-back-btn" 
+                            onClick={handleBackToSubs}
                         >
-                            Reset to All {activeCategory.name}
+                            <ArrowLeft size={16} />
+                            <span>Back to {activeCategory?.name || 'Category'} Sub-Categories</span>
                         </button>
-                    </div>
-                )}
 
-                {/* ── Products Section (At the last) ── */}
-                <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                    <div>
-                        <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#333', textTransform: 'capitalize' }}>
-                            Products in {productsTitle}
-                        </h3>
-                        <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: '#64748b' }}>
-                            Showing {products.length} product{products.length !== 1 ? 's' : ''} available
-                        </p>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <ViewToggle view={viewMode} onViewChange={setViewMode} />
-                        <ProductFilterSort 
-                            currentFilters={filterState} 
-                            onFilterChange={(newFilters) => { setFilterState(newFilters); setPage(1); }} 
-                        />
-                    </div>
-                </div>
+                        <div className="category-hierarchy-header" style={{ borderBottom: 'none', marginBottom: '14px' }}>
+                            <div className="category-hierarchy-title-group">
+                                <h2 className="category-hierarchy-title">
+                                    <Tag size={22} color="var(--primary-orange, #ff8f00)" />
+                                    <span>Types in {currentSub}</span>
+                                </h2>
+                                <div className="category-hierarchy-crumb">
+                                    <Link to="/">Home</Link>
+                                    <ChevronRight size={13} />
+                                    <button type="button" className="crumb-btn" onClick={handleBackToSubs}>
+                                        {activeCategory?.name}
+                                    </button>
+                                    <ChevronRight size={13} />
+                                    <span className="crumb-active">{currentSub}</span>
+                                </div>
+                            </div>
+                        </div>
 
-                {loading ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-                        <Loader2 className="spin" size={40} color="var(--primary-orange)" />
-                    </div>
-                ) : products.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f8fafc', borderRadius: '16px' }}>
-                        <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#64748b', marginBottom: '10px' }}>
-                            No products found in {productsTitle}.
-                        </h4>
-                        <p style={{ color: '#94a3b8', marginBottom: '16px' }}>
-                            Try selecting another sub-category or reset filters to browse the full fleet!
-                        </p>
-                        {(currentSub || currentSubSub) && (
-                            <button
-                                type="button"
-                                className="cat-reset-all-btn"
-                                onClick={handleClearAllFilters}
-                                style={{ margin: '0 auto' }}
-                            >
-                                <RotateCcw size={14} />
-                                <span>Show all {activeCategory?.name || 'products'}</span>
-                            </button>
-                        )}
-                    </div>
-                ) : (
-                    <>
-                        <div className={viewMode === 'list' ? 'product-list-view' : 'product-grid-view'}>
-                            {products.map(product => (
-                                <ProductCard key={product._id || product.id} product={product} />
+                        {/* Grid of Sub-Sub-Category Cards */}
+                        <div className="cat-subsub-grid">
+                            {selectedSubObj.subSubCategories.map((ssub, sidx) => (
+                                <button
+                                    key={sidx}
+                                    type="button"
+                                    className="cat-subsub-card"
+                                    onClick={() => handleSubSubClick(ssub)}
+                                >
+                                    <div className="cat-subsub-card-icon">
+                                        <span>🔖</span>
+                                    </div>
+                                    <div className="cat-subsub-card-body">
+                                        <span className="cat-subsub-card-title">{ssub}</span>
+                                        <span className="cat-subsub-card-hint">Browse products</span>
+                                    </div>
+                                    <ChevronRight size={18} className="cat-subsub-card-arrow" />
+                                </button>
                             ))}
                         </div>
 
-                        {/* Pagination Controls */}
-                        {pages > 1 && (
-                            <div className="storefront-pagination" style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '40px' }}>
-                                <button 
-                                    className="pagination-btn"
-                                    disabled={page === 1}
-                                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                                    style={{
-                                        padding: '10px 20px',
-                                        borderRadius: '8px',
-                                        border: '1px solid #e2e8f0',
-                                        background: page === 1 ? '#f1f5f9' : 'white',
-                                        color: page === 1 ? '#94a3b8' : '#334155',
-                                        cursor: page === 1 ? 'not-allowed' : 'pointer',
-                                        fontWeight: '600'
-                                    }}
-                                >
-                                    Previous
-                                </button>
-                                {[...Array(pages).keys()].map((x) => (
-                                    <button
-                                        key={x + 1}
-                                        onClick={() => setPage(x + 1)}
-                                        style={{
-                                            padding: '10px 16px',
-                                            borderRadius: '8px',
-                                            border: '1px solid #e2e8f0',
-                                            background: page === x + 1 ? 'var(--primary-orange)' : 'white',
-                                            color: page === x + 1 ? 'white' : '#334155',
-                                            cursor: 'pointer',
-                                            fontWeight: '700',
-                                            minWidth: '44px'
-                                        }}
-                                    >
-                                        {x + 1}
-                                    </button>
-                                ))}
-                                <button 
-                                    className="pagination-btn"
-                                    disabled={page === pages}
-                                    onClick={() => setPage(prev => Math.min(prev + 1, pages))}
-                                    style={{
-                                        padding: '10px 20px',
-                                        borderRadius: '8px',
-                                        border: '1px solid #e2e8f0',
-                                        background: page === pages ? '#f1f5f9' : 'white',
-                                        color: page === pages ? '#94a3b8' : '#334155',
-                                        cursor: page === pages ? 'not-allowed' : 'pointer',
-                                        fontWeight: '600'
-                                    }}
-                                >
-                                    Next
-                                </button>
+                        <div className="cat-bypass-wrap">
+                            <button 
+                                type="button" 
+                                className="cat-bypass-link" 
+                                onClick={handleBypassToProducts}
+                            >
+                                <span>Or view all {currentSub} products directly</span>
+                                <ArrowRight size={14} />
+                            </button>
+                        </div>
+                    </section>
+                )}
+
+                {/* ═══════════════════════════════════════════════════════════════════
+                    LEVEL 3 / DIRECT: PRODUCTS DISPLAYED AT THE LAST
+                    ═══════════════════════════════════════════════════════════════════ */}
+                {shouldShowProducts && (
+                    <>
+                        {/* Back button when drilled down to product view */}
+                        {!isDirect && currentSubSub && (
+                            <button 
+                                type="button" 
+                                className="cat-drilldown-back-btn" 
+                                onClick={handleBackToSubSubs}
+                            >
+                                <ArrowLeft size={16} />
+                                <span>Back to {currentSub} Types</span>
+                            </button>
+                        )}
+                        {!isDirect && currentSub && !hasSubSubCategories && (
+                            <button 
+                                type="button" 
+                                className="cat-drilldown-back-btn" 
+                                onClick={handleBackToSubs}
+                            >
+                                <ArrowLeft size={16} />
+                                <span>Back to {activeCategory?.name || 'Category'} Sub-Categories</span>
+                            </button>
+                        )}
+
+                        {/* Products Header */}
+                        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <div>
+                                <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#1e293b', textTransform: 'capitalize' }}>
+                                    Products in {productsTitle}
+                                </h3>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '13.5px', color: '#64748b' }}>
+                                    Showing {products.length} product{products.length !== 1 ? 's' : ''} available
+                                </p>
                             </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <ViewToggle view={viewMode} onViewChange={setViewMode} />
+                                <ProductFilterSort 
+                                    currentFilters={filterState} 
+                                    onFilterChange={(newFilters) => { setFilterState(newFilters); setPage(1); }} 
+                                />
+                            </div>
+                        </div>
+
+                        {loading ? (
+                            <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+                                <Loader2 className="spin" size={40} color="var(--primary-orange)" />
+                            </div>
+                        ) : products.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f8fafc', borderRadius: '16px', border: '1.5px solid #e2e8f0' }}>
+                                <h4 style={{ fontSize: '18px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>
+                                    No products found in {productsTitle}.
+                                </h4>
+                                <p style={{ color: '#94a3b8', marginBottom: '16px', fontSize: '14px' }}>
+                                    Try selecting another category or check back later!
+                                </p>
+                                {currentSub && (
+                                    <button
+                                        type="button"
+                                        className="cat-drilldown-back-btn"
+                                        onClick={handleBackToSubs}
+                                        style={{ margin: '0 auto' }}
+                                    >
+                                        <ArrowLeft size={16} />
+                                        <span>Browse other {activeCategory?.name || 'category'} sub-categories</span>
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <>
+                                <div className={viewMode === 'list' ? 'product-list-view' : 'product-grid-view'}>
+                                    {products.map(product => (
+                                        <ProductCard key={product._id || product.id} product={product} />
+                                    ))}
+                                </div>
+
+                                {/* Pagination Controls */}
+                                {pages > 1 && (
+                                    <div className="storefront-pagination" style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '40px' }}>
+                                        <button 
+                                            className="pagination-btn"
+                                            disabled={page === 1}
+                                            onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                                            style={{
+                                                padding: '10px 20px',
+                                                borderRadius: '8px',
+                                                border: '1px solid #e2e8f0',
+                                                background: page === 1 ? '#f1f5f9' : 'white',
+                                                color: page === 1 ? '#94a3b8' : '#334155',
+                                                cursor: page === 1 ? 'not-allowed' : 'pointer',
+                                                fontWeight: '600'
+                                            }}
+                                        >
+                                            Previous
+                                        </button>
+                                        {[...Array(pages).keys()].map((x) => (
+                                            <button
+                                                key={x + 1}
+                                                onClick={() => setPage(x + 1)}
+                                                style={{
+                                                    padding: '10px 16px',
+                                                    borderRadius: '8px',
+                                                    border: '1px solid #e2e8f0',
+                                                    background: page === x + 1 ? 'var(--primary-orange)' : 'white',
+                                                    color: page === x + 1 ? 'white' : '#334155',
+                                                    cursor: 'pointer',
+                                                    fontWeight: '700',
+                                                    minWidth: '44px'
+                                                }}
+                                            >
+                                                {x + 1}
+                                            </button>
+                                        ))}
+                                        <button 
+                                            className="pagination-btn"
+                                            disabled={page === pages}
+                                            onClick={() => setPage(prev => Math.min(prev + 1, pages))}
+                                            style={{
+                                                padding: '10px 20px',
+                                                borderRadius: '8px',
+                                                border: '1px solid #e2e8f0',
+                                                background: page === pages ? '#f1f5f9' : 'white',
+                                                color: page === pages ? '#94a3b8' : '#334155',
+                                                cursor: page === pages ? 'not-allowed' : 'pointer',
+                                                fontWeight: '600'
+                                            }}
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </>
                 )}

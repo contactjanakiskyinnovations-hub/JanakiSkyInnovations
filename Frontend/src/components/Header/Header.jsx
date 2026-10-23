@@ -326,43 +326,43 @@ const Header = () => {
                 <div className="mega-column">
                   <h3><Package size={18} /> COMPUTING & BOARDS</h3>
                   <ul>
-                    <li><Link to="/category/developments-boards">Development Boards</Link></li>
-                    <li><Link to="/category/arduino">Arduino Boards</Link></li>
-                    <li><Link to="/category/raspberry-pi">Raspberry Pi</Link></li>
-                    <li><Link to="/category/iot-wireless-modules">IoT & Wireless Modules</Link></li>
-                    <li><Link to="/category/display-modules">Display Modules</Link></li>
+                    <li><Link to="/category/developments-boards?direct=1">Development Boards</Link></li>
+                    <li><Link to="/category/arduino?direct=1">Arduino Boards</Link></li>
+                    <li><Link to="/category/raspberry-pi?direct=1">Raspberry Pi</Link></li>
+                    <li><Link to="/category/iot-wireless-modules?direct=1">IoT & Wireless Modules</Link></li>
+                    <li><Link to="/category/display-modules?direct=1">Display Modules</Link></li>
                   </ul>
                 </div>
 
                 <div className="mega-column">
                   <h3><LayoutGrid size={18} /> ELECTRONIC COMPONENTS</h3>
                   <ul>
-                    <li><Link to="/category/electronic-components">Basic Components</Link></li>
-                    <li><Link to="/category/electronic-modules">Electronic Modules</Link></li>
-                    <li><Link to="/category/sensors">Sensors & Kits</Link></li>
-                    <li><Link to="/category/connector">Connectors & JST</Link></li>
-                    <li><Link to="/category/silicon-wire-cable">Wires & Cables</Link></li>
+                    <li><Link to="/category/electronic-components?direct=1">Basic Components</Link></li>
+                    <li><Link to="/category/electronic-modules?direct=1">Electronic Modules</Link></li>
+                    <li><Link to="/category/sensors?direct=1">Sensors & Kits</Link></li>
+                    <li><Link to="/category/connector?direct=1">Connectors & JST</Link></li>
+                    <li><Link to="/category/silicon-wire-cable?direct=1">Wires & Cables</Link></li>
                   </ul>
                 </div>
 
                 <div className="mega-column">
                   <h3><Settings size={18} /> MOTORS & MECHANICS</h3>
                   <ul>
-                    <li><Link to="/category/servo-motor-accessorise">Servo Motors</Link></li>
-                    <li><Link to="/category/motor-mechanical-parts">Motors & Gears</Link></li>
-                    <li><Link to="/category/robot-wheels-chassis">Wheels & Chassis</Link></li>
-                    <li><Link to="/category/3d-printers-parts">3D Printer Parts</Link></li>
-                    <li><Link to="/category/screw-nut-bolt-washer-specer">Fasteners (Screws/Nuts)</Link></li>
+                    <li><Link to="/category/servo-motor-accessorise?direct=1">Servo Motors</Link></li>
+                    <li><Link to="/category/motor-mechanical-parts?direct=1">Motors & Gears</Link></li>
+                    <li><Link to="/category/robot-wheels-chassis?direct=1">Wheels & Chassis</Link></li>
+                    <li><Link to="/category/3d-printers-parts?direct=1">3D Printer Parts</Link></li>
+                    <li><Link to="/category/screw-nut-bolt-washer-specer?direct=1">Fasteners (Screws/Nuts)</Link></li>
                   </ul>
                 </div>
 
                 <div className="mega-column">
                   <h3><Award size={18} /> POWER & MORE</h3>
                   <ul>
-                    <li><Link to="/category/battery-power-supply">Batteries & Power</Link></li>
-                    <li><Link to="/category/drones">Drones & Kits</Link></li>
-                    <li><Link to="/category/stem-kits">STEM & Educational</Link></li>
-                    <li><Link to="/category/tools">Tools & Accessories</Link></li>
+                    <li><Link to="/category/battery-power-supply?direct=1">Batteries & Power</Link></li>
+                    <li><Link to="/category/drones?direct=1">Drones & Kits</Link></li>
+                    <li><Link to="/category/stem-kits?direct=1">STEM & Educational</Link></li>
+                    <li><Link to="/category/tools?direct=1">Tools & Accessories</Link></li>
                     <li><Link to="/top-rated">🔥 Best Sellers</Link></li>
                   </ul>
                 </div>
@@ -399,7 +399,7 @@ const Header = () => {
                   onMouseLeave={() => setHoveredSubByNav(prev => ({ ...prev, [slug]: null }))}
                 >
                   <div className="nav-item-row">
-                    <Link to={`/category/${slug}`} onClick={toggleMobileMenu}>
+                    <Link to={`/category/${slug}?direct=1`} onClick={toggleMobileMenu}>
                       <span>{label}</span>
                       {hasSubs && (
                         <ChevronDown size={13} className="nav-desktop-arrow" />
@@ -438,7 +438,7 @@ const Header = () => {
                               }}
                             >
                               <div className="sub-item-row">
-                                <Link to={`/category/${slugify(sub.name)}`} onClick={toggleMobileMenu}>
+                                <Link to={`/category/${slugify(sub.name)}?direct=1`} onClick={toggleMobileMenu}>
                                   <span>{sub.name}</span>
                                   {hasSubSubs && (
                                     <ChevronRight size={14} className="desktop-sub-arrow" />
@@ -461,7 +461,7 @@ const Header = () => {
                                 <ul className="mobile-subsub-accordion">
                                   {sub.subSubCategories.map((ss, j) => (
                                     <li key={j} onClick={toggleMobileMenu}>
-                                      <Link to={`/category/${slugify(ss)}`}>{ss}</Link>
+                                      <Link to={`/category/${slugify(ss)}?direct=1`}>{ss}</Link>
                                     </li>
                                   ))}
                                 </ul>
@@ -476,7 +476,7 @@ const Header = () => {
                         <ul className="dropdown-subsub-list desktop-only-subsub">
                           {activeSubObj.subSubCategories.map((ss, j) => (
                             <li key={j} onClick={toggleMobileMenu}>
-                              <Link to={`/category/${slugify(ss)}`}>{ss}</Link>
+                              <Link to={`/category/${slugify(ss)}?direct=1`}>{ss}</Link>
                             </li>
                           ))}
                         </ul>

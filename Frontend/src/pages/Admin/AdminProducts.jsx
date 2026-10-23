@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, Search, Filter, Edit, Trash2, ExternalLink, Loader2, X, SlidersHorizontal, Columns3, MoreVertical, MessageSquare, Star, RefreshCw, CheckCircle, AlertCircle, Upload, FileJson, ChevronLeft, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import api from '../../utils/api';
@@ -63,6 +64,7 @@ const AdminProducts = () => {
     const [uploading, setUploading] = useState(false);
     const [editImages, setEditImages] = useState([]); // { key, url, fileName, file, status: 'keep'|'delete' }
     const [actionMenuProductId, setActionMenuProductId] = useState(null);
+    const [actionMenuPosition, setActionMenuPosition] = useState(null);
     const [bestSellerThreshold, setBestSellerThreshold] = useState(10);
     const [newArrivalDays, setNewArrivalDays] = useState(30);
     const [editingPromotionSetting, setEditingPromotionSetting] = useState(null);
@@ -761,11 +763,25 @@ const AdminProducts = () => {
                                                     <MessageSquare size={14} />
                                                 </button>
                                                 <div style={{ position: 'relative' }}>
-                                                    <button className="secondary-btn" style={{ padding: '6px 8px', borderRadius: '6px' }} onClick={() => setActionMenuProductId(currentId => currentId === product._id ? null : product._id)} title="More Actions">
+                                                    <button className="secondary-btn" style={{ padding: '6px 8px', borderRadius: '6px' }} onClick={(event) => {
+                                                        if (actionMenuProductId === product._id) {
+                                                            setActionMenuProductId(null);
+                                                            setActionMenuPosition(null);
+                                                            return;
+                                                        }
+                                                        const rect = event.currentTarget.getBoundingClientRect();
+                                                        const menuHeight = Math.min(320, window.innerHeight * 0.7);
+                                                        const hasRoomBelow = window.innerHeight - rect.bottom >= menuHeight + 8;
+                                                        setActionMenuPosition({
+                                                            top: hasRoomBelow ? rect.bottom + 6 : Math.max(12, rect.top - menuHeight - 6),
+                                                            right: Math.max(12, window.innerWidth - rect.right),
+                                                        });
+                                                        setActionMenuProductId(product._id);
+                                                    }} title="More Actions">
                                                         <MoreVertical size={14} />
                                                     </button>
                                                     {actionMenuProductId === product._id && (
-                                                        <div style={{ position: 'absolute', right: 0, top: '36px', width: '220px', zIndex: 10, background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 8px 20px rgba(15, 23, 42, 0.14)', padding: '8px' }}>
+                                                        createPortal(<div style={{ position: 'fixed', right: actionMenuPosition?.right ?? 12, top: actionMenuPosition?.top ?? 12, width: '220px', maxHeight: '70vh', overflowY: 'auto', zIndex: 1100, background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 8px 20px rgba(15, 23, 42, 0.14)', padding: '8px' }}>
                                                             <button type="button" onClick={() => updatePromotion(product, 'forceNewArrival')} style={{ width: '100%', textAlign: 'left', border: 'none', background: 'transparent', padding: '9px', cursor: 'pointer' }}>
                                                                 {product.forceNewArrival ? 'Remove forced New Arrival' : 'Force New Arrival'}
                                                             </button>
@@ -802,7 +818,7 @@ const AdminProducts = () => {
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                        </div>
+                                                        </div>, document.body)
                                                     )}
                                                 </div>
                                             </div>
@@ -874,6 +890,7 @@ const AdminProducts = () => {
 
             {/* PRODUCT EDIT MODAL DIALOG */}
             {isEditModalOpen && (
+                createPortal(
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
                     <div className="admin-card" style={{ width: '90%', maxWidth: '680px', maxHeight: '90vh', overflowY: 'auto', padding: '30px', margin: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
@@ -1251,7 +1268,9 @@ const AdminProducts = () => {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
+                )
             )}
 
             {/* Customer Ratings & Comments Modal */}
