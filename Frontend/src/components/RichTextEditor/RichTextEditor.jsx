@@ -15,7 +15,17 @@ const DEFAULT_MODULES = {
         [{ 'align': [] }],
         ['link', 'blockquote', 'code-block'],
         ['clean']
-    ]
+    ],
+    keyboard: {
+        bindings: {
+            // Disable Quill 2 automatic markdown list autofill so typing hyphens/dashes
+            // in between sentences never converts text to list or breaks lines.
+            'list autofill': null
+        }
+    },
+    clipboard: {
+        matchVisual: false
+    }
 };
 
 const COMPACT_MODULES = {
@@ -29,7 +39,15 @@ const COMPACT_MODULES = {
         [{ 'align': [] }],
         ['link'],
         ['clean']
-    ]
+    ],
+    keyboard: {
+        bindings: {
+            'list autofill': null
+        }
+    },
+    clipboard: {
+        matchVisual: false
+    }
 };
 
 const FORMATS = [

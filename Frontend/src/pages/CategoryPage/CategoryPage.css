@@ -22,11 +22,7 @@
 }
 
 .category-hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.72));
-    z-index: 1;
+    display: none;
 }
 
 .category-hero-content {
@@ -125,3 +121,331 @@
 /* Category hero click-through overlay when a CMS banner link is set */
 .category-hero { position: relative; }
 a.category-hero-link { position: absolute; inset: 0; z-index: 1; display: block; border-radius: 20px; cursor: pointer; }
+
+/* ============================================================
+   Category Hierarchy Component - Customer-Attractive Hierarchy Cards
+   ============================================================ */
+
+.category-hierarchy-container {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 28px 30px 24px;
+    margin-bottom: 35px;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+}
+
+.category-hierarchy-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.category-hierarchy-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.category-hierarchy-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.category-hierarchy-crumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+    flex-wrap: wrap;
+}
+
+.category-hierarchy-crumb a,
+.category-hierarchy-crumb button.crumb-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.category-hierarchy-crumb a:hover,
+.category-hierarchy-crumb button.crumb-btn:hover {
+    color: var(--primary-orange, #ff8f00);
+}
+
+.category-hierarchy-crumb span.crumb-active {
+    color: var(--primary-orange, #ff8f00);
+    font-weight: 700;
+}
+
+.cat-reset-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--primary-orange, #ff8f00);
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 20px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cat-reset-all-btn:hover {
+    background: var(--primary-orange, #ff8f00);
+    color: #ffffff;
+    border-color: var(--primary-orange, #ff8f00);
+}
+
+/* Sub-categories grid */
+.category-hierarchy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.cat-hierarchy-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px 18px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    width: 100%;
+}
+
+.cat-hierarchy-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-orange, #ff8f00);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.cat-hierarchy-card:hover {
+    border-color: var(--primary-orange, #ff8f00);
+    background: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(255, 143, 0, 0.12);
+}
+
+.cat-hierarchy-card:hover::before {
+    opacity: 1;
+}
+
+.cat-hierarchy-card.active {
+    background: #ffffff;
+    border-color: var(--primary-orange, #ff8f00);
+    box-shadow: 0 8px 24px rgba(255, 143, 0, 0.16);
+}
+
+.cat-hierarchy-card.active::before {
+    opacity: 1;
+}
+
+.cat-hierarchy-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.cat-hierarchy-card-emoji {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.cat-hierarchy-card.active .cat-hierarchy-card-emoji,
+.cat-hierarchy-card:hover .cat-hierarchy-card-emoji {
+    background: #fff7ed;
+    border-color: #ffedd5;
+    transform: scale(1.06);
+}
+
+.cat-hierarchy-card-status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: #e2e8f0;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.cat-hierarchy-card.active .cat-hierarchy-card-status {
+    background: var(--primary-orange, #ff8f00);
+    color: #ffffff;
+}
+
+.cat-hierarchy-card-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    transition: color 0.15s ease;
+}
+
+.cat-hierarchy-card.active .cat-hierarchy-card-name,
+.cat-hierarchy-card:hover .cat-hierarchy-card-name {
+    color: var(--primary-orange, #ff8f00);
+}
+
+.cat-hierarchy-card-meta {
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+/* Sub-Sub-Categories Row */
+.cat-subsubs-panel {
+    background: #f8fafc;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cat-subsubs-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cat-subsubs-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cat-subsub-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.cat-subsub-pill:hover {
+    border-color: var(--primary-orange, #ff8f00);
+    color: var(--primary-orange, #ff8f00);
+    background: #fffaf0;
+    transform: translateY(-1px);
+}
+
+.cat-subsub-pill.active {
+    background: var(--primary-orange, #ff8f00);
+    border-color: var(--primary-orange, #ff8f00);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(255, 143, 0, 0.25);
+}
+
+/* Active Context Indicator above products */
+.cat-active-context-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    font-size: 13.5px;
+    color: #9a3412;
+}
+
+.cat-active-context-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+}
+
+.cat-active-clear-link {
+    background: none;
+    border: none;
+    color: #c2410c;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.cat-active-clear-link:hover {
+    color: #7c2d12;
+}
+
+@media (max-width: 768px) {
+    .category-hierarchy-container {
+        padding: 20px 16px 18px;
+        margin-bottom: 24px;
+        border-radius: 14px;
+    }
+
+    .category-hierarchy-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .category-hierarchy-title {
+        font-size: 17px;
+    }
+}

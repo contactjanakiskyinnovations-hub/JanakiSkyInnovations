@@ -52,7 +52,7 @@ const NewArrivals = () => {
             <Seo title="New Arrivals – Latest Drones & Electronics" description="Be the first to get the latest drone technology and robotics components. Shop new arrivals at Janaki Sky Innovations." path="/new-arrivals" />
             <div className="container">
                 <div style={{
-                    background: 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url("https://images.unsplash.com/photo-1473968512647-3e447244af8f?q=80&w=2070&auto=format&fit=crop")',
+                    background: 'url("https://images.unsplash.com/photo-1473968512647-3e447244af8f?q=80&w=2070&auto=format&fit=crop")',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     padding: '80px 40px',
@@ -60,10 +60,9 @@ const NewArrivals = () => {
                     color: 'white',
                     marginBottom: '60px',
                     textAlign: 'center',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.15)'
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                    minHeight: '200px'
                 }}>
-                    <h1 style={{ fontSize: '52px', fontWeight: '800', marginBottom: '15px', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>NEW ARRIVALS</h1>
-                    <p style={{ fontSize: '20px', opacity: '0.95', maxWidth: '600px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Be the first to get the latest drone technology and robotics components.</p>
                 </div>
 
                 <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderLeft: '8px solid var(--primary-orange)', paddingLeft: '20px' }}>

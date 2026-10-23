@@ -143,7 +143,7 @@ const AboutStore = () => {
             {/* Hero Banner */}
             <section 
                 className="about-hero" 
-                style={aboutData.bannerImage ? { backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.88)), url(${aboutData.bannerImage})` } : {}}
+                style={aboutData.bannerImage ? { backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.68)), url(${aboutData.bannerImage})` } : {}}
             >
                 <div className="container">
                     <div className="about-hero-content">

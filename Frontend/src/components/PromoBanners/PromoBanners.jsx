@@ -107,13 +107,13 @@ const PromoBanners = ({ cmsBanners }) => {
                         loop={banners.length > 2}
                         speed={700}
                         spaceBetween={16}
-                        slidesPerView={1.15}
+                        slidesPerView={1.1}
                         breakpoints={{
-                            480:  { slidesPerView: 1.4,  spaceBetween: 14 },
-                            680:  { slidesPerView: 1.85, spaceBetween: 16 },
-                            900:  { slidesPerView: 2.1,  spaceBetween: 16 },
-                            1100: { slidesPerView: 2.3,  spaceBetween: 18 },
-                            1400: { slidesPerView: 2.5,  spaceBetween: 20 },
+                            480:  { slidesPerView: 1.2,  spaceBetween: 14 },
+                            680:  { slidesPerView: 1.5,  spaceBetween: 16 },
+                            900:  { slidesPerView: 1.8,  spaceBetween: 18 },
+                            1100: { slidesPerView: 2.0,  spaceBetween: 20 },
+                            1400: { slidesPerView: 2.15, spaceBetween: 24 },
                         }}
                         pagination={{
                             clickable: true,

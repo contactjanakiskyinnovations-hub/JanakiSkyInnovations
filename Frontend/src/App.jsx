@@ -79,7 +79,7 @@ const AppContent = () => {
               <Route path="/new-arrivals" element={<NewArrivals />} />
               <Route path="/best-sellers" element={<BestSellers />} />
               <Route path="/category/:id" element={<CategoryPage />} />
-              <Route path="/categories/:id" element={<SubCategoryPage />} />
+              <Route path="/categories/:id" element={<CategoryPage />} />
 
               <Route path="/top-rated" element={<TopRated />} />
               <Route path="/product/:id" element={<ProductDetail />} />

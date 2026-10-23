@@ -117,8 +117,9 @@
 .promo-overlay-card {
     position: relative;
     width: 100%;
-    /* Tall landscape — matches reference image ratio */
-    aspect-ratio: 16 / 9;
+    /* Tall landscape — larger height and width */
+    aspect-ratio: 16 / 10;
+    min-height: 330px;
     border-radius: 14px;
     overflow: hidden;
     cursor: pointer;
@@ -143,6 +144,7 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    filter: brightness(1.10);
     transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -158,9 +160,9 @@
     /* Strong dark gradient rising from bottom */
     background: linear-gradient(
         to top,
-        rgba(5, 8, 18, 0.95) 0%,
-        rgba(5, 8, 18, 0.72) 42%,
-        rgba(5, 8, 18, 0.25) 75%,
+        rgba(5, 8, 18, 0.78) 0%,
+        rgba(5, 8, 18, 0.42) 42%,
+        rgba(5, 8, 18, 0.08) 75%,
         transparent 100%
     );
     pointer-events: none;
@@ -313,6 +315,9 @@
 }
 
 @media (max-width: 768px) {
+    .promo-overlay-card {
+        min-height: 270px;
+    }
     .promo-banners-section {
         padding: 32px 4% 38px;
     }
@@ -363,6 +368,7 @@
     }
     .promo-overlay-card {
         border-radius: 10px;
+        min-height: 220px;
     }
     .promo-overlay-title {
         font-size: 15px;

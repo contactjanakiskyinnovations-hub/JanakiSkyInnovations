@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Plus, Search, Filter, Edit, Trash2, ExternalLink, Loader2, X, SlidersHorizontal, Columns3, MoreVertical, MessageSquare, Star, RefreshCw, CheckCircle, AlertCircle, Upload, FileJson } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, ExternalLink, Loader2, X, SlidersHorizontal, Columns3, MoreVertical, MessageSquare, Star, RefreshCw, CheckCircle, AlertCircle, Upload, FileJson, ChevronLeft, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import api from '../../utils/api';
 import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
 import './Admin.css';
@@ -130,6 +130,15 @@ const AdminProducts = () => {
             alert(err.response?.data?.message || 'Failed to delete the review');
         } finally {
             setReviewsBusy(false);
+        }
+    };
+
+    // Horizontal Table Scroller ref & handler
+    const tableScrollRef = useRef(null);
+    const scrollTable = (direction) => {
+        if (tableScrollRef.current) {
+            const delta = direction === 'left' ? -450 : 450;
+            tableScrollRef.current.scrollBy({ left: delta, behavior: 'smooth' });
         }
     };
 
@@ -634,9 +643,36 @@ const AdminProducts = () => {
                 </div>
             )}
 
-            <div className="admin-card">
-                <div className="table-responsive">
-                    <table className="admin-table">
+            <div className="admin-card" style={{ padding: 0, overflow: 'hidden', width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+                <div className="admin-table-scroller-bar">
+                    <div className="admin-table-scroller-hint">
+                        <ArrowLeftRight size={16} />
+                        <span>Product Catalog</span>
+                        <span className="scroll-instruction-pill">Horizontal scroller enabled</span>
+                    </div>
+                    <div className="admin-scroller-actions">
+                        <button
+                            type="button"
+                            className="admin-scroller-pill-btn"
+                            onClick={() => scrollTable('left')}
+                            title="Scroll table left"
+                            aria-label="Scroll table left"
+                        >
+                            <ChevronLeft size={15} /> Scroll Left
+                        </button>
+                        <button
+                            type="button"
+                            className="admin-scroller-pill-btn"
+                            onClick={() => scrollTable('right')}
+                            title="Scroll table right"
+                            aria-label="Scroll table right"
+                        >
+                            Scroll Right <ChevronRight size={15} />
+                        </button>
+                    </div>
+                </div>
+                <div className="table-responsive" ref={tableScrollRef} style={{ margin: 0, borderRadius: 0, border: 'none', width: '100%', maxWidth: '100%', overflowX: 'auto', display: 'block' }}>
+                    <table className="admin-table admin-products-table">
                         <thead>
                             <tr>
                                 <th>Product Details</th>
@@ -776,6 +812,31 @@ const AdminProducts = () => {
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Bottom Horizontal Scroller Bar */}
+                <div className="admin-table-bottom-bar">
+                    <span style={{ fontSize: '12.5px', color: '#64748b', fontWeight: '500' }}>
+                        Showing {sortedProducts.length} product{sortedProducts.length !== 1 ? 's' : ''} • Scroll left/right to view all details
+                    </span>
+                    <div className="admin-scroller-actions">
+                        <button
+                            type="button"
+                            className="admin-scroller-pill-btn"
+                            onClick={() => scrollTable('left')}
+                            title="Scroll table left"
+                        >
+                            <ChevronLeft size={14} /> Left
+                        </button>
+                        <button
+                            type="button"
+                            className="admin-scroller-pill-btn"
+                            onClick={() => scrollTable('right')}
+                            title="Scroll table right"
+                        >
+                            Right <ChevronRight size={14} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Pagination Controls */}
