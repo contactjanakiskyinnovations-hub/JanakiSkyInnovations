@@ -1,7 +1,7 @@
 // Express 5 natively handles async errors — asyncHandler is not needed
 const Category = require('../models/Category');
 const Product = require('../models/Product');
-const { deleteFilesInFolder, resolveImageKitFolder } = require('../utils/imagekitHelpers');
+const { deleteFilesInFolder, resolveImageKitFolder, deleteFileByUrl } = require('../utils/imagekitHelpers');
 
 // @desc    Get all categories (nested format)
 // @route   GET /api/categories
@@ -38,7 +38,7 @@ const getCategoryById = async (req, res) => {
 // @route   POST /api/categories
 // @access  Private/Admin
 const createCategory = async (req, res) => {
-    const { name, slug, description, image, subCategories, isActive } = req.body;
+    const { name, slug, description, image, icon, subCategories, isActive } = req.body;
 
     const generatedSlug = slug || name.toLowerCase().replace(/\s+/g, '-');
 
@@ -65,13 +65,49 @@ const createCategory = async (req, res) => {
 // @route   PUT /api/categories/:id
 // @access  Private/Admin
 const updateCategory = async (req, res) => {
-    const { name, slug, description, image, subCategories, isActive, renameMap } = req.body;
+    const { name, slug, description, image, icon, subCategories, isActive, renameMap } = req.body;
 
     const category = await Category.findById(req.params.id);
 
     if (category) {
         const oldCategoryName = category.name;
         const oldSubCategories = category.subCategories ? [...category.subCategories] : [];
+
+        // Cleanup deleted images from ImageKit if category image was removed or changed
+        if (category.image && image !== undefined && image !== category.image) {
+            deleteFileByUrl(category.image).catch(err => console.error('Failed to delete old category image from ImageKit:', err.message));
+        }
+
+        // Cleanup deleted subcategory images from ImageKit if any subcategory image was removed or changed
+        if (Array.isArray(subCategories) && oldSubCategories.length > 0) {
+            for (const oldSub of oldSubCategories) {
+                if (oldSub.image) {
+                    const matchSub = subCategories.find(s => (s._id && oldSub._id && s._id.toString() === oldSub._id.toString()) || s.name === oldSub.name);
+                    if (!matchSub || !matchSub.image || matchSub.image !== oldSub.image) {
+                        deleteFileByUrl(oldSub.image).catch(err => console.error(`Failed to delete old subcategory icon "${oldSub.name}" from ImageKit:`, err.message));
+                    }
+                }
+
+                // Cleanup deleted sub-sub-category images from ImageKit
+                if (Array.isArray(oldSub.subSubCategories)) {
+                    const matchSub = subCategories.find(s => (s._id && oldSub._id && s._id.toString() === oldSub._id.toString()) || s.name === oldSub.name);
+                    for (const oldSubSub of oldSub.subSubCategories) {
+                        if (oldSubSub && typeof oldSubSub === 'object' && oldSubSub.image) {
+                            const matchSubSub = matchSub && Array.isArray(matchSub.subSubCategories)
+                                ? matchSub.subSubCategories.find(ss => {
+                                    const ssName = typeof ss === 'string' ? ss : ss?.name;
+                                    return ssName === oldSubSub.name;
+                                })
+                                : null;
+                            const newImage = typeof matchSubSub === 'object' ? matchSubSub?.image : '';
+                            if (!matchSubSub || !newImage || newImage !== oldSubSub.image) {
+                                deleteFileByUrl(oldSubSub.image).catch(err => console.error(`Failed to delete old sub-sub-category icon "${oldSubSub.name}" from ImageKit:`, err.message));
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         category.name = name || category.name;
         category.slug = slug || category.slug;

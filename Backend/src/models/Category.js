@@ -29,7 +29,9 @@ const categorySchema = new mongoose.Schema({
     subCategories: [
         {
             name: { type: String, required: true },
-            subSubCategories: [String]
+            image: { type: String, default: '' },
+            icon: { type: String, default: '' },
+            subSubCategories: [mongoose.Schema.Types.Mixed]
         }
     ]
 }, {

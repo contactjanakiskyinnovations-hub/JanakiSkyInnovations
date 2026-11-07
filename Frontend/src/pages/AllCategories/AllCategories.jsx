@@ -63,7 +63,7 @@ const AllCategories = () => {
     const filteredCategories = categoryHierarchy.filter(cat => 
         cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         cat.subCategories.some(sub => sub.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            sub.subSubCategories.some(name => name.toLowerCase().includes(searchQuery.toLowerCase())))
+            sub.subSubCategories.some(item => (typeof item === 'string' ? item : (item?.name || '')).toLowerCase().includes(searchQuery.toLowerCase())))
     );
 
     const CategoryIcon = ({ name }) => {
@@ -130,16 +130,29 @@ const AllCategories = () => {
                                 <div className="sub-cat-grid">
                                     {activeMainCategory.subCategories.map((sub, idx) => (
                                         <div key={idx} className="sub-cat-card">
-                                            <h3>{sub.name}</h3>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                                {sub.image && (
+                                                    <img 
+                                                        src={sub.image} 
+                                                        alt={sub.name} 
+                                                        style={{ width: '26px', height: '26px', objectFit: 'contain', borderRadius: '6px', background: '#f8fafc', padding: '2px', flexShrink: 0 }} 
+                                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                                    />
+                                                )}
+                                                <h3 style={{ margin: 0 }}>{sub.name}</h3>
+                                            </div>
                                             {sub.subSubCategories.length > 0 ? (
                                                 <ul className="sub-sub-list">
-                                                    {sub.subSubCategories.map((ssub, sidx) => (
+                                                    {sub.subSubCategories.map((ssub, sidx) => {
+                                                        const ssName = typeof ssub === 'string' ? ssub : (ssub?.name || '');
+                                                        return (
                                                         <li key={sidx}>
-                                                            <RouterLink to={`/category/${ssub.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
-                                                                {ssub}
+                                                            <RouterLink to={`/category/${ssName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+                                                                {ssName}
                                                             </RouterLink>
                                                         </li>
-                                                    ))}
+                                                        );
+                                                    })}
                                                 </ul>
                                             ) : (
                                                 <p className="direct-items-msg">Direct selection of products available for this category.</p>

@@ -246,7 +246,7 @@ const AdminProducts = () => {
                     taxonomy[cat.name] = {};
                     if (cat.subCategories && cat.subCategories.length > 0) {
                         cat.subCategories.forEach(sub => {
-                            taxonomy[cat.name][sub.name] = sub.subSubCategories || [];
+                            taxonomy[cat.name][sub.name] = (sub.subSubCategories || []).map(s => typeof s === 'string' ? s : (s?.name || ''));
                         });
                     }
                 });

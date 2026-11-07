@@ -78,6 +78,56 @@ const getSubEmoji = (name) => {
     return match ? SUB_EMOJIS[match] : '✈️';
 };
 
+const SubCategoryCover = ({ sub }) => {
+    const [failed, setFailed] = useState(false);
+    const hasImage = Boolean(sub?.image) && !failed;
+
+    return (
+        <div className={`cat-hierarchy-card-cover ${hasImage ? 'has-image' : 'has-fallback'}`}>
+            {hasImage ? (
+                <img 
+                    src={sub.image} 
+                    alt={sub.name} 
+                    className="cat-hierarchy-card-cover-img" 
+                    onError={() => setFailed(true)} 
+                    loading="lazy"
+                />
+            ) : (
+                <div className="cat-hierarchy-card-fallback-wrap">
+                    <span className="cat-hierarchy-card-fallback-emoji">{getSubEmoji(sub?.name || '')}</span>
+                </div>
+            )}
+            <div className="cat-hierarchy-card-cover-overlay" />
+        </div>
+    );
+};
+
+const SubSubCategoryCover = ({ ssub }) => {
+    const [failed, setFailed] = useState(false);
+    const imgUrl = typeof ssub === 'object' ? ssub?.image : '';
+    const name = typeof ssub === 'string' ? ssub : (ssub?.name || '');
+    const hasImage = Boolean(imgUrl) && !failed;
+
+    return (
+        <div className={`cat-hierarchy-card-cover ${hasImage ? 'has-image' : 'has-fallback'}`}>
+            {hasImage ? (
+                <img 
+                    src={imgUrl} 
+                    alt={name} 
+                    className="cat-hierarchy-card-cover-img" 
+                    onError={() => setFailed(true)} 
+                    loading="lazy"
+                />
+            ) : (
+                <div className="cat-hierarchy-card-fallback-wrap">
+                    <span className="cat-hierarchy-card-fallback-emoji">🔖</span>
+                </div>
+            )}
+            <div className="cat-hierarchy-card-cover-overlay" />
+        </div>
+    );
+};
+
 const slugifyKey = (v) => String(v || '').trim().toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
 const toSlug = (v) => String(v || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -179,13 +229,14 @@ const CategoryPage = () => {
         if (!matchedCat) {
             for (const cat of allCategories) {
                 for (const sub of (cat.subCategories || [])) {
-                    const ssub = (sub.subSubCategories || []).find(ss => 
-                        toSlug(ss) === targetSlug || slugifyKey(ss) === target
-                    );
+                    const ssub = (sub.subSubCategories || []).find(ss => {
+                        const ssName = typeof ss === 'string' ? ss : (ss?.name || '');
+                        return toSlug(ssName) === targetSlug || slugifyKey(ssName) === target;
+                    });
                     if (ssub) {
                         matchedCat = cat;
                         matchedSub = sub.name;
-                        matchedSubSub = ssub;
+                        matchedSubSub = typeof ssub === 'string' ? ssub : (ssub?.name || '');
                         break;
                     }
                 }
@@ -402,19 +453,24 @@ const CategoryPage = () => {
                                         className="cat-hierarchy-card"
                                         onClick={() => handleSubClick(sub.name)}
                                     >
-                                        <div className="cat-hierarchy-card-top">
-                                            <span className="cat-hierarchy-card-emoji">{getSubEmoji(sub.name)}</span>
+                                        <div className="cat-hierarchy-card-media">
+                                            <SubCategoryCover sub={sub} />
                                             <span className="cat-hierarchy-card-status">
                                                 {subSubCount > 0 ? `${subSubCount} TYPES` : 'BROWSE'}
                                             </span>
                                         </div>
-                                        <span className="cat-hierarchy-card-name">{sub.name}</span>
-                                        <span className="cat-hierarchy-card-meta">
-                                            {subSubCount > 0
-                                                ? sub.subSubCategories.slice(0, 3).join(', ') + (subSubCount > 3 ? '...' : '')
-                                                : 'Explore dedicated products'
-                                            }
-                                        </span>
+                                        <div className="cat-hierarchy-card-body">
+                                            <div className="cat-hierarchy-card-name-row">
+                                                <span className="cat-hierarchy-card-name">{sub.name}</span>
+                                                <ChevronRight size={15} className="cat-hierarchy-card-arrow" />
+                                            </div>
+                                            <span className="cat-hierarchy-card-meta">
+                                                {subSubCount > 0
+                                                    ? sub.subSubCategories.slice(0, 3).map(ss => typeof ss === 'string' ? ss : (ss?.name || '')).join(', ') + (subSubCount > 3 ? '...' : '')
+                                                    : 'Explore dedicated products'
+                                                }
+                                            </span>
+                                        </div>
                                     </button>
                                 );
                             })}
@@ -467,23 +523,29 @@ const CategoryPage = () => {
 
                         {/* Grid of Sub-Sub-Category Cards */}
                         <div className="cat-subsub-grid">
-                            {selectedSubObj.subSubCategories.map((ssub, sidx) => (
-                                <button
-                                    key={sidx}
-                                    type="button"
-                                    className="cat-subsub-card"
-                                    onClick={() => handleSubSubClick(ssub)}
-                                >
-                                    <div className="cat-subsub-card-icon">
-                                        <span>🔖</span>
-                                    </div>
-                                    <div className="cat-subsub-card-body">
-                                        <span className="cat-subsub-card-title">{ssub}</span>
-                                        <span className="cat-subsub-card-hint">Browse products</span>
-                                    </div>
-                                    <ChevronRight size={18} className="cat-subsub-card-arrow" />
-                                </button>
-                            ))}
+                            {selectedSubObj.subSubCategories.map((ssub, sidx) => {
+                                const ssubName = typeof ssub === 'string' ? ssub : (ssub?.name || '');
+                                return (
+                                    <button
+                                        key={sidx}
+                                        type="button"
+                                        className="cat-subsub-card"
+                                        onClick={() => handleSubSubClick(ssubName)}
+                                    >
+                                        <div className="cat-subsub-card-media">
+                                            <SubSubCategoryCover ssub={ssub} />
+                                            <span className="cat-subsub-card-status">BROWSE</span>
+                                        </div>
+                                        <div className="cat-subsub-card-body">
+                                            <div className="cat-subsub-card-name-row">
+                                                <span className="cat-subsub-card-title">{ssubName}</span>
+                                                <ChevronRight size={15} className="cat-subsub-card-arrow" />
+                                            </div>
+                                            <span className="cat-subsub-card-hint">Explore dedicated products</span>
+                                        </div>
+                                    </button>
+                                );
+                            })}
                         </div>
 
                         <div className="cat-bypass-wrap">

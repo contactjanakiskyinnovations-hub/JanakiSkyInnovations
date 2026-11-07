@@ -463,11 +463,14 @@ const Header = () => {
                               {/* Mobile Sub-Sub List Accordion */}
                               {hasSubSubs && isMobileSubOpen && (
                                 <ul className="mobile-subsub-accordion">
-                                  {sub.subSubCategories.map((ss, j) => (
-                                    <li key={j} onClick={toggleMobileMenu}>
-                                      <Link to={`/category/${slugify(ss)}?direct=1`}>{ss}</Link>
-                                    </li>
-                                  ))}
+                                  {sub.subSubCategories.map((ss, j) => {
+                                    const ssName = typeof ss === 'string' ? ss : (ss?.name || '');
+                                    return (
+                                      <li key={j} onClick={toggleMobileMenu}>
+                                        <Link to={`/category/${slugify(ssName)}?direct=1`}>{ssName}</Link>
+                                      </li>
+                                    );
+                                  })}
                                 </ul>
                               )}
                             </li>
@@ -478,11 +481,14 @@ const Header = () => {
                       {/* Desktop flyout right column */}
                       {hasActiveSubSubs && (
                         <ul className="dropdown-subsub-list desktop-only-subsub">
-                          {activeSubObj.subSubCategories.map((ss, j) => (
-                            <li key={j} onClick={toggleMobileMenu}>
-                              <Link to={`/category/${slugify(ss)}?direct=1`}>{ss}</Link>
-                            </li>
-                          ))}
+                          {activeSubObj.subSubCategories.map((ss, j) => {
+                            const ssName = typeof ss === 'string' ? ss : (ss?.name || '');
+                            return (
+                              <li key={j} onClick={toggleMobileMenu}>
+                                <Link to={`/category/${slugify(ssName)}?direct=1`}>{ssName}</Link>
+                              </li>
+                            );
+                          })}
                         </ul>
                       )}
                     </div>

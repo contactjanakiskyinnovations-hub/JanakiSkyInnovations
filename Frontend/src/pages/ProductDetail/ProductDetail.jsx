@@ -10,32 +10,10 @@ import '../../components/ViewToggle/ViewToggle.css';
 import WhatsappIcon from '../../components/icons/WhatsappIcon';
 import { withVat, formatINR } from '../../utils/price';
 import Seo, { buildProductSchema, buildBreadcrumbSchema } from '../../utils/seo';
-import { preserveHyphenatedText } from '../../utils/richText';
+import { preserveHyphenatedText, getPlainShortSummary } from '../../utils/richText';
 import './ProductDetail.css';
 
 const preserveHyphenatedWords = preserveHyphenatedText;
-
-const getPlainShortSummary = (content) => {
-    const withBreakSpaces = String(content || '')
-        .replace(/<br\s*\/?\s*>/gi, ' ')
-        .replace(/<\/(?:p|div|li|h[1-6])\s*>/gi, ' ');
-    const text = new DOMParser().parseFromString(withBreakSpaces, 'text/html').body.textContent;
-    return text.replace(/\s+/g, ' ').trim()
-        .replace(/(\S)\s+-\s+(\S)/g, '$1\u00a0-\u00a0$2')
-        .replace(/(\S)-(?=\S)/g, '$1\u2011');
-};
-
-const hasHyphenatedLineBreak = (content) => {
-    const source = String(content || '');
-    if (!/<[a-z][\s\S]*>/i.test(source)) return /\S\s*-\s*[\r\n]+\s*\S/.test(source);
-
-    const lineBreakMarker = '\uE000';
-    const marked = source
-        .replace(/<br\s*\/?\s*>/gi, lineBreakMarker)
-        .replace(/<\/(?:p|div|li|h[1-6])\s*>/gi, lineBreakMarker);
-    const text = new DOMParser().parseFromString(marked, 'text/html').body.textContent;
-    return new RegExp(`\\S\\s*-\\s*${lineBreakMarker}\\s*\\S`).test(text);
-};
 const ProductDetail = () => {
     const { id } = useParams();
     const { addToCart, toggleWishlist, wishlistItems, cartItems, updateQuantity } = useCart();
@@ -187,12 +165,6 @@ const ProductDetail = () => {
     const renderDescription = () => {
         if (!product.description) return null;
 
-        // Quill's saved line break after a dash is intentional markup, so render
-        // only this affected description as normalized text to remove it.
-        if (hasHyphenatedLineBreak(product.description)) {
-            return <p className="overview-paragraph">{getPlainShortSummary(product.description)}</p>;
-        }
-
         // If content contains HTML tags from Quill
         if (/<[a-z][\s\S]*>/i.test(product.description)) {
             return (
@@ -203,9 +175,9 @@ const ProductDetail = () => {
             );
         }
 
-        // A plain-text editor newline immediately after a dash is a soft wrap,
-        // not a new overview paragraph. Keep that phrase together as well.
-        const lines = product.description.split('\n').map(l => l.trim()).filter(Boolean);
+        // Join plain-text soft line wraps immediately after a dash so the phrase stays in the same paragraph
+        const normalizedDesc = product.description.replace(/(\S\s*-\s*)[\r\n]+(?:\s*[\r\n]+)*\s*(?=\S)/g, '$1 ');
+        const lines = normalizedDesc.split('\n').map(l => l.trim()).filter(Boolean);
         return lines.map((line, idx) => {
             if (line.startsWith('●')) {
                 const cleanLine = line.substring(1).trim();
