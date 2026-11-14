@@ -24,8 +24,7 @@ const ProductDetail = () => {
     const [activeTab, setActiveTab] = useState('specs'); // 'specs' or 'comparison'
     const [quantity, setQuantity] = useState(1);
     const thumbnailsRef = useRef(null);
-    const [canScrollLeft, setCanScrollLeft] = useState(false);
-    const [canScrollRight, setCanScrollRight] = useState(false);
+    const [scrollIndex, setScrollIndex] = useState(0);
 
     // Collect all available unique product images (ensuring mainImage is included)
     const productImages = useMemo(() => {
@@ -37,38 +36,47 @@ const ProductDetail = () => {
         return galleryList.length > 0 ? galleryList : (product.mainImage ? [product.mainImage] : []);
     }, [product]);
 
-    const checkThumbnailsScroll = () => {
-        const el = thumbnailsRef.current;
-        if (!el) return;
-        const { scrollLeft, scrollWidth, clientWidth } = el;
-        setCanScrollLeft(scrollLeft > 2);
-        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 2);
-    };
+    const maxScrollIndex = Math.max(0, productImages.length - 3);
+    const canScrollLeft = scrollIndex > 0;
+    const canScrollRight = scrollIndex < maxScrollIndex;
 
+    // Reset scroll when product changes
     useEffect(() => {
-        const t1 = setTimeout(checkThumbnailsScroll, 50);
-        const t2 = setTimeout(checkThumbnailsScroll, 200);
-        const handleResize = () => checkThumbnailsScroll();
-        window.addEventListener('resize', handleResize);
-        return () => {
-            clearTimeout(t1);
-            clearTimeout(t2);
-            window.removeEventListener('resize', handleResize);
-        };
-    }, [productImages]);
+        setScrollIndex(0);
+        if (thumbnailsRef.current) {
+            thumbnailsRef.current.scrollTo({ left: 0, behavior: 'instant' });
+        }
+    }, [product?._id]);
 
     const handleScrollThumbnails = (direction) => {
+        const nextIndex = direction === 'left'
+            ? Math.max(0, scrollIndex - 1)
+            : Math.min(maxScrollIndex, scrollIndex + 1);
+        setScrollIndex(nextIndex);
         const el = thumbnailsRef.current;
-        if (!el) return;
-        // Scroll by exactly one thumbnail width + gap so next image is revealed
-        const itemWidth = (el.clientWidth - 20) / 3 + 10;
-        const targetScroll = direction === 'left'
-            ? Math.max(0, el.scrollLeft - itemWidth)
-            : Math.min(el.scrollWidth - el.clientWidth, el.scrollLeft + itemWidth);
-        el.scrollTo({ left: targetScroll, behavior: 'smooth' });
-        setTimeout(checkThumbnailsScroll, 100);
-        setTimeout(checkThumbnailsScroll, 350);
-        setTimeout(checkThumbnailsScroll, 500);
+        if (el) {
+            const itemWidth = (el.clientWidth - 20) / 3 + 10;
+            el.scrollTo({ left: nextIndex * itemWidth, behavior: 'smooth' });
+        }
+    };
+
+    const handleThumbnailClick = (img, index) => {
+        setActiveImage(img);
+        if (index > scrollIndex + 2) {
+            const nextIndex = Math.min(maxScrollIndex, index - 2);
+            setScrollIndex(nextIndex);
+            if (thumbnailsRef.current) {
+                const itemWidth = (thumbnailsRef.current.clientWidth - 20) / 3 + 10;
+                thumbnailsRef.current.scrollTo({ left: nextIndex * itemWidth, behavior: 'smooth' });
+            }
+        } else if (index < scrollIndex) {
+            const nextIndex = Math.max(0, index);
+            setScrollIndex(nextIndex);
+            if (thumbnailsRef.current) {
+                const itemWidth = (thumbnailsRef.current.clientWidth - 20) / 3 + 10;
+                thumbnailsRef.current.scrollTo({ left: nextIndex * itemWidth, behavior: 'smooth' });
+            }
+        }
     };
     const [relatedViewMode, setRelatedViewMode] = useState('grid');
     const [relatedFilterState, setRelatedFilterState] = useState({
@@ -336,13 +344,12 @@ const ProductDetail = () => {
                                 <div 
                                     className="gallery-thumbnails"
                                     ref={thumbnailsRef}
-                                    onScroll={checkThumbnailsScroll}
                                 >
                                     {productImages.map((img, idx) => (
                                         <div 
                                             key={idx} 
                                             className={`thumbnail-wrapper ${activeImage === img ? 'active' : ''}`}
-                                            onClick={() => setActiveImage(img)}
+                                            onClick={() => handleThumbnailClick(img, idx)}
                                         >
                                             <img src={img} alt={`${product.name} gallery ${idx + 1}`} />
                                         </div>
