@@ -54,19 +54,22 @@
     align-items: center;
     gap: 8px;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .gallery-thumbnails {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     overflow-x: auto;
     scroll-behavior: smooth;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE / Edge */
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     padding: 4px 2px;
+    box-sizing: border-box;
 }
 
 .gallery-thumbnails::-webkit-scrollbar {
@@ -74,7 +77,7 @@
 }
 
 .thumbnail-wrapper {
-    flex: 0 0 calc((100% - 24px) / 3);
+    flex: 0 0 calc((100% - 30px) / 4);
     min-width: 0;
     aspect-ratio: 1.2;
     border-radius: 10px;
@@ -89,6 +92,10 @@
     padding: 5px;
     box-sizing: border-box;
     scroll-snap-align: start;
+}
+
+.gallery-thumbnails.few-thumbnails .thumbnail-wrapper {
+    flex: 0 0 calc((100% - 20px) / 3);
 }
 
 .thumbnail-wrapper img {

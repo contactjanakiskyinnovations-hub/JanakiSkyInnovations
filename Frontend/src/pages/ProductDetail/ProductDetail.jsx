@@ -27,6 +27,16 @@ const ProductDetail = () => {
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
 
+    // Collect all available unique product images (ensuring mainImage is included)
+    const productImages = useMemo(() => {
+        if (!product) return [];
+        const galleryList = Array.isArray(product.gallery) ? product.gallery.filter(Boolean) : [];
+        if (product.mainImage && !galleryList.includes(product.mainImage)) {
+            return [product.mainImage, ...galleryList];
+        }
+        return galleryList.length > 0 ? galleryList : (product.mainImage ? [product.mainImage] : []);
+    }, [product]);
+
     const checkThumbnailsScroll = () => {
         const el = thumbnailsRef.current;
         if (!el) return;
@@ -43,12 +53,13 @@ const ProductDetail = () => {
             clearTimeout(timer);
             window.removeEventListener('resize', handleResize);
         };
-    }, [product?.gallery]);
+    }, [productImages]);
 
     const handleScrollThumbnails = (direction) => {
         const el = thumbnailsRef.current;
         if (!el) return;
-        const itemWidth = (el.clientWidth - 24) / 3 + 12;
+        const visibleCount = productImages.length <= 3 ? 3 : 4;
+        const itemWidth = (el.clientWidth - (visibleCount - 1) * 10) / visibleCount + 10;
         const scrollDistance = direction === 'left' ? -itemWidth : itemWidth;
         el.scrollBy({ left: scrollDistance, behavior: 'smooth' });
         setTimeout(checkThumbnailsScroll, 350);
@@ -303,9 +314,9 @@ const ProductDetail = () => {
                         <div className="main-image-container">
                             <img src={activeImage} alt={product.name} />
                         </div>
-                        {product.gallery && product.gallery.length > 1 && (
+                        {productImages.length > 1 && (
                             <div className="gallery-thumbnails-wrapper">
-                                {product.gallery.length > 3 && (
+                                {productImages.length > 3 && (
                                     <button 
                                         type="button"
                                         className="gallery-scroll-btn prev"
@@ -317,11 +328,11 @@ const ProductDetail = () => {
                                     </button>
                                 )}
                                 <div 
-                                    className="gallery-thumbnails"
+                                    className={`gallery-thumbnails ${productImages.length <= 3 ? 'few-thumbnails' : ''}`}
                                     ref={thumbnailsRef}
                                     onScroll={checkThumbnailsScroll}
                                 >
-                                    {product.gallery.map((img, idx) => (
+                                    {productImages.map((img, idx) => (
                                         <div 
                                             key={idx} 
                                             className={`thumbnail-wrapper ${activeImage === img ? 'active' : ''}`}
@@ -334,7 +345,7 @@ const ProductDetail = () => {
                                         </div>
                                     ))}
                                 </div>
-                                {product.gallery.length > 3 && (
+                                {productImages.length > 3 && (
                                     <button 
                                         type="button"
                                         className="gallery-scroll-btn next"
