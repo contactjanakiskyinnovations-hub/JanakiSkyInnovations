@@ -103,9 +103,9 @@ router.post('/', protect, admin, upload.single('image'), async (req, res) => {
             fileName,
         });
     } catch (error) {
-        console.error(error);
-        res.status(500);
-        throw new Error('Image upload failed');
+        console.error('[ImageKit Upload Error]:', error);
+        const detailedMsg = error?.message || error?.help || 'Image upload failed';
+        res.status(500).json({ message: `Image upload failed: ${detailedMsg}` });
     }
 });
 

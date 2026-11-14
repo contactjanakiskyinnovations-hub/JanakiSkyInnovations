@@ -5,11 +5,13 @@
 const imagekit = require('../config/imagekit');
 
 // Make a single path segment safe for an ImageKit folder / file name.
+// ImageKit folder paths only allow alphanumeric characters (a-z, A-Z, 0-9), hyphens (-), and underscores (_).
+// Periods/dots (.), slashes (/), spaces, and special symbols are strictly disallowed in ImageKit folder paths.
 const sanitizeSegment = (value) => {
     return String(value || '')
         .trim()
-        .replace(/[^a-zA-Z0-9._-]+/g, '-')
-        .replace(/^[.-]+|[.-]+$/g, '')
+        .replace(/[^a-zA-Z0-9_-]+/g, '-')
+        .replace(/^[-_]+|[-_]+$/g, '')
         .slice(0, 60) || 'item';
 };
 

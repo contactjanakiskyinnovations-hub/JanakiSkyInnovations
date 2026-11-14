@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Edit, Trash2, Layers, Loader2, X, Search, SlidersHorizontal, CheckCircle, AlertCircle, ChevronUp, ChevronDown, Check, Image as ImageIcon, Upload, Tag } from 'lucide-react';
 import api from '../../utils/api';
 import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
+import { getPlainShortSummary } from '../../utils/richText';
 import './Admin.css';
 
 const AdminCategories = () => {
@@ -629,6 +630,9 @@ const AdminCategories = () => {
         }
         setSaving(true);
         let uploadedCount = 0;
+        // Helper to safely format folder segments for ImageKit (strips dots, slashes, and special characters)
+        const cleanSeg = (val) => String(val || '').trim().replace(/[/\\?%*:|"<>.]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'item';
+
         try {
             // 1. Upload main category image if new file selected
             let imageUrl = categoryForm.image || '';
@@ -636,7 +640,7 @@ const AdminCategories = () => {
                 const formData = new FormData();
                 formData.append('image', categoryForm.pendingImage);
                 formData.append('context', 'category');
-                formData.append('folderPath', categoryForm.name.trim());
+                formData.append('folderPath', cleanSeg(categoryForm.name));
                 formData.append('index', '1');
                 if (categoryForm.image) formData.append('oldImageUrl', categoryForm.image);
                 const { data } = await api.post('/api/upload', formData, {
@@ -654,7 +658,7 @@ const AdminCategories = () => {
                         const formData = new FormData();
                         formData.append('image', sub.pendingImage);
                         formData.append('context', 'category');
-                        formData.append('folderPath', `${categoryForm.name.trim()}/${sub.name.trim()}`);
+                        formData.append('folderPath', `${cleanSeg(categoryForm.name)}/${cleanSeg(sub.name)}`);
                         formData.append('index', '1');
                         if (sub.image) formData.append('oldImageUrl', sub.image);
                         const { data } = await api.post('/api/upload', formData, {
@@ -673,7 +677,7 @@ const AdminCategories = () => {
                                 const formData = new FormData();
                                 formData.append('image', ssub.pendingImage);
                                 formData.append('context', 'category');
-                                formData.append('folderPath', `${categoryForm.name.trim()}/${sub.name.trim()}/${ssName.trim()}`);
+                                formData.append('folderPath', `${cleanSeg(categoryForm.name)}/${cleanSeg(sub.name)}/${cleanSeg(ssName)}`);
                                 formData.append('index', '1');
                                 if (ssImgUrl) formData.append('oldImageUrl', ssImgUrl);
                                 const { data } = await api.post('/api/upload', formData, {
@@ -866,7 +870,14 @@ const AdminCategories = () => {
                                                 </div>
                                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                                                     <span style={{ fontWeight: '700', color: '#0f172a' }}>{cat.name}</span>
-                                                    {cat.description && <span style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.description}</span>}
+                                                    {cat.description && (
+                                                        <span 
+                                                            style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                                                            title={getPlainShortSummary(cat.description)}
+                                                        >
+                                                            {getPlainShortSummary(cat.description)}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </td>

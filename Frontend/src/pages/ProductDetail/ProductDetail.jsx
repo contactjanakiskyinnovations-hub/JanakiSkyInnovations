@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Heart, Loader2, CheckCircle2, ChevronRight, Info, Plus, Minus, ShoppingCart, Star } from 'lucide-react';
+import { Heart, Loader2, CheckCircle2, ChevronLeft, ChevronRight, Info, Plus, Minus, ShoppingCart, Star } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import api from '../../utils/api';
 import ProductCard from '../../components/ProductCard/ProductCard';
@@ -23,6 +23,36 @@ const ProductDetail = () => {
     const [activeImage, setActiveImage] = useState('');
     const [activeTab, setActiveTab] = useState('specs'); // 'specs' or 'comparison'
     const [quantity, setQuantity] = useState(1);
+    const thumbnailsRef = useRef(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+
+    const checkThumbnailsScroll = () => {
+        const el = thumbnailsRef.current;
+        if (!el) return;
+        const { scrollLeft, scrollWidth, clientWidth } = el;
+        setCanScrollLeft(scrollLeft > 2);
+        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 2);
+    };
+
+    useEffect(() => {
+        const timer = setTimeout(checkThumbnailsScroll, 100);
+        const handleResize = () => checkThumbnailsScroll();
+        window.addEventListener('resize', handleResize);
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [product?.gallery]);
+
+    const handleScrollThumbnails = (direction) => {
+        const el = thumbnailsRef.current;
+        if (!el) return;
+        const itemWidth = (el.clientWidth - 24) / 3 + 12;
+        const scrollDistance = direction === 'left' ? -itemWidth : itemWidth;
+        el.scrollBy({ left: scrollDistance, behavior: 'smooth' });
+        setTimeout(checkThumbnailsScroll, 350);
+    };
     const [relatedViewMode, setRelatedViewMode] = useState('grid');
     const [relatedFilterState, setRelatedFilterState] = useState({
         sort: '',
@@ -274,16 +304,47 @@ const ProductDetail = () => {
                             <img src={activeImage} alt={product.name} />
                         </div>
                         {product.gallery && product.gallery.length > 1 && (
-                            <div className="gallery-thumbnails">
-                                {product.gallery.map((img, idx) => (
-                                    <div 
-                                        key={idx} 
-                                        className={`thumbnail-wrapper ${activeImage === img ? 'active' : ''}`}
-                                        onClick={() => setActiveImage(img)}
+                            <div className="gallery-thumbnails-wrapper">
+                                {product.gallery.length > 3 && (
+                                    <button 
+                                        type="button"
+                                        className="gallery-scroll-btn prev"
+                                        onClick={() => handleScrollThumbnails('left')}
+                                        disabled={!canScrollLeft}
+                                        aria-label="Previous thumbnails"
                                     >
-                                        <img src={img} alt={`${product.name} gallery ${idx + 1}`} />
-                                    </div>
-                                ))}
+                                        <ChevronLeft size={18} />
+                                    </button>
+                                )}
+                                <div 
+                                    className="gallery-thumbnails"
+                                    ref={thumbnailsRef}
+                                    onScroll={checkThumbnailsScroll}
+                                >
+                                    {product.gallery.map((img, idx) => (
+                                        <div 
+                                            key={idx} 
+                                            className={`thumbnail-wrapper ${activeImage === img ? 'active' : ''}`}
+                                            onClick={(e) => {
+                                                setActiveImage(img);
+                                                e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                                            }}
+                                        >
+                                            <img src={img} alt={`${product.name} gallery ${idx + 1}`} />
+                                        </div>
+                                    ))}
+                                </div>
+                                {product.gallery.length > 3 && (
+                                    <button 
+                                        type="button"
+                                        className="gallery-scroll-btn next"
+                                        onClick={() => handleScrollThumbnails('right')}
+                                        disabled={!canScrollRight}
+                                        aria-label="Next thumbnails"
+                                    >
+                                        <ChevronRight size={18} />
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>
