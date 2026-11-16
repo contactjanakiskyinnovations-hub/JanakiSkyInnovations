@@ -340,6 +340,7 @@
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     gap: 30px;
     margin-top: 40px;
+    align-items: start;
 }
 
 .left-details-column,
@@ -520,7 +521,7 @@
 
 /* Tabs Styling */
 .interactive-tabs-card {
-    height: 100%;
+    height: auto;
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -583,8 +584,7 @@
 }
 
 .tab-content-body {
-    flex: 1;
-    overflow-y: auto;
+    flex: initial;
 }
 
 /* Tables Styling */
