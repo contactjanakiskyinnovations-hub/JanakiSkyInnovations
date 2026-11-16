@@ -3,17 +3,21 @@ const Category = require('../models/Category');
 const Product = require('../models/Product');
 const { deleteFilesInFolder, resolveImageKitFolder, deleteFileByUrl } = require('../utils/imagekitHelpers');
 
+// Safely escape any regex metacharacters so queries with '()' etc. work reliably in MongoDB regex
+const escapeRegex = (str) => String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // @desc    Get all categories (nested format)
 // @route   GET /api/categories
 // @access  Public
 const getCategories = async (req, res) => {
     let query = {};
     if (req.query.keyword) {
+        const safeKeyword = escapeRegex(req.query.keyword.trim());
         query = {
             $or: [
-                { name: { $regex: req.query.keyword, $options: 'i' } },
-                { description: { $regex: req.query.keyword, $options: 'i' } },
-                { slug: { $regex: req.query.keyword, $options: 'i' } }
+                { name: { $regex: safeKeyword, $options: 'i' } },
+                { description: { $regex: safeKeyword, $options: 'i' } },
+                { slug: { $regex: safeKeyword, $options: 'i' } }
             ]
         };
     }
@@ -40,7 +44,9 @@ const getCategoryById = async (req, res) => {
 const createCategory = async (req, res) => {
     const { name, slug, description, image, icon, subCategories, isActive } = req.body;
 
-    const generatedSlug = slug || name.toLowerCase().replace(/\s+/g, '-');
+    const generatedSlug = slug 
+        ? slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+        : name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
     const categoryExists = await Category.findOne({ $or: [{ name }, { slug: generatedSlug }] });
     if (categoryExists) {
@@ -109,8 +115,12 @@ const updateCategory = async (req, res) => {
             }
         }
 
+        const cleanSlug = slug
+            ? slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+            : (name ? name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : category.slug);
+
         category.name = name || category.name;
-        category.slug = slug || category.slug;
+        category.slug = cleanSlug || category.slug;
         category.description = description !== undefined ? description : category.description;
         category.image = image !== undefined ? image : category.image;
         category.isActive = isActive !== undefined ? isActive : category.isActive;

@@ -5,6 +5,7 @@ import { useCart } from '../../context/CartContext';
 import WhatsappIcon from '../icons/WhatsappIcon';
 import './ProductCard.css';
 import { withVat, formatINR } from '../../utils/price';
+import { getWhatsAppNumber } from '../../utils/contactConfig';
 
 const ProductCard = ({ product, showWishlist = true, onAddToCart = null }) => {
     const navigate = useNavigate();
@@ -71,10 +72,6 @@ const ProductCard = ({ product, showWishlist = true, onAddToCart = null }) => {
         setError('');
         if (!isInCart) return;
         updateQuantity(id, delta);
-    };
-
-    const getWhatsAppNumber = () => {
-        return '917742228345';
     };
 
     return (
@@ -202,7 +199,12 @@ const ProductCard = ({ product, showWishlist = true, onAddToCart = null }) => {
 
             {/* Buy Now — hidden when out of stock */}
             {(!outOfStock || forcePreOrder) && (
-                <button className="buy-now-btn" onClick={(e) => { e.stopPropagation(); const msg = `Hi, I am interested in ${name} (SKU: ${sku}${forcePreOrder ? ' — Pre-Order' : ''})`; window.open(`https://wa.me/${getWhatsAppNumber()}?text=${encodeURIComponent(msg)}`, '_blank'); }}>
+                <button className="buy-now-btn" onClick={(e) => { 
+                    e.stopPropagation(); 
+                    const msg = `Hi, I am interested in ${name} (SKU: ${sku}${forcePreOrder ? ' — Pre-Order' : ''})`; 
+                    const waNum = getWhatsAppNumber();
+                    window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`, '_blank'); 
+                }}>
                     <WhatsappIcon /> Buy Now
                 </button>
             )}

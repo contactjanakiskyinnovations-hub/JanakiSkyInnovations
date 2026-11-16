@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import AuthModal from '../AuthModal/AuthModal';
 import api from '../../utils/api';
+import { useContactConfig, updateContactConfigCache } from '../../utils/contactConfig';
 import './Header.css';
 
 const Header = () => {
@@ -16,6 +17,7 @@ const Header = () => {
   const navigate = useNavigate();
   const [serviceCategories, setServiceCategories] = useState([]);
   const [navCategories, setNavCategories] = useState([]);
+  const { displayPhone, whatsappNumber } = useContactConfig();
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -122,6 +124,9 @@ const Header = () => {
     const loadServiceCategories = async () => {
       try {
         const { data } = await api.get('/api/cms');
+        if (data) {
+          updateContactConfigCache(data);
+        }
         if (data?.logoImage) {
           setLogoUrl(data.logoImage);
         }
@@ -164,10 +169,6 @@ const Header = () => {
   // Convert a sub-category / sub-sub-category name into a URL slug
   const slugify = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-  const getDisplayPhone = () => {
-    return isLoggedIn && user && user.mobile ? '+977-9842228345' : '+977-9842228345';
-  };
-
   return (
     <header className="header">
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
@@ -181,7 +182,15 @@ const Header = () => {
             <span className="top-bar-tagline">Nepal's Biggest Robotics & Drone Store</span>
           </p>
           <div className="top-links">
-            <span className="phone"><i className="phone-icon">📞</i> {getDisplayPhone()}</span>
+            <a 
+              href={`https://wa.me/${whatsappNumber}`} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="phone"
+              title="Contact us on WhatsApp"
+            >
+              <i className="phone-icon">📞</i> {displayPhone}
+            </a>
           </div>
         </div>
         <span className="top-bar-sparkle sparkle-right" aria-hidden="true">✨</span>

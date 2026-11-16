@@ -9,6 +9,7 @@ import ViewToggle from '../../components/ViewToggle/ViewToggle';
 import '../../components/ViewToggle/ViewToggle.css';
 import WhatsappIcon from '../../components/icons/WhatsappIcon';
 import { withVat, formatINR } from '../../utils/price';
+import { getWhatsAppNumber } from '../../utils/contactConfig';
 import Seo, { buildProductSchema, buildBreadcrumbSchema } from '../../utils/seo';
 import { preserveHyphenatedText, getPlainShortSummary } from '../../utils/richText';
 import './ProductDetail.css';
@@ -170,10 +171,6 @@ const ProductDetail = () => {
         );
     }
 
-    const getWhatsAppNumber = () => {
-        return '917742228345';
-    };
-
     // Stock handling for product detail page
     const productStock = Number(product?.stock);
     const isOutOfStock = Number.isFinite(productStock) && productStock <= 0;
@@ -313,7 +310,7 @@ const ProductDetail = () => {
                         buildProductSchema(product),
                         buildBreadcrumbSchema([
                             { name: 'Home', path: '/' },
-                            { name: product.category || 'Products', path: `/category/${String(product.category || 'products').toLowerCase().replace(/\s+/g, '-')}` },
+                            { name: product.category || 'Products', path: `/category/${String(product.category || 'products').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}` },
                             { name: product.name, path: `/product/${product._id}` },
                         ]),
                     ]}
@@ -439,7 +436,11 @@ const ProductDetail = () => {
                             ) : (
                                 <>
                                     {/* Row 1: Buy Now (left) + Wishlist (right) */}
-                                    <button className="buy-whatsapp-btn" onClick={() => { const msg = `Hi, I am interested in ${product.name} (SKU: ${product.sku})`; window.open(`https://wa.me/${getWhatsAppNumber()}?text=${encodeURIComponent(msg)}`, '_blank'); }}>
+                                    <button className="buy-whatsapp-btn" onClick={() => { 
+                                        const msg = `Hi, I am interested in ${product.name} (SKU: ${product.sku})`; 
+                                        const waNum = getWhatsAppNumber();
+                                        window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`, '_blank'); 
+                                    }}>
                                         <WhatsappIcon /> Buy Now on WhatsApp
                                     </button>
                                     <button 

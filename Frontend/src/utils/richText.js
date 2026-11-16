@@ -49,6 +49,14 @@ export const preserveHyphenatedText = (content) => {
     try {
         const parsed = new DOMParser().parseFromString(cleaned, 'text/html');
 
+        // Remove empty <p> tags that Quill inserts as blank lines (p:empty or p containing only <br>)
+        Array.from(parsed.body.querySelectorAll('p')).forEach((p) => {
+            const inner = p.innerHTML.trim();
+            if (inner === '' || inner === '<br>' || inner === '<br/>') {
+                p.remove();
+            }
+        });
+
         // Clean any remaining br tags preceded by a hyphen in DOM
         Array.from(parsed.body.querySelectorAll('br')).forEach((lineBreak) => {
             const prevText = (lineBreak.previousSibling?.textContent || '').replace(/\u00a0/g, ' ');

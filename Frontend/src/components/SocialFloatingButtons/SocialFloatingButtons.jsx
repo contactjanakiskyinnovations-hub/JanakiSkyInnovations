@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MessageCircle, Phone, Mail, MessageSquare } from 'lucide-react';
 import WhatsappIcon from '../icons/WhatsappIcon';
 import api from '../../utils/api';
+import { updateContactConfigCache } from '../../utils/contactConfig';
 import './SocialFloatingButtons.css';
 
 const DEFAULT_CONTACT_ICONS = [
@@ -18,6 +19,7 @@ const SocialFloatingButtons = () => {
             try {
                 const { data } = await api.get('/api/cms');
                 const icons = data?.contactIcons;
+                if (data) updateContactConfigCache(data);
                 if (Array.isArray(icons) && icons.length > 0) {
                     setContactIcons(icons);
                 } else {

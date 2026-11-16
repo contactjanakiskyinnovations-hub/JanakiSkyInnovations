@@ -22,6 +22,7 @@ import {
 import api from '../../utils/api';
 import Seo from '../../utils/seo';
 import { preserveHyphenatedText } from '../../utils/richText';
+import { useContactConfig, updateContactConfigCache } from '../../utils/contactConfig';
 import './AboutStore.css';
 
 const DEFAULT_ABOUT = {
@@ -91,11 +92,13 @@ const AboutStore = () => {
         email: 'support@janakiskyinnovations.com'
     });
     const [loading, setLoading] = useState(true);
+    const { whatsappNumber, whatsappUrl } = useContactConfig();
 
     useEffect(() => {
         const fetchCmsData = async () => {
             try {
                 const { data } = await api.get('/api/cms');
+                if (data) updateContactConfigCache(data);
                 if (data?.aboutStore) {
                     setAboutData({
                         ...DEFAULT_ABOUT,
@@ -351,7 +354,7 @@ const AboutStore = () => {
                             <Link to="/services" className="btn-white-about">
                                 Request UAV Service
                             </Link>
-                            <a href={`https://wa.me/917742228345?text=Hi!%20I%20have%20a%20question%20about%20your%20store.`} target="_blank" rel="noopener noreferrer" className="btn-outline-about">
+                            <a href={`https://wa.me/${whatsappNumber}?text=Hi!%20I%20have%20a%20question%20about%20your%20store.`} target="_blank" rel="noopener noreferrer" className="btn-outline-about">
                                 Chat on WhatsApp
                             </a>
                         </div>

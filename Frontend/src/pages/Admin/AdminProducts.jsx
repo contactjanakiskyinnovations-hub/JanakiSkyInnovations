@@ -431,11 +431,13 @@ const AdminProducts = () => {
         }
         const subCats = Object.keys(categoryTaxonomy[initialCat] || {});
         if (!subCats.includes(initialSub)) {
-            initialSub = subCats.length > 0 ? subCats[0] : '';
+            const foundSub = subCats.find(s => s.toLowerCase() === (initialSub || '').toLowerCase());
+            initialSub = foundSub || (subCats.length > 0 ? subCats[0] : '');
         }
         const subSubCats = categoryTaxonomy[initialCat]?.[initialSub] || [];
         if (!subSubCats.includes(initialSubSub)) {
-            initialSubSub = subSubCats.length > 0 ? subSubCats[0] : '';
+            const foundSubSub = subSubCats.find(ss => ss.toLowerCase() === (initialSubSub || '').toLowerCase());
+            initialSubSub = foundSubSub || (subSubCats.length > 0 ? subSubCats[0] : '');
         }
 
         setProductForm({

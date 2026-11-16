@@ -38,9 +38,9 @@ const categorySchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Create slug from name before saving (async style - compatible with Mongoose 7+ and Express 5)
+// Create clean slug from slug/name before saving (async style - compatible with Mongoose 7+ and Express 5)
 categorySchema.pre('save', async function() {
-    this.slug = this.name.toLowerCase().replace(/\s+/g, '-');
+    this.slug = (this.slug || this.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 });
 
 module.exports = mongoose.model('Category', categorySchema);

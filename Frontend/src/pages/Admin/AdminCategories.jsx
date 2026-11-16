@@ -630,8 +630,8 @@ const AdminCategories = () => {
         }
         setSaving(true);
         let uploadedCount = 0;
-        // Helper to safely format folder segments for ImageKit (strips dots, slashes, and special characters)
-        const cleanSeg = (val) => String(val || '').trim().replace(/[/\\?%*:|"<>.]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'item';
+        // Helper to safely format folder segments for ImageKit (strips dots, slashes, parentheses, and special characters)
+        const cleanSeg = (val) => String(val || '').trim().replace(/[/\\?%*:|"<>.\(\)]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'item';
 
         try {
             // 1. Upload main category image if new file selected

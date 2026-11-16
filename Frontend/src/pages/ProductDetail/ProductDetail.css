@@ -931,9 +931,24 @@
 .in-box-html-content p,
 .instruction-html-content p {
     margin-bottom: 10px;
-    min-height: 1.25em;
     overflow-wrap: break-word;
     word-break: normal;
+}
+
+/* Collapse empty Quill paragraphs so they don't create blank lines */
+.overview-html-content p:empty,
+.key-features-html-content p:empty,
+.in-box-html-content p:empty,
+.instruction-html-content p:empty {
+    display: none;
+    margin: 0;
+}
+
+.overview-html-content p > br:only-child,
+.key-features-html-content p > br:only-child,
+.in-box-html-content p > br:only-child,
+.instruction-html-content p > br:only-child {
+    display: none;
 }
 
 .overview-html-content ul,

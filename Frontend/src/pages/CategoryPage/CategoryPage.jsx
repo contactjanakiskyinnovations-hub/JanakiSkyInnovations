@@ -128,7 +128,7 @@ const SubSubCategoryCover = ({ ssub }) => {
     );
 };
 
-const slugifyKey = (v) => String(v || '').trim().toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+const slugifyKey = (v) => String(v || '').trim().toLowerCase().replace(/[()]/g, ' ').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
 const toSlug = (v) => String(v || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 const CategoryPage = () => {
@@ -260,9 +260,13 @@ const CategoryPage = () => {
     // Find the currently selected sub-category object
     const selectedSubObj = useMemo(() => {
         if (!activeCategory || !currentSub) return null;
-        return (activeCategory.subCategories || []).find(
-            s => s.name.toLowerCase() === currentSub.toLowerCase()
-        ) || null;
+        const curLower = currentSub.toLowerCase();
+        const curSlug = toSlug(currentSub);
+        const curKey = slugifyKey(currentSub);
+        return (activeCategory.subCategories || []).find(s => {
+            const sLower = s.name.toLowerCase();
+            return sLower === curLower || toSlug(s.name) === curSlug || slugifyKey(s.name) === curKey;
+        }) || null;
     }, [activeCategory, currentSub]);
 
     // Banner image resolution

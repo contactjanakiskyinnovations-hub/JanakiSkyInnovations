@@ -20,6 +20,39 @@ const normalizeComparisonTable = (comparisonTable) => {
     };
 };
 
+// Safely escape any regex metacharacters so strings with '()' etc. work reliably in MongoDB regex
+const escapeRegex = (str) => String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Build a comprehensive, case-insensitive, hyphen/space/parenthesis-agnostic filter for category fields
+const buildCategoryFieldConditions = (field, rawValue) => {
+    if (!rawValue) return [];
+    const raw = String(rawValue).trim();
+    if (!raw) return [];
+
+    const escaped = escapeRegex(raw);
+    const conds = [
+        { [field]: raw }, // Exact string equality (literal '()' preserved)
+        { [field]: new RegExp(`^${escaped}$`, 'i') }, // Literal case-insensitive regex
+    ];
+
+    // Flexible pattern where hyphens, underscores, spaces and optional parentheses are interchangeable
+    const flexiblePattern = escaped
+        .replace(/\\\(|\\\)/g, '[\\(\\)]*')
+        .replace(/[-_\\s]+/g, '[-_\\s]*');
+    conds.push({ [field]: new RegExp(`^${flexiblePattern}$`, 'i') });
+    conds.push({ [field]: new RegExp(flexiblePattern, 'i') });
+
+    // Words-based pattern (ignoring parentheses characters entirely)
+    const words = raw.replace(/[()]/g, ' ').trim().split(/[-_\s]+/).filter(Boolean);
+    if (words.length > 0) {
+        const wordsPattern = words.map(escapeRegex).join('[-_\\s\\(\\)]*');
+        conds.push({ [field]: new RegExp(`^[-_\\s\\(\\)]*${wordsPattern}[-_\\s\\(\\)]*$`, 'i') });
+        conds.push({ [field]: new RegExp(wordsPattern, 'i') });
+    }
+
+    return conds;
+};
+
 // @desc    Fetch all products
 // @route   GET /api/products
 // @access  Public
@@ -32,30 +65,22 @@ const getProducts = async (req, res) => {
     let query = {};
     
     if (req.query.keyword) {
+        const safeKeyword = escapeRegex(req.query.keyword.trim());
         query = {
             $or: [
-                { name: { $regex: req.query.keyword, $options: 'i' } },
-                { sku: { $regex: req.query.keyword, $options: 'i' } },
-                { brand: { $regex: req.query.keyword, $options: 'i' } },
-                { description: { $regex: req.query.keyword, $options: 'i' } }
+                { name: { $regex: safeKeyword, $options: 'i' } },
+                { sku: { $regex: safeKeyword, $options: 'i' } },
+                { brand: { $regex: safeKeyword, $options: 'i' } },
+                { description: { $regex: safeKeyword, $options: 'i' } }
             ]
         };
     }
 
-    // Category, Subcategory, and SubSubcategory filters (Hyphen & Space Agnostic, Case Insensitive)
+    // Category, Subcategory, and SubSubcategory filters (Hyphen, Space, and Parenthesis Agnostic, Case Insensitive)
     const filterConditions = [];
     if (req.query.category) {
         const rawCat = req.query.category.trim();
         const lowerCat = rawCat.toLowerCase();
-        
-        // Build flexible regexes matching both hyphenated slugs ("surveillance-drones") and spaced names ("Surveillance Drones")
-        const catPattern = rawCat.replace(/[-_]/g, '[-_\\s]+');
-        const catExactRegex = new RegExp(`^${catPattern}$`, 'i');
-        const catContainsRegex = new RegExp(rawCat.replace(/[-_]/g, '[-_\\s]*'), 'i');
-        
-        // Also derive base word if category ends in -drones or drones (e.g. "surveillance-drones" -> "surveillance")
-        const baseWord = rawCat.replace(/[-_\s]*drones$/i, '').trim();
-        const baseWordRegex = baseWord ? new RegExp(`^${baseWord}$`, 'i') : null;
 
         if (lowerCat === 'drones' || lowerCat === 'drones products' || lowerCat === 'drones-products') {
             filterConditions.push({ 
@@ -87,15 +112,15 @@ const getProducts = async (req, res) => {
             });
         } else {
             const catOrConditions = [
-                { category: catExactRegex },
-                { category: catContainsRegex },
-                { subCategory: catExactRegex },
-                { subCategory: catContainsRegex },
-                { subSubCategory: catExactRegex },
-                { subSubCategory: catContainsRegex }
+                ...buildCategoryFieldConditions('category', rawCat),
+                ...buildCategoryFieldConditions('subCategory', rawCat),
+                ...buildCategoryFieldConditions('subSubCategory', rawCat)
             ];
 
-            if (baseWordRegex) {
+            // Derive base word if category ends in -drones or drones
+            const baseWord = rawCat.replace(/[()]/g, '').replace(/[-_\s]*drones$/i, '').trim();
+            if (baseWord) {
+                const baseWordRegex = new RegExp(`^${escapeRegex(baseWord)}$`, 'i');
                 catOrConditions.push(
                     { category: baseWordRegex },
                     { subCategory: baseWordRegex },
@@ -104,22 +129,22 @@ const getProducts = async (req, res) => {
             }
 
             // Compound slug parsing for hierarchical URLs (e.g. "dji-mini" -> subCategory: DJI, subSubCategory: Mini)
-            const catWords = rawCat.split(/[-_\s]+/);
+            const catWords = rawCat.replace(/[()]/g, ' ').trim().split(/[-_\s]+/).filter(Boolean);
             if (catWords.length > 1) {
-                const firstWord = catWords[0];
-                const remainingWords = catWords.slice(1).join('[-_\\s]*');
+                const firstWord = escapeRegex(catWords[0]);
+                const remainingWords = catWords.slice(1).map(escapeRegex).join('[-_\\s\\(\\)]*');
 
                 catOrConditions.push({
                     $and: [
-                        { subCategory: new RegExp(`^${firstWord}`, 'i') },
-                        { subSubCategory: new RegExp(`^${remainingWords}`, 'i') }
+                        { subCategory: new RegExp(`^[-_\\s\\(\\)]*${firstWord}`, 'i') },
+                        { subSubCategory: new RegExp(`^[-_\\s\\(\\)]*${remainingWords}`, 'i') }
                     ]
                 });
 
                 catOrConditions.push({
                     $and: [
-                        { category: new RegExp(`^${firstWord}`, 'i') },
-                        { subCategory: new RegExp(`^${remainingWords}`, 'i') }
+                        { category: new RegExp(`^[-_\\s\\(\\)]*${firstWord}`, 'i') },
+                        { subCategory: new RegExp(`^[-_\\s\\(\\)]*${remainingWords}`, 'i') }
                     ]
                 });
             }
@@ -128,23 +153,13 @@ const getProducts = async (req, res) => {
         }
     }
     if (req.query.subCategory) {
-        const rawSub = req.query.subCategory.trim();
-        const subPattern = rawSub.replace(/[-_]/g, '[-_\\s]+');
         filterConditions.push({ 
-            $or: [
-                { subCategory: new RegExp(`^${subPattern}$`, 'i') },
-                { subCategory: new RegExp(rawSub.replace(/[-_]/g, '[-_\\s]*'), 'i') }
-            ]
+            $or: buildCategoryFieldConditions('subCategory', req.query.subCategory) 
         });
     }
     if (req.query.subSubCategory) {
-        const rawSubSub = req.query.subSubCategory.trim();
-        const subSubPattern = rawSubSub.replace(/[-_]/g, '[-_\\s]+');
         filterConditions.push({ 
-            $or: [
-                { subSubCategory: new RegExp(`^${subSubPattern}$`, 'i') },
-                { subSubCategory: new RegExp(rawSubSub.replace(/[-_]/g, '[-_\\s]*'), 'i') }
-            ]
+            $or: buildCategoryFieldConditions('subSubCategory', req.query.subSubCategory) 
         });
     }
 
@@ -163,7 +178,8 @@ const getProducts = async (req, res) => {
 
     // Name filter
     if (req.query.name) {
-        filterConditions.push({ name: { $regex: req.query.name, $options: 'i' } });
+        const safeName = escapeRegex(req.query.name.trim());
+        filterConditions.push({ name: { $regex: safeName, $options: 'i' } });
     }
 
     if (filterConditions.length > 0) {
